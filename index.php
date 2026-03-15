@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FSUU Dental Clinic - Quality Dental Care</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%),
+                        url('https://images.unsplash.com/photo-1606811951340-0c2b4c4e3f0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') center/cover;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: white;
+            text-align: center;
+        }
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            color: white;
+        }
+        .features-section {
+            padding: 80px 0;
+            background: white;
+        }
+        .feature-card {
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 30px;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: #667eea !important;
+        }
+        .footer {
+            background: #343a40;
+            color: white;
+            padding: 40px 0;
+            margin-top: 0;
+        }
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            .btn-custom {
+                padding: 12px 30px;
+                margin: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-heart-pulse-fill me-2"></i>
+                FSUU Dental Clinic
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-custom ms-3" href="auth/login.php">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-custom ms-2" href="auth/register.php">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Welcome to FSUU Dental Clinic</h1>
+                <p class="hero-subtitle">Professional dental care with modern technology and compassionate service</p>
+                <div class="d-flex justify-content-center flex-wrap">
+                    <a href="auth/login.php" class="btn btn-light btn-custom">Login to Your Account</a>
+                    <a href="auth/register.php" class="btn btn-outline-light btn-custom">Create New Account</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 fw-bold text-primary">Our Services</h2>
+                    <p class="lead text-muted">Comprehensive dental care for the entire family</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-tooth"></i>
+                        </div>
+                        <h4>General Dentistry</h4>
+                        <p>Complete dental check-ups, cleanings, fillings, and preventive care to keep your smile healthy.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-braces"></i>
+                        </div>
+                        <h4>Orthodontics</h4>
+                        <p>Straighten your teeth with modern braces and aligners for a perfect, confident smile.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-heart-pulse"></i>
+                        </div>
+                        <h4>Oral Surgery</h4>
+                        <p>Expert surgical procedures including wisdom teeth removal and dental implants.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-palette"></i>
+                        </div>
+                        <h4>Cosmetic Dentistry</h4>
+                        <p>Enhance your smile with teeth whitening, veneers, and other aesthetic treatments.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h4>Emergency Care</h4>
+                        <p>24/7 emergency dental services for sudden tooth pain, injuries, and urgent care needs.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h4>Family Dentistry</h4>
+                        <p>Dental care for patients of all ages, from children to seniors, in a friendly environment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="display-5 fw-bold text-primary mb-4">About FSUU Dental Clinic</h2>
+                    <p class="lead mb-4">Located at Francisco Sanchez University (FSUU), our dental clinic provides state-of-the-art dental care with a focus on patient comfort and satisfaction.</p>
+                    <p>Our team of experienced dentists and staff are committed to delivering high-quality dental services using the latest technology and techniques. We believe that everyone deserves a healthy, beautiful smile.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Modern equipment and technology</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Experienced and qualified dentists</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Patient-centered care approach</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Affordable treatment options</li>
+                    </ul>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1606811967280-6d9e49d3d9f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80" alt="Dental Clinic" class="img-fluid rounded shadow">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 fw-bold text-primary">Contact Us</h2>
+                    <p class="lead text-muted">Get in touch for appointments or inquiries</p>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-4">
+                            <div class="feature-icon mb-3">
+                                <i class="bi bi-geo-alt"></i>
+                            </div>
+                            <h5>Address</h5>
+                            <p>Francisco Sanchez University<br>Campus, Philippines</p>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="feature-icon mb-3">
+                                <i class="bi bi-telephone"></i>
+                            </div>
+                            <h5>Phone</h5>
+                            <p>+63 (123) 456-7890</p>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="feature-icon mb-3">
+                                <i class="bi bi-envelope"></i>
+                            </div>
+                            <h5>Email</h5>
+                            <p>dental@fsuu.edu.ph</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h5>FSUU Dental Clinic</h5>
+                    <p>Committed to providing excellent dental care with compassion and professionalism.</p>
+                </div>
+                <div class="col-lg-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="auth/login.php" class="text-white">Login</a></li>
+                        <li><a href="auth/register.php" class="text-white">Register</a></li>
+                        <li><a href="#features" class="text-white">Services</a></li>
+                        <li><a href="#about" class="text-white">About</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h5>Follow Us</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-3"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-white me-3"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2026 FSUU Dental Clinic. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar background change on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(255, 255, 255, 0.98) !important';
+            } else {
+                navbar.style.background = 'rgba(255, 255, 255, 0.95) !important';
+            }
+        });
+    </script>
+</body>
+</html>
