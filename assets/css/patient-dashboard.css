@@ -1,0 +1,22 @@
+/* Patient Dashboard Specific Styles */
+
+.service-card {
+    transition: all 0.2s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    border-color: #002B5C !important;
+}
+
+.service-card.border-primary {
+    border-width: 2px !important;
+    border-color: #FDB813 !important;
+    background-color: #fffdf5;
+}
+
+/* Appointment List Specific */
+.table td {
+    padding: 1rem 0.75rem;
+}

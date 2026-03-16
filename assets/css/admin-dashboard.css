@@ -1,0 +1,30 @@
+/* Admin Dashboard Specific Styles */
+body {
+    background-color: #f0f2f5;
+}
+
+.card {
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.table th {
+    background-color: #f8fafc;
+    color: #64748b;
+}
+
+.btn-outline-primary {
+    border-color: #002B5C;
+    color: #002B5C;
+}
+.btn-outline-primary:hover {
+    background-color: #002B5C;
+    color: #ffffff;
+}
+
+/* Make action buttons a bit more refined */
+.btn-success { background-color: #10b981; border: none; }
+.btn-danger { background-color: #ef4444; border: none; }
+
+.table-responsive {
+    border-radius: 8px;
+}

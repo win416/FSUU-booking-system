@@ -43,6 +43,7 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
 </head>
 <body>
     <!-- Navigation -->

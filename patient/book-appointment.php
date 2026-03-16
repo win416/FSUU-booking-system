@@ -18,37 +18,7 @@ $services = $db->query("SELECT * FROM services WHERE is_active = 1 ORDER BY serv
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css">
-    <style>
-        #calendar {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-        .fc-event {
-            cursor: pointer;
-        }
-        .time-slot {
-            display: inline-block;
-            margin: 5px;
-            padding: 10px 15px;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .time-slot:hover {
-            background-color: #e9ecef;
-        }
-        .time-slot.selected {
-            background-color: #0d6efd;
-            color: white;
-            border-color: #0d6efd;
-        }
-        .time-slot.disabled {
-            background-color: #f8f9fa;
-            color: #6c757d;
-            cursor: not-allowed;
-            border-color: #dee2e6;
-        }
-    </style>
+    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css">
 </head>
 <body>
     <!-- Navigation (same as dashboard) -->
