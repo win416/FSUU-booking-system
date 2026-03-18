@@ -26,9 +26,26 @@ while($row = $hours->fetch_assoc()) {
     $settings[$row['setting_key']] = $row['setting_value'];
 }
 
-$start = $settings['operating_hours_start'] ?? '08:00';
-$end = $settings['operating_hours_end'] ?? '17:00';
 $maxPerDay = $settings['max_bookings_per_day'] ?? 20;
+
+// Set operating hours based on day of week
+$dayOfWeek = date('w', strtotime($date));
+if ($dayOfWeek >= 1 && $dayOfWeek <= 5) { // Monday-Friday
+    $start = '13:00:00';
+    $end = '15:30:00';
+} elseif ($dayOfWeek == 6) { // Saturday
+    $start = '09:00:00';
+    $end = '12:00:00';
+} else { // Sunday (0) or others
+    echo json_encode([
+        'success' => true, 
+        'slots' => [], 
+        'maxPerDay' => $maxPerDay, 
+        'date' => $date,
+        'message' => 'The clinic is closed on Sundays.'
+    ]);
+    exit();
+}
 
 // Generate time slots (every 30 minutes)
 $slots = [];

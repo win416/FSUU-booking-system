@@ -7,7 +7,7 @@ define('DB_NAME', 'fsuu_dental_booking');
 
 // Application configuration
 define('SITE_NAME', 'FSUU Dental Clinic');
-define('SITE_URL', 'http://localhost/FSUU-booking-system');
+define('SITE_URL', 'http://localhost/FSUU-booking-system-1');
 define('TIMEZONE', 'Asia/Manila');  // Correct timezone for the Philippines
 date_default_timezone_set(TIMEZONE);
 

@@ -1,22 +1,198 @@
 /* Patient Dashboard Specific Styles */
 
+/* Sidebar Layout Base */
+body {
+    background-color: var(--bg-white);
+    margin: 0;
+    overflow-x: hidden;
+    color: var(--primary-text);
+}
+
+.dashboard-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Styling - Dark Theme */
+.sidebar {
+    width: 280px;
+    background: #1e293b;
+    color: #cbd5e1;
+    min-height: 100vh;
+    padding-top: 2rem;
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    border-right: none;
+}
+
+.sidebar .brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 0 1.5rem 2.5rem;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar .brand i {
+    color: #00aeef;
+    margin-right: 12px;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0 0.75rem;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.sidebar-nav .nav-item {
+    margin-bottom: 4px;
+}
+
+.sidebar-nav .nav-link {
+    color: #94a3b8;
+    padding: 12px 1.25rem;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-weight: 500;
+    border-left: none;
+}
+
+.sidebar-nav .nav-link i {
+    font-size: 1.25rem;
+    margin-right: 12px;
+    width: 24px;
+}
+
+.sidebar-nav .nav-link:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-nav .nav-link.active {
+    color: #ffffff;
+    background: #00aeef;
+    font-weight: 600;
+}
+
+.sidebar-nav .nav-link.active i {
+    color: #ffffff;
+}
+
+.logout-nav-item {
+    margin-top: auto;
+    padding: 1.5rem 0.75rem;
+}
+
+.logout-nav-item .nav-link {
+    color: #f87171;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    padding-top: 1.5rem;
+}
+
+/* Main Content Area */
+.main-content {
+    flex-grow: 1;
+    margin-left: 280px;
+    padding: 2.5rem;
+    width: calc(100% - 280px);
+    background-color: #f8fafc;
+}
+
+.alert-info {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--primary-text);
+    padding: 1.25rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+
+/* Stat Cards Enhancement */
+.card-stats {
+    transition: transform 0.2s;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: #ffffff;
+}
+
+.card-stats:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.card-stats .card-body {
+    padding: 1.5rem;
+}
+
+.card-stats h6 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+}
+
+.card-stats h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1e293b;
+}
+
+.progress {
+    height: 6px;
+    border-radius: 3px;
+    margin-top: 1rem;
+    background-color: #f1f5f9;
+}
+
+.progress-bar {
+    background-color: var(--primary-color);
+}
+
+/* Service Selection Cards */
 .service-card {
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px;
 }
 
 .service-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-    border-color: #002B5C !important;
+    box-shadow: var(--card-shadow-hover);
+    border-color: var(--primary-color) !important;
 }
 
 .service-card.border-primary {
     border-width: 2px !important;
-    border-color: #FDB813 !important;
-    background-color: #fffdf5;
+    border-color: var(--primary-color) !important;
 }
 
-/* Appointment List Specific */
-.table td {
-    padding: 1rem 0.75rem;
+@media (max-width: 991.98px) {
+    .dashboard-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        position: relative;
+        padding-bottom: 1rem;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 1.5rem;
+    }
 }

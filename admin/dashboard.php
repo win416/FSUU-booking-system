@@ -42,15 +42,31 @@ $stats = $db->query("
 ")->fetch_assoc();
 
 // Weekly stats
-$weekly = $db->query("
+$weekly_data = [];
+for ($i = 6; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-$i days"));
+    $weekly_data[$date] = 0;
+}
+
+$weekly_query = $db->query("
     SELECT 
         DATE(appointment_date) as date,
         COUNT(*) as total
     FROM appointments
-    WHERE appointment_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND CURDATE()
+    WHERE appointment_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
     GROUP BY DATE(appointment_date)
-    ORDER BY date
 ");
+
+while ($row = $weekly_query->fetch_assoc()) {
+    $weekly_data[$row['date']] = (int)$row['total'];
+}
+
+$chart_labels = [];
+$chart_values = [];
+foreach ($weekly_data as $date => $count) {
+    $chart_labels[] = date('M d', strtotime($date));
+    $chart_values[] = $count;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -60,68 +76,66 @@ $weekly = $db->query("
     <title>Admin Dashboard - FSUU Dental Clinic</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- Admin Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="dashboard.php">FSUU Dental - Admin</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="dashboard.php">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="appointments.php">
-                            <i class="bi bi-calendar-check"></i> Appointments
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="patients.php">
-                            <i class="bi bi-people"></i> Patients
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="schedule.php">
-                            <i class="bi bi-clock"></i> Schedule
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="reports.php">
-                            <i class="bi bi-graph-up"></i> Reports
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="users.php">
-                            <i class="bi bi-person-badge"></i> Users
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="settings.php">
-                            <i class="bi bi-gear"></i> Settings
-                        </a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="../auth/logout.php">
-                            <i class="bi bi-box-arrow-right"></i> Logout
-                        </a>
-                    </li>
-                </ul>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="brand">
+                <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
+                FSUU Admin
             </div>
-        </div>
-    </nav>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="dashboard.php">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="appointments.php">
+                        <i class="bi bi-calendar-check"></i> Appointments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="patients.php">
+                        <i class="bi bi-people"></i> Patients
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="schedule.php">
+                        <i class="bi bi-clock"></i> Schedule
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="reports.php">
+                        <i class="bi bi-graph-up"></i> Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="users.php">
+                        <i class="bi bi-person-badge"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="settings.php">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                </li>
+                <li class="nav-item logout-nav-item">
+                    <a class="nav-link text-danger" href="../auth/logout.php">
+                        <i class="bi bi-box-arrow-right text-danger"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-    <!-- Main Content -->
-    <div class="container-fluid my-4">
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="container-fluid my-4">
         <div class="row">
             <div class="col-md-12">
                 <h2>Admin Dashboard</h2>
@@ -132,34 +146,46 @@ $weekly = $db->query("
         <!-- Stats Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card text-white bg-primary">
+                <div class="card card-stats h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Today's Appointments</h5>
+                        <h6>Today's Appointments</h6>
                         <h2><?php echo $stats['total_today'] ?? 0; ?></h2>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white bg-warning">
+                <div class="card card-stats h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Pending Approval</h5>
+                        <h6>Pending Approval</h6>
                         <h2><?php echo $stats['pending_count'] ?? 0; ?></h2>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: 40%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white bg-success">
+                <div class="card card-stats h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Approved Today</h5>
+                        <h6>Approved Today</h6>
                         <h2><?php echo $stats['approved_count'] ?? 0; ?></h2>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: 70%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white bg-info">
+                <div class="card card-stats h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Completed</h5>
+                        <h6>Completed</h6>
                         <h2><?php echo $stats['completed_count'] ?? 0; ?></h2>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: 90%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -293,26 +319,20 @@ $weekly = $db->query("
                                 <i class="bi bi-person-plus"></i> Add User
                             </a>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                </div> <!-- closing Quick Actions -->
+            </div> <!-- closing Quick Actions col -->
+        </div> <!-- closing row -->
 
+    </div> <!-- closing container-fluid -->
+</div> <!-- closing main-content -->
+</div> <!-- closing dashboard-wrapper -->
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
     // Weekly Chart
     const ctx = document.getElementById('weeklyChart').getContext('2d');
-    const weeklyData = <?php
-        $dates = [];
-        $counts = [];
-        while($row = $weekly->fetch_assoc()) {
-            $dates[] = date('M d', strtotime($row['date']));
-            $counts[] = $row['total'];
-        }
-        echo json_encode(['dates' => $dates, 'counts' => $counts]);
-    ?>;
+    const weeklyData = <?php echo json_encode(['dates' => $chart_labels, 'counts' => $chart_values]); ?>;
     
     new Chart(ctx, {
         type: 'line',
@@ -321,8 +341,10 @@ $weekly = $db->query("
             datasets: [{
                 label: 'Appointments',
                 data: weeklyData.counts,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
+                borderColor: '#00aeef',
+                backgroundColor: 'rgba(0, 174, 239, 0.1)',
+                fill: true,
+                tension: 0.3
             }]
         },
         options: {
@@ -378,5 +400,6 @@ $weekly = $db->query("
         }
     });
     </script>
+
 </body>
 </html>

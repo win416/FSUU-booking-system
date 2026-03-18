@@ -18,54 +18,68 @@ $services = $db->query("SELECT * FROM services WHERE is_active = 1 ORDER BY serv
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/patient-dashboard.css">
     <link rel="stylesheet" href="../assets/css/patient-book-appointment.css">
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
-    <!-- Navigation (same as dashboard) -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="dashboard.php">FSUU Dental Clinic</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="book-appointment.php">
-                            <i class="bi bi-calendar-plus"></i> Book Appointment
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="my-appointments.php">
-                            <i class="bi bi-calendar-check"></i> My Appointments
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="profile.php">
-                            <i class="bi bi-person"></i> Profile
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="history.php">
-                            <i class="bi bi-clock-history"></i> History
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../auth/logout.php">
-                            <i class="bi bi-box-arrow-right"></i> Logout
-                        </a>
-                    </li>
-                </ul>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="brand">
+                <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
+                FSUU Dental
             </div>
-        </div>
-    </nav>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.php">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="book-appointment.php">
+                        <i class="bi bi-calendar-plus"></i> Book Appointment
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="my-appointments.php">
+                        <i class="bi bi-calendar-check"></i> My Appointments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="notifications.php">
+                        <i class="bi bi-bell"></i> Notifications
+                        <?php
+                        $unread_stmt = $db->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
+                        $unread_stmt->bind_param("i", $user['user_id']);
+                        $unread_stmt->execute();
+                        $unread_count = $unread_stmt->get_result()->fetch_assoc()['count'];
+                        if ($unread_count > 0): ?>
+                            <span class="badge bg-danger rounded-pill ms-2"><?php echo $unread_count; ?></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="profile.php">
+                        <i class="bi bi-person"></i> Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="history.php">
+                        <i class="bi bi-clock-history"></i> History
+                    </a>
+                </li>
+                <li class="nav-item logout-nav-item">
+                    <a class="nav-link text-danger" href="../auth/logout.php">
+                        <i class="bi bi-box-arrow-right text-danger"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-    <div class="container my-4">
+        <!-- Main Content -->
+        <div class="main-content">
         <h2>Book an Appointment</h2>
         
         <div class="row">
@@ -185,6 +199,9 @@ $services = $db->query("SELECT * FROM services WHERE is_active = 1 ORDER BY serv
         </div>
     </div>
 
+        </div>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
@@ -219,6 +236,18 @@ $services = $db->query("SELECT * FROM services WHERE is_active = 1 ORDER BY serv
             },
             selectable: true,
             select: function(info) {
+                const blockedEvent = calendar.getEvents().find(e => 
+                    e.display === 'background' && 
+                    e.extendedProps.isFullDay && 
+                    e.startStr === info.startStr
+                );
+
+                if (blockedEvent) {
+                    alert('This date is unavailable: ' + (blockedEvent.extendedProps.reason || 'Management decision'));
+                    calendar.unselect();
+                    return;
+                }
+
                 selectedDate = info.startStr;
                 loadTimeSlots(selectedDate);
             },
@@ -234,6 +263,17 @@ $services = $db->query("SELECT * FROM services WHERE is_active = 1 ORDER BY serv
                 }
             },
             dateClick: function(info) {
+                const blockedEvent = calendar.getEvents().find(e => 
+                    e.display === 'background' && 
+                    e.extendedProps.isFullDay && 
+                    e.startStr === info.dateStr
+                );
+
+                if (blockedEvent) {
+                    alert('This date is unavailable: ' + (blockedEvent.extendedProps.reason || 'Management decision'));
+                    return;
+                }
+
                 selectedDate = info.dateStr;
                 loadTimeSlots(selectedDate);
             }
@@ -250,7 +290,14 @@ $services = $db->query("SELECT * FROM services WHERE is_active = 1 ORDER BY serv
                 service_id: selectedService
             },
             success: function(response) {
-                displayTimeSlots(response.slots, response.maxPerDay);
+                if (response.success) {
+                    displayTimeSlots(response.slots, response.maxPerDay);
+                } else {
+                    alert(response.message || 'Error loading slots');
+                }
+            },
+            error: function() {
+                alert('Connection error while loading slots');
             }
         });
     }
@@ -258,14 +305,14 @@ $services = $db->query("SELECT * FROM services WHERE is_active = 1 ORDER BY serv
     function displayTimeSlots(slots, maxPerDay) {
         let html = '';
         const now = new Date();
-        const selectedDate = new Date(selectedDate + 'T00:00:00');
+        const dateObj = new Date(selectedDate + 'T00:00:00');
         
         // Check if selected date is today
-        const isToday = selectedDate.toDateString() === now.toDateString();
+        const isToday = dateObj.toDateString() === now.toDateString();
         
         slots.forEach(function(slot) {
             const [hours, minutes] = slot.time.split(':');
-            const slotTime = new Date(selectedDate);
+            const slotTime = new Date(dateObj);
             slotTime.setHours(parseInt(hours), parseInt(minutes), 0);
             
             // Check if slot is in the past for today

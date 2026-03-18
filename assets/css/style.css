@@ -2,118 +2,122 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --fsuu-navy: #002B5C;
-    --fsuu-navy-dark: #001f42;
-    --fsuu-gold: #FDB813;
-    --fsuu-gold-hover: #e0a310;
-    --fsuu-bg: #f5f7fa;
-    --fsuu-text: #2c3e50;
-    --fsuu-text-light: #6c757d;
+    --primary-color: #00aeef;
+    --primary-color-hover: #0096ce;
+    --secondary-bg: #f8fbff;
+    --primary-text: #2d3e50;
+    --accent-color: #eef7ff;
+    --bg-white: #ffffff;
+    --text-light: #64748b;
+    --border-color: #e2e8f0;
+    --sidebar-dark: #1e293b;
+    --sidebar-text: #94a3b8;
+    --sidebar-active: #00aeef;
+    --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 body {
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    background-color: var(--fsuu-bg);
-    color: var(--fsuu-text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f1f5f9;
+    color: var(--primary-text);
+    line-height: 1.5;
 }
 
-/* Navbar */
+/* Navbar Enhancement */
 .navbar {
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
 }
-.navbar.bg-primary, .navbar.bg-dark {
-    background-color: var(--fsuu-navy) !important;
-}
+
 .navbar-brand {
     font-weight: 700;
-    font-size: 1.4rem;
-    letter-spacing: 0.5px;
-}
-.navbar-light .navbar-brand {
-    color: var(--fsuu-navy) !important;
+    font-size: 1.5rem;
+    color: var(--primary-color) !important;
+    display: flex;
+    align-items: center;
 }
 
-/* Cards */
-.card {
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    margin-bottom: 24px;
+.sidebar-logo {
+    height: 36px;
+    width: 36px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 12px;
 }
+
+/* Cards Redesign */
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--bg-white);
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--card-shadow-hover);
+}
+
 .card-header {
-    border-radius: 12px 12px 0 0 !important;
-    background-color: #ffffff;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    background-color: var(--bg-white);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.25rem;
     font-weight: 600;
 }
-.card-header.bg-primary {
-    background-color: var(--fsuu-navy) !important;
-    color: #ffffff;
-}
 
-/* Buttons */
+/* Buttons Transformation */
 .btn-primary {
-    background-color: var(--fsuu-gold);
-    color: var(--fsuu-navy);
+    background: linear-gradient(135deg, var(--primary-color) 0%, #0096ce 100%);
     border: none;
     font-weight: 600;
     border-radius: 8px;
     padding: 10px 24px;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
 }
-.btn-primary:hover, .btn-primary:focus {
-    background-color: var(--fsuu-gold-hover);
-    color: var(--fsuu-navy);
+
+.btn-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(253, 184, 19, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.3);
+    background: linear-gradient(135deg, #0096ce 0%, #0081b1 100%);
 }
 
 .btn-outline-primary {
-    color: var(--fsuu-navy);
-    border-color: var(--fsuu-navy);
-    font-weight: 500;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
     border-radius: 8px;
-}
-.btn-outline-primary:hover {
-    background-color: var(--fsuu-navy);
-    color: white;
+    background: transparent;
 }
 
-/* Tables */
-.table {
-    background: white;
-    margin-bottom: 0;
-}
+/* Tables and Badges */
 .table thead th {
-    border-bottom: 2px solid #edf2f7;
-    color: var(--fsuu-text-light);
+    background-color: #f8fafc;
+    color: var(--text-light);
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-}
-.table td {
-    vertical-align: middle;
-    border-bottom: 1px solid #edf2f7;
-    color: var(--fsuu-text);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-color);
 }
 
-/* Badges / Status */
 .badge {
-    padding: 6px 10px;
+    padding: 6px 12px;
     font-weight: 500;
-    border-radius: 6px;
+    border-radius: 9999px;
 }
-.bg-warning { background-color: #fff3cd !important; color: #856404 !important; border: 1px solid #ffeeba; }
-.bg-success { background-color: #d4edda !important; color: #155724 !important; border: 1px solid #c3e6cb; }
-.bg-info { background-color: #d1ecf1 !important; color: #0c5460 !important; border: 1px solid #bee5eb; }
-.bg-danger { background-color: #f8d7da !important; color: #721c24 !important; border: 1px solid #f5c6cb; }
-.bg-secondary { background-color: #e2e3e5 !important; color: #383d41 !important; border: 1px solid #d6d8db; }
+
+.bg-warning { background-color: #fef3c7 !important; color: #92400e !important; }
+.bg-success { background-color: #dcfce7 !important; color: #166534 !important; }
+.bg-info { background-color: #e0f2fe !important; color: #075985 !important; }
+.bg-danger { background-color: #fee2e2 !important; color: #991b1b !important; }
 
 /* Dashboard Stat Cards Override */
 .card.text-white { border: none; }
-.card.bg-primary { background: linear-gradient(135deg, var(--fsuu-navy) 0%, #00152e 100%) !important; }
-.card.bg-warning { background: linear-gradient(135deg, var(--fsuu-gold) 0%, #d4980a 100%) !important; color: var(--fsuu-navy) !important; }
-.card.bg-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; }
-.card.bg-info { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; }
+.card.bg-primary { background: linear-gradient(135deg, var(--primary-color) 0%, #008bcc 100%) !important; }
+.card.bg-warning { background: linear-gradient(135deg, #ffd43b 0%, #fab005 100%) !important; color: #2d3e50 !important; }
+.card.bg-success { background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%) !important; }
+.card.bg-info { background: linear-gradient(135deg, #339af0 0%, #1c7ed6 100%) !important; }

@@ -44,6 +44,31 @@ if (strtotime($appointment_date) < strtotime(date('Y-m-d'))) {
     exit();
 }
 
+// Validate operating hours based on day of week
+$dayOfWeek = date('w', strtotime($appointment_date));
+$isValidTime = false;
+$time = date('H:i:s', strtotime($appointment_time));
+
+if ($dayOfWeek >= 1 && $dayOfWeek <= 5) { // Monday-Friday
+    if ($time >= '13:00:00' && $time <= '15:30:00') {
+        $isValidTime = true;
+    }
+    $allowedRange = "1:00 PM - 3:30 PM";
+} elseif ($dayOfWeek == 6) { // Saturday
+    if ($time >= '09:00:00' && $time <= '12:00:00') {
+        $isValidTime = true;
+    }
+    $allowedRange = "9:00 AM - 12:00 PM";
+} else { // Sunday (0)
+    echo json_encode(['success' => false, 'message' => 'The clinic is closed on Sundays']);
+    exit();
+}
+
+if (!$isValidTime) {
+    echo json_encode(['success' => false, 'message' => "Invalid appointment time. On this day, we only accept appointments between $allowedRange."]);
+    exit();
+}
+
 // Check if time slot is available
 $check = $db->prepare("
     SELECT COUNT(*) as count FROM appointments 

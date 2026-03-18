@@ -8,22 +8,53 @@
 .time-slot {
     display: inline-block;
     margin: 5px;
-    padding: 10px 15px;
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
+    padding: 12px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    background: white;
+    color: var(--primary-text);
 }
 .time-slot:hover {
-    background-color: #e9ecef;
+    border-color: var(--primary-color);
+    background-color: var(--accent-color);
+    transform: translateY(-2px);
 }
 .time-slot.selected {
-    background-color: #0d6efd;
+    background-color: var(--primary-color);
     color: white;
-    border-color: #0d6efd;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.2);
 }
 .time-slot.disabled {
     background-color: #f8f9fa;
-    color: #6c757d;
+    color: #adb5bd;
     cursor: not-allowed;
-    border-color: #dee2e6;
+    border-color: var(--border-color);
+    opacity: 0.7;
+}
+
+.fc-day-today {
+    background: var(--secondary-bg) !important;
+}
+
+.fc-highlight {
+    background: var(--accent-color) !important;
+}
+
+.service-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 174, 239, 0.1);
+}
+
+.service-card.border-primary {
+    border-color: var(--primary-color) !important;
+    background-color: var(--secondary-bg);
 }

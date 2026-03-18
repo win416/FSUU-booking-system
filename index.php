@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FSUU Dental Clinic - Quality Dental Care</title>
+    <title>FSUU Dental Clinic</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link rel="stylesheet" href="assets/css/index.css">
 </head>
 <body>
@@ -13,7 +14,7 @@
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="bi bi-heart-pulse-fill me-2"></i>
+                <img src="img/fsuu%20dental.jpg" alt="Logo" class="navbar-logo me-2">
                 FSUU Dental Clinic
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -45,7 +46,7 @@
     <section class="hero-section">
         <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">Welcome to FSUU Dental Clinic</h1>
+                <h2 class="hero-title">Welcome to FSUU Dental Clinic</h2>
                 <p class="hero-subtitle">Professional dental care with modern technology and compassionate service</p>
                 <div class="d-flex justify-content-center flex-wrap">
                     <a href="auth/login.php" class="btn btn-light btn-custom">Login to Your Account</a>
@@ -61,62 +62,32 @@
             <div class="row">
                 <div class="col-12 text-center mb-5">
                     <h2 class="display-4 fw-bold text-primary">Our Services</h2>
-                    <p class="lead text-muted">Comprehensive dental care for the entire family</p>
+                    <p class="lead text-muted">Comprehensive dental care for the Urian Community</p>
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="bi bi-tooth"></i>
-                        </div>
-                        <h4>General Dentistry</h4>
-                        <p>Complete dental check-ups, cleanings, fillings, and preventive care to keep your smile healthy.</p>
+                        <h4>Consultation</h4>
+                        <p>Professional dental check-ups and preventive care to keep your smile healthy.</p>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="bi bi-braces"></i>
-                        </div>
-                        <h4>Orthodontics</h4>
-                        <p>Straighten your teeth with modern braces and aligners for a perfect, confident smile.</p>
+                        <h4>Tooth Extraction</h4>
+                        <p>Removing a tooth that is damaged, decayed, or impacted.</p>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="bi bi-heart-pulse"></i>
-                        </div>
-                        <h4>Oral Surgery</h4>
-                        <p>Expert surgical procedures including wisdom teeth removal and dental implants.</p>
+                        <h4>Oral Prophylaxis</h4>
+                        <p>Professional cleaning of teeth to remove plaque, tartar, and stains.</p>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="bi bi-palette"></i>
-                        </div>
-                        <h4>Cosmetic Dentistry</h4>
-                        <p>Enhance your smile with teeth whitening, veneers, and other aesthetic treatments.</p>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="bi bi-shield-check"></i>
-                        </div>
-                        <h4>Emergency Care</h4>
-                        <p>24/7 emergency dental services for sudden tooth pain, injuries, and urgent care needs.</p>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="bi bi-people"></i>
-                        </div>
-                        <h4>Family Dentistry</h4>
-                        <p>Dental care for patients of all ages, from children to seniors, in a friendly environment.</p>
+                        <h4>Permanent Tooth Filling</h4>
+                        <p>Restoring damaged teeth with durable filling materials to maintain function and aesthetics.</p>
                     </div>
                 </div>
             </div>
@@ -129,7 +100,7 @@
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <h2 class="display-5 fw-bold text-primary mb-4">About FSUU Dental Clinic</h2>
-                    <p class="lead mb-4">Located at Francisco Sanchez University (FSUU), our dental clinic provides state-of-the-art dental care with a focus on patient comfort and satisfaction.</p>
+                    <p class="lead mb-4">Located at Father Saturnino Urios University (FSUU) at 1st floor CB Building, our dental clinic provides state-of-the-art dental care with a focus on patient comfort and satisfaction.</p>
                     <p>Our team of experienced dentists and staff are committed to delivering high-quality dental services using the latest technology and techniques. We believe that everyone deserves a healthy, beautiful smile.</p>
                     <ul class="list-unstyled">
                         <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Modern equipment and technology</li>
@@ -139,7 +110,7 @@
                     </ul>
                 </div>
                 <div class="col-lg-6">
-                    <img src="https://images.unsplash.com/photo-1606811967280-6d9e49d3d9f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80" alt="Dental Clinic" class="img-fluid rounded shadow">
+                    <img src="img/inside clinic.jpg" alt="Dental Clinic" class="img-fluid rounded shadow">
                 </div>
             </div>
         </div>
@@ -162,21 +133,21 @@
                                 <i class="bi bi-geo-alt"></i>
                             </div>
                             <h5>Address</h5>
-                            <p>Francisco Sanchez University<br>Campus, Philippines</p>
+                            <p>San Francisco Street, Butuan City, Philippines, 8600</p>
                         </div>
                         <div class="col-md-4 mb-4">
                             <div class="feature-icon mb-3">
                                 <i class="bi bi-telephone"></i>
                             </div>
                             <h5>Phone</h5>
-                            <p>+63 (123) 456-7890</p>
+                            <p>+63 951 250 4812</p>
                         </div>
                         <div class="col-md-4 mb-4">
                             <div class="feature-icon mb-3">
                                 <i class="bi bi-envelope"></i>
                             </div>
                             <h5>Email</h5>
-                            <p>dental@fsuu.edu.ph</p>
+                            <p>clinic.triage@urios.edu.ph</p>
                         </div>
                     </div>
                 </div>
@@ -238,11 +209,12 @@
         window.addEventListener('scroll', function() {
             const navbar = document.querySelector('.navbar');
             if (window.scrollY > 50) {
-                navbar.style.background = 'rgba(255, 255, 255, 0.98) !important';
+                navbar.classList.add('navbar-scrolled');
             } else {
-                navbar.style.background = 'rgba(255, 255, 255, 0.95) !important';
+                navbar.classList.remove('navbar-scrolled');
             }
         });
+
     </script>
 </body>
 </html>

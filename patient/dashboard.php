@@ -44,57 +44,69 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="dashboard.php">FSUU Dental Clinic</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="dashboard.php">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="book-appointment.php">
-                            <i class="bi bi-calendar-plus"></i> Book Appointment
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="my-appointments.php">
-                            <i class="bi bi-calendar-check"></i> My Appointments
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="profile.php">
-                            <i class="bi bi-person"></i> Profile
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="history.php">
-                            <i class="bi bi-clock-history"></i> History
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../auth/logout.php">
-                            <i class="bi bi-box-arrow-right"></i> Logout
-                        </a>
-                    </li>
-                </ul>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="brand">
+                <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
+                FSUU Dental
             </div>
-        </div>
-    </nav>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="dashboard.php">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="book-appointment.php">
+                        <i class="bi bi-calendar-plus"></i> Book Appointment
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="my-appointments.php">
+                        <i class="bi bi-calendar-check"></i> My Appointments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="notifications.php">
+                        <i class="bi bi-bell"></i> Notifications
+                        <?php
+                        $unread_stmt = $db->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
+                        $unread_stmt->bind_param("i", $user['user_id']);
+                        $unread_stmt->execute();
+                        $unread_count = $unread_stmt->get_result()->fetch_assoc()['count'];
+                        if ($unread_count > 0): ?>
+                            <span class="badge bg-danger rounded-pill ms-2"><?php echo $unread_count; ?></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="profile.php">
+                        <i class="bi bi-person"></i> Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="history.php">
+                        <i class="bi bi-clock-history"></i> History
+                    </a>
+                </li>
+                <li class="nav-item logout-nav-item">
+                    <a class="nav-link text-danger" href="../auth/logout.php">
+                        <i class="bi bi-box-arrow-right text-danger"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-    <!-- Main Content -->
-    <div class="container my-4">
+        <!-- Main Content -->
+        <div class="main-content">
         <div class="row">
             <div class="col-md-12">
                 <div class="alert alert-info">
+                    <h2>User Dashboard</h2>
                     Welcome back, <strong><?php echo $user['first_name'] . ' ' . $user['last_name']; ?></strong>!
                 </div>
             </div>
@@ -103,34 +115,46 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
         <!-- Stats Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card text-white bg-warning">
+                <div class="card card-stats h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Pending</h5>
+                        <h6>Pending</h6>
                         <h2><?php echo $appointment_stats['pending_count'] ?? 0; ?></h2>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: 40%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white bg-success">
+                <div class="card card-stats h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Approved</h5>
+                        <h6>Approved</h6>
                         <h2><?php echo $appointment_stats['approved_count'] ?? 0; ?></h2>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: 70%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white bg-info">
+                <div class="card card-stats h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Completed</h5>
+                        <h6>Completed</h6>
                         <h2><?php echo $appointment_stats['completed_count'] ?? 0; ?></h2>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: 90%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white bg-secondary">
+                <div class="card card-stats h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Total</h5>
+                        <h6>Total Appointments</h6>
                         <h2><?php echo array_sum($appointment_stats); ?></h2>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -217,16 +241,16 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                     </div>
                 </div>
 
-                <!-- Clinic Hours -->
+                <!-- Clinic Schedule -->
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h5>Clinic Hours</h5>
+                        <h5>Clinic Schedule</h5>
                     </div>
                     <div class="card-body">
                         <ul class="list-unstyled">
-                            <li><strong>Monday - Friday:</strong> 8:00 AM - 5:00 PM</li>
-                            <li><strong>Saturday:</strong> 8:00 AM - 12:00 PM</li>
-                            <li><strong>Sunday:</strong> Closed</li>
+                            <li><strong>M/TH, T/F:</strong> 8:00 AM - 9:00 PM</li>
+                            <li><strong>WEDNESDAY:</strong> 8:00 AM - 5:00 PM</li>
+                            <li><strong>SATURDAY:</strong> 8:00 AM - 4:00 PM</li>
                         </ul>
                     </div>
                 </div>
@@ -234,6 +258,9 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
         </div>
     </div>
 
+        </div>
+    </div>
+    
     <!-- Cancel Appointment Modal -->
     <div class="modal fade" id="cancelModal" tabindex="-1">
         <div class="modal-dialog">

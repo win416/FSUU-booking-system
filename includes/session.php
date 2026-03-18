@@ -15,6 +15,7 @@ class SessionManager {
         $_SESSION['email'] = $userData['email'];
         $_SESSION['first_name'] = $userData['first_name'];
         $_SESSION['last_name'] = $userData['last_name'];
+        $_SESSION['contact_number'] = $userData['contact_number'] ?? '';
         $_SESSION['role'] = $userData['role'];
         $_SESSION['last_activity'] = time();
     }
@@ -46,6 +47,7 @@ class SessionManager {
             'email' => $_SESSION['email'] ?? null,
             'first_name' => $_SESSION['first_name'] ?? null,
             'last_name' => $_SESSION['last_name'] ?? null,
+            'contact_number' => $_SESSION['contact_number'] ?? null,
             'role' => $_SESSION['role'] ?? null
         ];
     }
