@@ -34,6 +34,7 @@ $result = $db->query($query);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
+    <link href="../assets/css/admin-patients.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -93,7 +94,7 @@ $result = $db->query($query);
             <div class="container-fluid my-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Manage Patients</h2>
-                    <form class="d-flex" action="" method="GET" style="max-width: 400px;">
+                    <form class="d-flex patient-search-form" action="" method="GET">
                         <div class="input-group">
                             <input type="text" name="search" class="form-control" placeholder="Search by name or ID..." value="<?php echo htmlspecialchars($search); ?>">
                             <button class="btn btn-primary" type="submit">

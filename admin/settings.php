@@ -2,6 +2,33 @@
 require_once '../includes/session.php';
 require_once '../includes/db_connection.php';
 SessionManager::requireAdmin();
+
+$db = getDB();
+$currentUser = SessionManager::getUser();
+
+// Load system settings
+$sys_settings = [];
+$res = $db->query("SELECT setting_key, setting_value FROM system_settings");
+if ($res) {
+    while ($row = $res->fetch_assoc()) {
+        $sys_settings[$row['setting_key']] = $row['setting_value'];
+    }
+}
+
+// Load services
+$services_result = $db->query("SELECT * FROM services ORDER BY service_name ASC");
+
+// Default values if settings don't exist
+$max_bookings    = $sys_settings['max_bookings_per_day'] ?? 20;
+$reminder_hours  = $sys_settings['reminder_hours'] ?? 24;
+$wday_start      = $sys_settings['weekday_start'] ?? '13:00';
+$wday_end        = $sys_settings['weekday_end'] ?? '15:30';
+$sat_start       = $sys_settings['saturday_start'] ?? '09:00';
+$sat_end         = $sys_settings['saturday_end'] ?? '12:00';
+$clinic_name     = $sys_settings['clinic_name'] ?? 'FSUU Dental Clinic';
+$clinic_email    = $sys_settings['clinic_email'] ?? '';
+$clinic_phone    = $sys_settings['clinic_phone'] ?? '';
+$clinic_address  = $sys_settings['clinic_address'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,6 +44,7 @@ SessionManager::requireAdmin();
 </head>
 <body>
     <div class="dashboard-wrapper">
+        <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="brand">
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
@@ -29,7 +57,7 @@ SessionManager::requireAdmin();
                 <li class="nav-item"><a class="nav-link" href="schedule.php"><i class="bi bi-clock"></i> Schedule</a></li>
                 <li class="nav-item"><a class="nav-link" href="reports.php"><i class="bi bi-graph-up"></i> Reports</a></li>
                 <li class="nav-item"><a class="nav-link" href="users.php"><i class="bi bi-person-badge"></i> Users</a></li>
-                <li class="nav-item active"><a class="nav-link active" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
+                <li class="nav-item"><a class="nav-link active" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
                 <li class="nav-item logout-nav-item">
                     <a class="nav-link text-danger" href="../auth/logout.php">
                         <i class="bi bi-box-arrow-right text-danger"></i> Logout
@@ -37,15 +65,451 @@ SessionManager::requireAdmin();
                 </li>
             </ul>
         </nav>
+
+        <!-- Main Content -->
         <div class="main-content">
             <div class="container-fluid my-4">
                 <h2>System Settings</h2>
-                <div class="alert alert-info py-4 mt-4">
-                    <i class="bi bi-info-circle-fill me-2"></i>
-                    Configuration for operating hours, dental services, and clinic details will be manageable here in the next update.
+
+                <!-- Global alert -->
+                <div id="alertContainer" class="mt-2"></div>
+
+                <!-- Tabs -->
+                <ul class="nav nav-tabs mt-3" id="settingsTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#tab-booking">
+                            <i class="bi bi-calendar-check me-1"></i> Booking & Hours
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#tab-clinic">
+                            <i class="bi bi-hospital me-1"></i> Clinic Info
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#tab-services">
+                            <i class="bi bi-tooth me-1"></i> Dental Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#tab-account">
+                            <i class="bi bi-person-circle me-1"></i> My Account
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-4">
+
+                    <!-- ===== TAB 1: BOOKING & HOURS ===== -->
+                    <div class="tab-pane fade show active" id="tab-booking">
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="card">
+                                    <div class="card-header"><h5 class="mb-0">Booking Rules</h5></div>
+                                    <div class="card-body">
+                                        <form id="bookingSettingsForm">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Max Bookings Per Time Slot</label>
+                                                <input type="number" name="max_bookings_per_day" class="form-control" min="1" max="100" value="<?php echo htmlspecialchars($max_bookings); ?>" required>
+                                                <small class="text-muted">Maximum number of patients that can book the same time slot.</small>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">Appointment Reminder (hours before)</label>
+                                                <input type="number" name="reminder_hours" class="form-control" min="1" max="72" value="<?php echo htmlspecialchars($reminder_hours); ?>" required>
+                                                <small class="text-muted">How many hours before the appointment to send a reminder email.</small>
+                                            </div>
+
+                                            <h6 class="fw-bold border-bottom pb-2 mb-3">Operating Hours</h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Monday – Friday</label>
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <label class="form-label small text-muted">Start Time</label>
+                                                        <input type="time" name="weekday_start" class="form-control" value="<?php echo htmlspecialchars($wday_start); ?>" required>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label small text-muted">End Time</label>
+                                                        <input type="time" name="weekday_end" class="form-control" value="<?php echo htmlspecialchars($wday_end); ?>" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">Saturday</label>
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <label class="form-label small text-muted">Start Time</label>
+                                                        <input type="time" name="saturday_start" class="form-control" value="<?php echo htmlspecialchars($sat_start); ?>" required>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label small text-muted">End Time</label>
+                                                        <input type="time" name="saturday_end" class="form-control" value="<?php echo htmlspecialchars($sat_end); ?>" required>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">Sunday is always closed.</small>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-save me-1"></i> Save Booking Settings
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white"><h6 class="mb-0"><i class="bi bi-info-circle me-1"></i>Info</h6></div>
+                                    <div class="card-body small text-muted">
+                                        <ul class="mb-0 ps-3">
+                                            <li>Time slots are generated every <strong>30 minutes</strong> within the operating hours.</li>
+                                            <li>Blocked schedules (managed in the <a href="schedule.php">Schedule</a> tab) take priority over these hours.</li>
+                                            <li>The clinic is always closed on <strong>Sundays</strong>.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== TAB 2: CLINIC INFO ===== -->
+                    <div class="tab-pane fade" id="tab-clinic">
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="card">
+                                    <div class="card-header"><h5 class="mb-0">Clinic Information</h5></div>
+                                    <div class="card-body">
+                                        <form id="clinicInfoForm">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Clinic Name</label>
+                                                <input type="text" name="clinic_name" class="form-control" value="<?php echo htmlspecialchars($clinic_name); ?>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Contact Email</label>
+                                                <input type="email" name="clinic_email" class="form-control" value="<?php echo htmlspecialchars($clinic_email); ?>">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Contact Phone</label>
+                                                <input type="text" name="clinic_phone" class="form-control" value="<?php echo htmlspecialchars($clinic_phone); ?>">
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">Address</label>
+                                                <textarea name="clinic_address" class="form-control" rows="3"><?php echo htmlspecialchars($clinic_address); ?></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-save me-1"></i> Save Clinic Info
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== TAB 3: SERVICES ===== -->
+                    <div class="tab-pane fade" id="tab-services">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Dental Services</h5>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                                <i class="bi bi-plus-circle me-1"></i> Add Service
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Service Name</th>
+                                                <th>Description</th>
+                                                <th>Duration</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="servicesTableBody">
+                                            <?php if ($services_result && $services_result->num_rows > 0): ?>
+                                                <?php while ($svc = $services_result->fetch_assoc()): ?>
+                                                <tr id="service-row-<?php echo $svc['service_id']; ?>">
+                                                    <td><strong><?php echo htmlspecialchars($svc['service_name']); ?></strong></td>
+                                                    <td><small class="text-muted"><?php echo htmlspecialchars($svc['description'] ?? ''); ?></small></td>
+                                                    <td><?php echo htmlspecialchars($svc['duration_minutes'] ?? ''); ?> min</td>
+                                                    <td>
+                                                        <?php if ($svc['is_active']): ?>
+                                                            <span class="badge bg-success">Active</span>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-secondary">Inactive</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-primary edit-service-btn"
+                                                            data-id="<?php echo $svc['service_id']; ?>"
+                                                            data-name="<?php echo htmlspecialchars($svc['service_name']); ?>"
+                                                            data-desc="<?php echo htmlspecialchars($svc['description'] ?? ''); ?>"
+                                                            data-duration="<?php echo $svc['duration_minutes'] ?? 30; ?>"
+                                                            title="Edit">
+                                                            <i class="bi bi-pencil-fill"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-warning toggle-service-btn"
+                                                            data-id="<?php echo $svc['service_id']; ?>"
+                                                            data-active="<?php echo $svc['is_active']; ?>"
+                                                            title="<?php echo $svc['is_active'] ? 'Deactivate' : 'Activate'; ?>">
+                                                            <i class="bi bi-<?php echo $svc['is_active'] ? 'eye-slash' : 'eye'; ?>-fill"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-danger delete-service-btn"
+                                                            data-id="<?php echo $svc['service_id']; ?>"
+                                                            data-name="<?php echo htmlspecialchars($svc['service_name']); ?>"
+                                                            title="Delete">
+                                                            <i class="bi bi-trash-fill"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <?php endwhile; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-4 text-muted">No services found. Add one above.</td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== TAB 4: MY ACCOUNT ===== -->
+                    <div class="tab-pane fade" id="tab-account">
+                        <div class="row g-4">
+                            <!-- Personal Info -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-person-fill me-2"></i>Personal Information</h5></div>
+                                    <div class="card-body">
+                                        <div id="personalInfoAlert"></div>
+                                        <form id="personalInfoForm">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">First Name</label>
+                                                <input type="text" name="first_name" class="form-control" value="<?php echo htmlspecialchars($currentUser['first_name']); ?>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Last Name</label>
+                                                <input type="text" name="last_name" class="form-control" value="<?php echo htmlspecialchars($currentUser['last_name']); ?>" required>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">Contact Number</label>
+                                                <input type="text" name="contact_number" class="form-control" value="<?php echo htmlspecialchars($currentUser['contact_number']); ?>">
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-save me-1"></i> Save Changes
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Change Password -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-shield-lock-fill me-2"></i>Change Password</h5></div>
+                                    <div class="card-body">
+                                        <div id="passwordAlert"></div>
+                                        <form id="changePasswordForm">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Current Password</label>
+                                                <input type="password" name="current_password" class="form-control" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">New Password</label>
+                                                <input type="password" name="new_password" class="form-control" minlength="8" required>
+                                                <small class="text-muted">Minimum 8 characters</small>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">Confirm New Password</label>
+                                                <input type="password" name="confirm_password" class="form-control" minlength="8" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-warning">
+                                                <i class="bi bi-key-fill me-1"></i> Update Password
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- end tab-content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Service Modal -->
+    <div class="modal fade" id="addServiceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Dental Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="addServiceAlert"></div>
+                    <form id="addServiceForm">
+                        <div class="mb-3">
+                            <label class="form-label">Service Name <span class="text-danger">*</span></label>
+                            <input type="text" name="service_name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Duration (minutes) <span class="text-danger">*</span></label>
+                            <input type="number" name="duration_minutes" class="form-control" min="5" max="480" value="30" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveAddService">
+                        <i class="bi bi-check-lg me-1"></i> Save Service
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Edit Service Modal -->
+    <div class="modal fade" id="editServiceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil-fill me-2"></i>Edit Dental Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="editServiceAlert"></div>
+                    <form id="editServiceForm">
+                        <input type="hidden" name="service_id" id="edit_service_id">
+                        <div class="mb-3">
+                            <label class="form-label">Service Name <span class="text-danger">*</span></label>
+                            <input type="text" name="service_name" id="edit_service_name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" id="edit_service_desc" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Duration (minutes) <span class="text-danger">*</span></label>
+                            <input type="number" name="duration_minutes" id="edit_service_duration" class="form-control" min="5" max="480" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveEditService">
+                        <i class="bi bi-check-lg me-1"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    function showAlert(container, type, message) {
+        $(container).html('<div class="alert alert-' + type + ' alert-dismissible fade show py-2">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+    }
+
+    // ---- Booking Settings ----
+    $('#bookingSettingsForm').submit(function(e) {
+        e.preventDefault();
+        $.post('../api/settings.php', $(this).serialize() + '&action=save_booking_settings', function(res) {
+            showAlert('#alertContainer', res.success ? 'success' : 'danger', res.message);
+        }, 'json').fail(() => showAlert('#alertContainer', 'danger', 'Request failed.'));
+    });
+
+    // ---- Clinic Info ----
+    $('#clinicInfoForm').submit(function(e) {
+        e.preventDefault();
+        $.post('../api/settings.php', $(this).serialize() + '&action=save_clinic_info', function(res) {
+            showAlert('#alertContainer', res.success ? 'success' : 'danger', res.message);
+        }, 'json').fail(() => showAlert('#alertContainer', 'danger', 'Request failed.'));
+    });
+
+    // ---- Services ----
+    $('#saveAddService').click(function() {
+        $.post('../api/settings.php', $('#addServiceForm').serialize() + '&action=add_service', function(res) {
+            if (res.success) {
+                showAlert('#alertContainer', 'success', res.message);
+                $('#addServiceModal').modal('hide');
+                $('#addServiceForm')[0].reset();
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showAlert('#addServiceAlert', 'danger', res.message);
+            }
+        }, 'json').fail(() => showAlert('#addServiceAlert', 'danger', 'Request failed.'));
+    });
+
+    $('.edit-service-btn').click(function() {
+        const btn = $(this);
+        $('#edit_service_id').val(btn.data('id'));
+        $('#edit_service_name').val(btn.data('name'));
+        $('#edit_service_desc').val(btn.data('desc'));
+        $('#edit_service_duration').val(btn.data('duration'));
+        $('#editServiceAlert').html('');
+        $('#editServiceModal').modal('show');
+    });
+
+    $('#saveEditService').click(function() {
+        $.post('../api/settings.php', $('#editServiceForm').serialize() + '&action=edit_service', function(res) {
+            if (res.success) {
+                showAlert('#alertContainer', 'success', res.message);
+                $('#editServiceModal').modal('hide');
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showAlert('#editServiceAlert', 'danger', res.message);
+            }
+        }, 'json').fail(() => showAlert('#editServiceAlert', 'danger', 'Request failed.'));
+    });
+
+    $('.toggle-service-btn').click(function() {
+        const id = $(this).data('id');
+        $.post('../api/settings.php', { action: 'toggle_service', service_id: id }, function(res) {
+            showAlert('#alertContainer', res.success ? 'success' : 'danger', res.message);
+            if (res.success) setTimeout(() => location.reload(), 800);
+        }, 'json').fail(() => showAlert('#alertContainer', 'danger', 'Request failed.'));
+    });
+
+    $('.delete-service-btn').click(function() {
+        const id = $(this).data('id');
+        const name = $(this).data('name');
+        if (!confirm('Delete service "' + name + '"? This cannot be undone.')) return;
+        $.post('../api/settings.php', { action: 'delete_service', service_id: id }, function(res) {
+            showAlert('#alertContainer', res.success ? 'success' : 'danger', res.message);
+            if (res.success) $('#service-row-' + id).fadeOut(400, function() { $(this).remove(); });
+        }, 'json').fail(() => showAlert('#alertContainer', 'danger', 'Request failed.'));
+    });
+
+    // ---- My Account: Personal Info ----
+    $('#personalInfoForm').submit(function(e) {
+        e.preventDefault();
+        $.post('../api/update-profile.php', $(this).serialize() + '&action=update_personal', function(res) {
+            showAlert('#personalInfoAlert', res.success ? 'success' : 'danger', res.message);
+        }, 'json').fail(() => showAlert('#personalInfoAlert', 'danger', 'Request failed.'));
+    });
+
+    // ---- My Account: Change Password ----
+    $('#changePasswordForm').submit(function(e) {
+        e.preventDefault();
+        const newPwd = $('input[name="new_password"]', this).val();
+        const confirmPwd = $('input[name="confirm_password"]', this).val();
+        if (newPwd !== confirmPwd) {
+            showAlert('#passwordAlert', 'danger', 'New passwords do not match.');
+            return;
+        }
+        $.post('../api/update-profile.php', $(this).serialize() + '&action=update_password', function(res) {
+            showAlert('#passwordAlert', res.success ? 'success' : 'danger', res.message);
+            if (res.success) $('#changePasswordForm')[0].reset();
+        }, 'json').fail(() => showAlert('#passwordAlert', 'danger', 'Request failed.'));
+    });
+    </script>
 </body>
 </html>

@@ -7,10 +7,41 @@ header('Content-Type: application/json');
 
 $db = getDB();
 
+// ── By date (used by schedule calendar day modal) ────────────────────────────
+$date = $_GET['date'] ?? '';
+if (!empty($date)) {
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid date format']);
+        exit();
+    }
+    $stmt = $db->prepare("
+        SELECT a.appointment_id, a.appointment_date,
+               TIME_FORMAT(a.appointment_time,'%h:%i %p') AS appointment_time,
+               a.status, a.notes,
+               u.first_name, u.last_name, u.fsuu_id,
+               s.service_name
+        FROM appointments a
+        JOIN users u ON a.user_id = u.user_id
+        JOIN services s ON a.service_id = s.service_id
+        WHERE a.appointment_date = ?
+        ORDER BY a.appointment_time ASC
+    ");
+    $stmt->bind_param("s", $date);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $appointments = [];
+    while ($row = $res->fetch_assoc()) {
+        $appointments[] = $row;
+    }
+    echo json_encode(['success' => true, 'appointments' => $appointments]);
+    exit();
+}
+
+// ── By appointment ID (original behavior) ────────────────────────────────────
 $appointment_id = $_GET['id'] ?? '';
 
 if (empty($appointment_id)) {
-    echo json_encode(['success' => false, 'message' => 'Missing appointment ID']);
+    echo json_encode(['success' => false, 'message' => 'Missing appointment ID or date']);
     exit();
 }
 
@@ -36,11 +67,5 @@ if ($result->num_rows === 0) {
 }
 
 $data = $result->fetch_assoc();
-
-// Format response HTML or JSON? 
-// The implementation plan says "Populate detailsContent with the formatted results", 
-// which implies I should return HTML or the frontend handles formatting.
-// Returning JSON is cleaner.
-
 echo json_encode(['success' => true, 'data' => $data]);
 ?>

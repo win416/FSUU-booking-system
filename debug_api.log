@@ -13,3 +13,6 @@
 [2026-03-17 22:53:12] Updating appointment. POST: {"appointment_id":"5","status":"approved","reason":""}
 [2026-03-17 22:53:12] Update successful. Affected rows: 1
 [2026-03-17 22:53:12] Notification created.
+[2026-03-19 20:55:30] Updating appointment. POST: {"appointment_id":"6","status":"approved","reason":""}
+[2026-03-19 20:55:30] Update successful. Affected rows: 1
+[2026-03-19 20:55:30] Notification created.

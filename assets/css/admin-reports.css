@@ -1,0 +1,44 @@
+/* ── Print styles ─────────────────────────────────────────────────── */
+.print-header {
+    display: none;
+}
+
+@media print {
+    .sidebar,
+    .no-print {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+    }
+
+    .print-header {
+        display: block !important;
+    }
+
+    .card {
+        break-inside: avoid;
+    }
+}
+
+/* ── Export button badge ──────────────────────────────────────────── */
+.export-badge {
+    font-size: 0.7rem;
+    vertical-align: middle;
+}
+
+/* ── Date filter inputs ───────────────────────────────────────────── */
+.report-date-input {
+    width: 160px;
+}
+
+/* ── Chart containers ─────────────────────────────────────────────── */
+.chart-container {
+    height: 300px;
+}
+
+/* ── Service breakdown progress bar ──────────────────────────────── */
+.service-progress {
+    height: 5px;
+}
