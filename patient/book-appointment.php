@@ -116,7 +116,7 @@ function serviceIcon(string $name): string {
 
             <div class="row g-4">
                 <!-- Left: Step Panels -->
-                <div class="col-lg-8">
+                <div class="col-lg-8" id="panelCol">
 
                     <!-- ── Step 1: Select Service ─────────────────────────────── -->
                     <div class="booking-panel" id="step1">
@@ -375,7 +375,8 @@ function updateSummary() {
     const timeStr = selectedTime ? formatTime(selectedTime) : '—';
     $('#sum-time-val').text(timeStr).toggleClass('text-muted', !selectedTime);
 
-    if (svc) { $('#summaryCol').show(); } else { $('#summaryCol').hide(); }
+    if (svc) { $('#summaryCol').show(); $('#panelCol').removeClass('col-panel-full'); }
+    else     { $('#summaryCol').hide(); $('#panelCol').addClass('col-panel-full'); }
 }
 
 // ── Step 1 → 2: Service selection ─────────────────────────────────────
@@ -409,6 +410,19 @@ $('#changeServiceBtn').on('click', function () {
 });
 
 // ── Calendar ──────────────────────────────────────────────────────────
+
+// Shared tooltip element for blocked-date hover
+const $calTip = $('<div class="cal-blocked-tooltip"></div>').appendTo('body');
+let calTipTimer = null;
+
+function showCalTip(text, x, y) {
+    $calTip.text(text).css({ left: x, top: y }).addClass('visible');
+}
+function hideCalTip() {
+    clearTimeout(calTipTimer);
+    $calTip.removeClass('visible');
+}
+
 function initCalendar() {
     const calEl = document.getElementById('calendar');
     calendar = new FullCalendar.Calendar(calEl, {
@@ -420,18 +434,40 @@ function initCalendar() {
             url: '../api/get-blocked-dates.php',
             failure: () => showToast('warning', 'Could not load blocked dates.')
         },
+        eventDidMount: function (info) {
+            // Only attach tooltip to background (blocked) events
+            if (info.event.display !== 'background' || !info.event.extendedProps.isFullDay) return;
+            const reason = info.event.extendedProps.reason || 'Management decision';
+            const msg    = 'Not available: ' + reason;
+            const el     = info.el;
+
+            $(el).on('mouseenter', function (e) {
+                const rect = el.getBoundingClientRect();
+                const x = rect.left + window.scrollX + rect.width / 2;
+                const y = rect.top  + window.scrollY - 8;
+                showCalTip(msg, x, y);
+                // Reposition tooltip centred above cell after render
+                const tw = $calTip.outerWidth();
+                $calTip.css('left', x - tw / 2);
+            });
+
+            $(el).on('mouseleave', function () {
+                calTipTimer = setTimeout(hideCalTip, 120);
+            });
+
+            $(el).on('click', function () {
+                hideCalTip();
+            });
+        },
         dateClick: function (info) {
             // Reject Sundays
             const dow = new Date(info.dateStr + 'T00:00:00').getDay();
             if (dow === 0) { showToast('warning', 'The clinic is closed on Sundays.'); return; }
 
-            // Check blocked
+            // Check blocked — silently ignore, tooltip already shown on hover
             const blocked = calendar.getEvents().find(e =>
                 e.display === 'background' && e.extendedProps.isFullDay && e.startStr === info.dateStr);
-            if (blocked) {
-                showToast('warning', 'This date is unavailable: ' + (blocked.extendedProps.reason || 'Management decision'));
-                return;
-            }
+            if (blocked) return;
 
             // Highlight selected date
             calendar.getEvents().filter(e => e.extendedProps.isSelected).forEach(e => e.remove());

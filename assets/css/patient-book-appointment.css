@@ -1,3 +1,37 @@
+/* ── Booking page layout overrides ──────────────────────────────────── */
+/*
+ * main-content (patient-dashboard.css) already provides 2.5rem outer padding.
+ * Bootstrap's container-fluid adds another 0.75rem each side, causing double-
+ * padding and pushing the booking panels off-screen on medium viewports.
+ * Strip the container-fluid padding so the row uses the full content area.
+ */
+.main-content > .container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Prevent the overall page from producing a horizontal scrollbar */
+.main-content {
+    overflow-x: hidden;
+}
+
+/* Booking panel always stays inside its column */
+.booking-panel,
+.booking-summary {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/*
+ * When the booking summary sidebar is hidden (no service selected yet),
+ * expand the left step-panels column to fill the full row width.
+ * Uses CSS :has() — supported in Chrome 105+, Edge 105+, Safari 15.4+.
+ */
+.row:has(#summaryCol[style*="none"]) > .col-lg-8 {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
 /* ── Calendar ────────────────────────────────────────────────────────── */
 #calendar {
     max-width: 100%;
@@ -7,6 +41,99 @@
 .fc-day-today { background: var(--secondary-bg) !important; }
 .fc-highlight { background: var(--accent-color) !important; }
 .fc .fc-daygrid-day-number { font-size: 0.82rem; }
+
+/* ── Fix blocked-date event labels overflowing into adjacent cells ───── */
+
+/* Constrain each day cell so children cannot escape it */
+.fc .fc-daygrid-day {
+    overflow: hidden;
+}
+
+/* Keep event titles on one line and ellipsis-truncate them */
+.fc .fc-daygrid-event .fc-event-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.7rem;
+}
+
+/* Limit the event block itself to the cell width */
+.fc .fc-daygrid-event {
+    overflow: hidden;
+    max-width: 100%;
+}
+
+/* ── Blocked dates: solid red, NO text ───────────────────────────────── */
+.fc .fc-bg-event {
+    overflow: hidden;
+    cursor: not-allowed;
+}
+
+/* Hide the label text completely — reason shown via tooltip instead */
+.fc .fc-bg-event .fc-event-title {
+    display: none;
+}
+
+/* ── Blocked-date tooltip ────────────────────────────────────────────── */
+.cal-blocked-tooltip {
+    position: absolute;
+    z-index: 9999;
+    background: #1e293b;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    max-width: 220px;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+.cal-blocked-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1e293b;
+}
+
+.cal-blocked-tooltip.visible {
+    opacity: 1;
+}
+
+/* Prevent blocked-date event titles from overflowing into adjacent cells */
+.fc .fc-daygrid-event {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Keep background events from spilling text outside their cell */
+.fc .fc-bg-event {
+    overflow: hidden;
+}
+
+/* Constrain the event title element itself */
+.fc .fc-event-title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+    max-width: 100%;
+}
+
+/* Ensure day cells clip any overflow from events */
+.fc .fc-daygrid-day-frame {
+    overflow: hidden;
+}
 
 /* ── Step progress bar ───────────────────────────────────────────────── */
 .booking-steps {
@@ -373,6 +500,34 @@
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
+
+/*
+ * At lg (992–1199px) the sidebar (280px) + outer padding leaves ~440px for
+ * col-lg-8. Three col-lg-4 cards = ~147px each — too narrow.
+ * Force 2 per row at lg; allow 3 per row only at xl+ (≥1200px).
+ * Exception: when the panel is full-width (:has summary hidden), 3 per row
+ * fits fine again, so we restore it.
+ */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    #servicesGrid > [class*="col"] {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    /* Full-width panel has more room — keep 3 per row */
+    .row:has(#summaryCol[style*="none"]) #servicesGrid > [class*="col"] {
+        flex: 0 0 33.3333%;
+        max-width: 33.3333%;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    /* Reduce outer padding so the two-column layout (panel + summary) fits */
+    .main-content {
+        padding: 1.5rem;
+    }
+}
+
 @media (max-width: 991.98px) {
     .booking-steps { gap: 0; }
     .step-label { font-size: 0.68rem; }

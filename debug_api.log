@@ -16,3 +16,18 @@
 [2026-03-19 20:55:30] Updating appointment. POST: {"appointment_id":"6","status":"approved","reason":""}
 [2026-03-19 20:55:30] Update successful. Affected rows: 1
 [2026-03-19 20:55:30] Notification created.
+[2026-03-20 08:07:13] Updating appointment. POST: {"appointment_id":"7","status":"approved"}
+[2026-03-20 08:07:13] Update successful. Affected rows: 1
+[2026-03-20 08:07:13] Notification created.
+[2026-03-20 08:07:24] Updating appointment. POST: {"appointment_id":"1","status":"completed","reason":""}
+[2026-03-20 08:07:24] Update successful. Affected rows: 1
+[2026-03-20 08:07:24] Notification created.
+[2026-03-20 08:07:27] Updating appointment. POST: {"appointment_id":"4","status":"completed","reason":""}
+[2026-03-20 08:07:27] Update successful. Affected rows: 1
+[2026-03-20 08:07:27] Notification created.
+[2026-03-20 08:07:29] Updating appointment. POST: {"appointment_id":"5","status":"completed","reason":""}
+[2026-03-20 08:07:29] Update successful. Affected rows: 1
+[2026-03-20 08:07:29] Notification created.
+[2026-03-20 08:07:30] Updating appointment. POST: {"appointment_id":"6","status":"completed","reason":""}
+[2026-03-20 08:07:30] Update successful. Affected rows: 1
+[2026-03-20 08:07:30] Notification created.
