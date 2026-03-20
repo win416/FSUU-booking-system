@@ -2,15 +2,6 @@
 require_once '../includes/session.php';
 require_once '../includes/db_connection.php';
 
-// Auto-migrate: add verification columns if they don't exist yet
-(function () {
-    $db = getDB();
-    $db->query("ALTER TABLE `users` ADD COLUMN `is_verified`       TINYINT(1)   NOT NULL DEFAULT 0    AFTER `role`");
-    $db->query("ALTER TABLE `users` ADD COLUMN `verification_code` VARCHAR(255) NULL     DEFAULT NULL AFTER `is_verified`");
-    $db->query("ALTER TABLE `users` ADD COLUMN `code_expiry`       DATETIME     NULL     DEFAULT NULL AFTER `verification_code`");
-    $db->query("UPDATE `users` SET `is_verified` = 1 WHERE `is_verified` = 0 AND `user_id` > 0");
-})();
-
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -22,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $db = getDB();
         
-        $stmt = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role, is_verified FROM users WHERE email = ?");
+        $stmt = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -31,33 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $user = $result->fetch_assoc();
             
             if (password_verify($password, $user['password'])) {
-
-                // Block unverified student accounts
-                if (empty($user['is_verified']) && $user['role'] === 'student') {
-                    // Re-issue a fresh OTP so they can verify
-                    require_once '../includes/email_helper.php';
-                    $code       = (string) random_int(100000, 999999);
-                    $codeHash   = password_hash($code, PASSWORD_DEFAULT);
-                    $codeExpiry = date('Y-m-d H:i:s', time() + OTP_EXPIRY_MINUTES * 60);
-                    $upd = $db->prepare("UPDATE users SET verification_code = ?, code_expiry = ? WHERE user_id = ?");
-                    $upd->bind_param("ssi", $codeHash, $codeExpiry, $user['user_id']);
-                    $upd->execute();
-
-                    $_SESSION['pending_verification'] = [
-                        'user_id'    => $user['user_id'],
-                        'email'      => $user['email'],
-                        'first_name' => $user['first_name'],
-                        'expires'    => time() + OTP_EXPIRY_MINUTES * 60,
-                    ];
-                    $_SESSION['otp_attempts'] = 0;
-
-                    $emailError = '';
-                    sendVerificationEmail($user['email'], $user['first_name'], $code, $emailError);
-
-                    header('Location: verify-email.php');
-                    exit();
-                }
-
                 SessionManager::setUser($user);
                 
                 // Redirect based on role
@@ -97,16 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="card-body p-4">
                     <?php if($error): ?>
                         <div class="alert alert-danger"><?php echo $error; ?></div>
-                    <?php endif; ?>
-
-                    <?php if (isset($_GET['registered'])): ?>
-                        <div class="alert alert-success">
-                            ✅ Email verified! Your account is active — you can now log in.
-                        </div>
-                    <?php elseif (isset($_GET['verified'])): ?>
-                        <div class="alert alert-success">
-                            Account already verified. Please log in.
-                        </div>
                     <?php endif; ?>
                     
                     <form method="POST" action="">
