@@ -116,6 +116,11 @@ foreach ($weekly_data as $date => $count) {
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="messages.php">
+                        <i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="users.php">
                         <i class="bi bi-person-badge"></i> Users
                     </a>
@@ -135,6 +140,7 @@ foreach ($weekly_data as $date => $count) {
 
         <!-- Main Content -->
         <div class="main-content">
+            <?php include '../includes/admin-topbar.php'; ?>
             <div class="container-fluid my-4">
         <div class="row">
             <div class="col-md-12">
@@ -145,13 +151,23 @@ foreach ($weekly_data as $date => $count) {
 
         <!-- Stats Cards -->
         <div class="row mb-4">
+            <?php
+            $total_today    = $stats['total_today']     ?? 0;
+            $pending_count  = $stats['pending_count']   ?? 0;
+            $approved_count = $stats['approved_count']  ?? 0;
+            $completed_count= $stats['completed_count'] ?? 0;
+            $max_stat = max($total_today, $pending_count, $approved_count, $completed_count, 1);
+            function adminBarWidth($val, $max) {
+                return $max > 0 ? round(($val / $max) * 100) : 0;
+            }
+            ?>
             <div class="col-md-3">
                 <div class="card card-stats h-100">
                     <div class="card-body">
                         <h6>Today's Appointments</h6>
-                        <h2><?php echo $stats['total_today'] ?? 0; ?></h2>
+                        <h2><?php echo $total_today; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar" style="width: 100%"></div>
+                            <div class="progress-bar" style="width: <?php echo adminBarWidth($total_today, $max_stat); ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -160,9 +176,9 @@ foreach ($weekly_data as $date => $count) {
                 <div class="card card-stats h-100">
                     <div class="card-body">
                         <h6>Pending Approval</h6>
-                        <h2><?php echo $stats['pending_count'] ?? 0; ?></h2>
+                        <h2><?php echo $pending_count; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar bg-warning" style="width: 40%"></div>
+                            <div class="progress-bar" style="width: <?php echo adminBarWidth($pending_count, $max_stat); ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -171,9 +187,9 @@ foreach ($weekly_data as $date => $count) {
                 <div class="card card-stats h-100">
                     <div class="card-body">
                         <h6>Approved Today</h6>
-                        <h2><?php echo $stats['approved_count'] ?? 0; ?></h2>
+                        <h2><?php echo $approved_count; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar bg-success" style="width: 70%"></div>
+                            <div class="progress-bar" style="width: <?php echo adminBarWidth($approved_count, $max_stat); ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -182,9 +198,9 @@ foreach ($weekly_data as $date => $count) {
                 <div class="card card-stats h-100">
                     <div class="card-body">
                         <h6>Completed</h6>
-                        <h2><?php echo $stats['completed_count'] ?? 0; ?></h2>
+                        <h2><?php echo $completed_count; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar bg-info" style="width: 90%"></div>
+                            <div class="progress-bar" style="width: <?php echo adminBarWidth($completed_count, $max_stat); ?>%"></div>
                         </div>
                     </div>
                 </div>

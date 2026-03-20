@@ -5,6 +5,18 @@ SessionManager::requireLogin();
 $user = SessionManager::getUser();
 $db = getDB();
 
+// Ensure profile_picture column exists (safe on MySQL 8+ and MariaDB 10.3+)
+$db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(255) DEFAULT NULL");
+
+// Fetch fresh profile_picture from DB
+$profilePic = null;
+$picStmt = $db->prepare("SELECT profile_picture FROM users WHERE user_id = ?");
+if ($picStmt) {
+    $picStmt->bind_param("i", $user['user_id']);
+    $picStmt->execute();
+    $picRow = $picStmt->get_result()->fetch_assoc();
+    $profilePic = $picRow['profile_picture'] ?? null;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,6 +28,7 @@ $db = getDB();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
+    <link href="../assets/css/patient-profile.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -42,6 +55,7 @@ $db = getDB();
                         <?php endif; ?>
                     </a>
                 </li>
+                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
                 <li class="nav-item"><a class="nav-link active" href="profile.php"><i class="bi bi-person"></i> Profile</a></li>
                 <li class="nav-item"><a class="nav-link" href="history.php"><i class="bi bi-clock-history"></i> History</a></li>
                 <li class="nav-item logout-nav-item">
@@ -51,8 +65,45 @@ $db = getDB();
         </nav>
 
         <div class="main-content">
+            <?php include '../includes/patient-topbar.php'; ?>
             <div class="container-fluid my-4">
                 <h2 class="mb-4">Profile Settings</h2>
+
+                <!-- Profile Picture Card -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                            <?php
+                            $initials = strtoupper(substr($user['first_name'] ?? 'U', 0, 1) . substr($user['last_name'] ?? 'U', 0, 1));
+                            $picSrc   = !empty($profilePic) ? '../' . htmlspecialchars($profilePic) : null;
+                            ?>
+                            <div class="profile-pic-wrapper" title="Click to change photo">
+                                <label for="picUploadInput" class="profile-pic-label">
+                                    <?php if ($picSrc): ?>
+                                        <img id="profilePicImg" src="<?php echo $picSrc; ?>?v=<?php echo time(); ?>" alt="Profile Picture" class="profile-pic-img">
+                                    <?php else: ?>
+                                        <div id="profilePicInitials" class="profile-avatar-initials">
+                                            <?php echo $initials; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="profile-pic-overlay"><i class="bi bi-camera-fill"></i></div>
+                                </label>
+                                <input type="file" id="picUploadInput" accept="image/jpeg,image/png,image/gif,image/webp" class="d-none">
+                            </div>
+                            <div>
+                                <h5 class="mb-0"><?php echo htmlspecialchars(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')); ?></h5>
+                                <small class="text-muted"><?php echo htmlspecialchars($user['email'] ?? ''); ?></small>
+                                <div class="mt-2">
+                                    <label for="picUploadInput" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-upload"></i> Upload Photo
+                                    </label>
+                                    <small class="text-muted ms-2">JPG, PNG, GIF or WEBP · Max 2 MB</small>
+                                </div>
+                                <div id="uploadAlert" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="row">
                     <!-- Personal Information -->
@@ -125,13 +176,63 @@ $db = getDB();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
     $(document).ready(function() {
+
+        // Profile picture upload
+        $('#picUploadInput').on('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowed.includes(file.type)) {
+                showUploadAlert('Invalid file type. Only JPG, PNG, GIF, WEBP allowed.', 'danger'); return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                showUploadAlert('File too large. Maximum 2 MB.', 'danger'); return;
+            }
+            const fd = new FormData();
+            fd.append('profile_picture', file);
+            $.ajax({
+                url: '../api/upload-profile-picture.php',
+                method: 'POST',
+                data: fd,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(res) {
+                    if (res.success) {
+                        showUploadAlert(res.message, 'success');
+                        $('#profilePicInitials').remove();
+                        let img = $('#profilePicImg');
+                        if (img.length) {
+                            img.attr('src', '../' + res.path);
+                        } else {
+                            $('.profile-pic-label').prepend(
+                                `<img id="profilePicImg" src="../${res.path}" alt="Profile Picture" class="profile-pic-img">`
+                            );
+                        }
+                    } else {
+                        showUploadAlert(res.message, 'danger');
+                    }
+                },
+                error: function() { showUploadAlert('Upload failed. Please try again.', 'danger'); }
+            });
+        });
+
+        function showUploadAlert(msg, type) {
+            $('#uploadAlert').html(
+                `<div class="alert alert-${type} alert-dismissible py-1 px-2 mb-0 small">
+                    ${msg}
+                    <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                </div>`
+            );
+        }
+
+        // Existing form submit handler
         $('form').on('submit', function(e) {
             e.preventDefault();
             const form = $(this);
             const submitBtn = form.find('button[type="submit"]');
             const originalBtnText = submitBtn.text();
 
-            // Password match validation
             if (form.attr('id') === 'securityForm') {
                 if ($('input[name="new_password"]').val() !== $('input[name="confirm_password"]').val()) {
                     alert('New passwords do not match');

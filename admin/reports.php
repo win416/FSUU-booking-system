@@ -39,6 +39,7 @@ SessionManager::requireAdmin();
                 <li class="nav-item"><a class="nav-link" href="patients.php"><i class="bi bi-people"></i> Patients</a></li>
                 <li class="nav-item"><a class="nav-link" href="schedule.php"><i class="bi bi-clock"></i> Schedule</a></li>
                 <li class="nav-item"><a class="nav-link active" href="reports.php"><i class="bi bi-graph-up"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="users.php"><i class="bi bi-person-badge"></i> Users</a></li>
                 <li class="nav-item"><a class="nav-link" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
                 <li class="nav-item logout-nav-item">
@@ -51,6 +52,7 @@ SessionManager::requireAdmin();
 
 
         <div class="main-content">
+            <?php include '../includes/admin-topbar.php'; ?>
             <div class="container-fluid my-4">
 
                 <!-- Print Header (only visible when printing) -->
@@ -98,7 +100,7 @@ SessionManager::requireAdmin();
                                 <h6>Total Appointments</h6>
                                 <h2 id="stat-total">—</h2>
                                 <div class="progress">
-                                    <div class="progress-bar w-100"></div>
+                                    <div class="progress-bar" id="progress-total"></div>
                                 </div>
                                 <small class="text-info d-block mt-1" id="stat-monthly-diff"></small>
                             </div>
@@ -110,7 +112,7 @@ SessionManager::requireAdmin();
                                 <h6>Completed</h6>
                                 <h2 id="stat-completed">—</h2>
                                 <div class="progress">
-                                    <div class="progress-bar bg-success" id="progress-completed"></div>
+                                    <div class="progress-bar" id="progress-completed"></div>
                                 </div>
                             </div>
                         </div>
@@ -121,7 +123,7 @@ SessionManager::requireAdmin();
                                 <h6>Pending Approval</h6>
                                 <h2 id="stat-pending">—</h2>
                                 <div class="progress">
-                                    <div class="progress-bar bg-warning" id="progress-pending"></div>
+                                    <div class="progress-bar" id="progress-pending"></div>
                                 </div>
                             </div>
                         </div>
@@ -132,7 +134,7 @@ SessionManager::requireAdmin();
                                 <h6>New Patients</h6>
                                 <h2 id="stat-new-patients">—</h2>
                                 <div class="progress">
-                                    <div class="progress-bar bg-info w-100"></div>
+                                    <div class="progress-bar" id="progress-new-patients"></div>
                                 </div>
                             </div>
                         </div>
@@ -297,10 +299,22 @@ SessionManager::requireAdmin();
 
         // ── Render Charts & Summary Cards ────────────────────────────────────
         function renderReports(data) {
-            document.getElementById('stat-total').textContent = data.total_appointments;
-            document.getElementById('stat-completed').textContent = data.status_breakdown.completed || 0;
-            document.getElementById('stat-pending').textContent = data.status_breakdown.pending || 0;
-            document.getElementById('stat-new-patients').textContent = data.new_patients;
+            const total      = data.total_appointments || 0;
+            const completed  = data.status_breakdown.completed || 0;
+            const pending    = data.status_breakdown.pending || 0;
+            const newPts     = data.new_patients || 0;
+            const maxStat    = Math.max(total, completed, pending, newPts, 1);
+            const pctOf = v  => Math.round((v / maxStat) * 100);
+
+            document.getElementById('stat-total').textContent        = total;
+            document.getElementById('stat-completed').textContent    = completed;
+            document.getElementById('stat-pending').textContent      = pending;
+            document.getElementById('stat-new-patients').textContent = newPts;
+
+            document.getElementById('progress-total').style.width        = pctOf(total)     + '%';
+            document.getElementById('progress-completed').style.width    = pctOf(completed) + '%';
+            document.getElementById('progress-pending').style.width      = pctOf(pending)   + '%';
+            document.getElementById('progress-new-patients').style.width = pctOf(newPts)    + '%';
 
             const diff = data.current_month_count - data.last_month_count;
             const pct = data.last_month_count > 0 ? (diff / data.last_month_count * 100).toFixed(1) : (diff > 0 ? 100 : 0);
@@ -343,9 +357,9 @@ SessionManager::requireAdmin();
             });
 
             // Services Table
-            const total = data.services.reduce((acc, s) => acc + parseInt(s.count), 0);
+            const servicesTotal = data.services.reduce((acc, s) => acc + parseInt(s.count), 0);
             document.querySelector('#services-table tbody').innerHTML = data.services.map(s => {
-                const pct = total > 0 ? (parseInt(s.count) / total * 100).toFixed(1) : 0;
+                const pct = servicesTotal > 0 ? (parseInt(s.count) / servicesTotal * 100).toFixed(1) : 0;
                 return `<tr>
                     <td>${escHtml(s.service_name)}</td>
                     <td>${s.count}</td>

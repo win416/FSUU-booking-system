@@ -29,3 +29,4 @@ define('SESSION_TIMEOUT', 1800); // 30 minutes in seconds
 
 define('SMTP_FROM_NAME', 'FSUU Dental Clinic');
 define('OTP_EXPIRY_MINUTES', 5);
+define('CLINIC_EMAIL', SMTP_USER); // Dental clinic contact email

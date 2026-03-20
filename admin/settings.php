@@ -56,6 +56,7 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                 <li class="nav-item"><a class="nav-link" href="patients.php"><i class="bi bi-people"></i> Patients</a></li>
                 <li class="nav-item"><a class="nav-link" href="schedule.php"><i class="bi bi-clock"></i> Schedule</a></li>
                 <li class="nav-item"><a class="nav-link" href="reports.php"><i class="bi bi-graph-up"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="users.php"><i class="bi bi-person-badge"></i> Users</a></li>
                 <li class="nav-item"><a class="nav-link active" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
                 <li class="nav-item logout-nav-item">
@@ -68,6 +69,7 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
 
         <!-- Main Content -->
         <div class="main-content">
+            <?php include '../includes/admin-topbar.php'; ?>
             <div class="container-fluid my-4">
                 <h2>System Settings</h2>
 

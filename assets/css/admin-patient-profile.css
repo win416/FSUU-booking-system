@@ -1,0 +1,104 @@
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #000000;
+    color: #fff;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Profile picture upload widget ───────────────────────────────── */
+.profile-pic-wrapper {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.profile-pic-label {
+    display: block;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+}
+
+.profile-pic-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+.profile-avatar-initials,
+.profile-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: #212529;
+    color: #fff;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-pic-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.4rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.profile-pic-wrapper:hover .profile-pic-overlay {
+    opacity: 1;
+}
+
+/* ── Stat pills ───────────────────────────────────────────────────── */
+.stat-pill {
+    border-radius: 12px;
+    padding: 12px 20px;
+    text-align: center;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .75rem;
+}
+
+.info-row {
+    margin-bottom: .5rem;
+}
+
+.info-label {
+    font-size: .75rem;
+    text-transform: uppercase;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.info-value {
+    font-size: .95rem;
+}
+
+.badge-status {
+    font-size: .85rem;
+    padding: .4em .8em;
+}

@@ -72,6 +72,11 @@ $result = $db->query($query);
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="messages.php">
+                        <i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="users.php">
                         <i class="bi bi-person-badge"></i> Users
                     </a>
@@ -91,6 +96,7 @@ $result = $db->query($query);
 
         <!-- Main Content -->
         <div class="main-content">
+            <?php include '../includes/admin-topbar.php'; ?>
             <div class="container-fluid my-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Manage Patients</h2>
@@ -128,7 +134,7 @@ $result = $db->query($query);
                                         <?php while($patient = $result->fetch_assoc()): ?>
                                         <tr>
                                             <td><code><?php echo htmlspecialchars($patient['fsuu_id']); ?></code></td>
-                                            <td><strong><?php echo htmlspecialchars($patient['last_name'] . ', ' . $patient['first_name']); ?></strong></td>
+                                            <td><a href="patient-profile.php?id=<?php echo $patient['user_id']; ?>" class="patient-name-link"><?php echo htmlspecialchars($patient['last_name'] . ', ' . $patient['first_name']); ?></a></td>
                                             <td><small><?php echo htmlspecialchars($patient['email']); ?></small></td>
                                             <td><?php echo htmlspecialchars($patient['contact_number'] ?: 'N/A'); ?></td>
                                             <td>
@@ -145,9 +151,9 @@ $result = $db->query($query);
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <button class="btn btn-sm btn-outline-primary view-details" data-id="<?php echo $patient['user_id']; ?>" title="View Profile">
+                                                <a href="patient-profile.php?id=<?php echo $patient['user_id']; ?>" class="btn btn-sm btn-outline-primary" title="View Profile">
                                                     <i class="bi bi-person-lines-fill"></i>
-                                                </button>
+                                                </a>
                                                 <a href="appointments.php?search=<?php echo urlencode($patient['fsuu_id']); ?>" class="btn btn-sm btn-outline-info" title="View Appointments">
                                                     <i class="bi bi-calendar2-week"></i>
                                                 </a>
@@ -170,12 +176,5 @@ $result = $db->query($query);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-    $(document).ready(function() {
-        $('.view-details').click(function() {
-            alert('Patient detailed profile implementation coming soon.');
-        });
-    });
-    </script>
 </body>
 </html>

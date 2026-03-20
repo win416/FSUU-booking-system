@@ -196,3 +196,207 @@ body {
         padding: 1.5rem;
     }
 }
+
+/* ── Patient Top Bar & Notification Bell ────────────────────────────────── */
+.patient-topbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 280px;
+    height: 56px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 1.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Push main-content down so topbar doesn't overlap */
+.main-content {
+    padding-top: calc(2.5rem + 56px) !important;
+}
+
+.patient-topbar-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Bell button */
+.pt-notif-btn {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: #475569;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+.pt-notif-btn:hover {
+    background: #f1f5f9;
+    color: #00aeef;
+}
+
+/* Badge */
+.pt-notif-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    border: 2px solid #fff;
+    line-height: 1;
+}
+
+/* Dropdown */
+.pt-notif-wrapper {
+    position: relative;
+}
+
+.pt-notif-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 340px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.14);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    z-index: 9999;
+}
+.pt-notif-dropdown.open {
+    display: block;
+    animation: ptNotifFadeIn 0.15s ease;
+}
+@keyframes ptNotifFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.pt-notif-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1e293b;
+}
+
+.pt-notif-view-all {
+    font-size: 0.75rem;
+    color: #00aeef;
+    text-decoration: none;
+    font-weight: 500;
+}
+.pt-notif-view-all:hover { text-decoration: underline; }
+
+.pt-notif-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.pt-notif-empty {
+    padding: 1.25rem 1rem;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.pt-notif-item {
+    border-bottom: 1px solid #f8fafc;
+}
+.pt-notif-item:last-child { border-bottom: none; }
+
+.pt-notif-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.12s;
+}
+.pt-notif-link:hover { background: #f8fafc; }
+
+.pt-notif-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    margin-top: 2px;
+}
+
+.pt-notif-body { flex: 1; min-width: 0; }
+
+.pt-notif-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pt-notif-detail {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-top: 1px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.pt-notif-time {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.pt-notif-footer {
+    padding: 0.6rem 1rem;
+    border-top: 1px solid #f1f5f9;
+    text-align: center;
+    font-size: 0.78rem;
+}
+.pt-notif-footer a {
+    color: #475569;
+    text-decoration: none;
+    font-weight: 500;
+}
+.pt-notif-footer a:hover { color: #00aeef; }
+
+@media (max-width: 991.98px) {
+    .patient-topbar { left: 0; }
+    .pt-notif-dropdown { width: 300px; right: 0; }
+}

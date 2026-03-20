@@ -84,6 +84,11 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="messages.php">
+                        <i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="profile.php">
                         <i class="bi bi-person"></i> Profile
                     </a>
@@ -103,6 +108,7 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
 
         <!-- Main Content -->
         <div class="main-content">
+            <?php include '../includes/patient-topbar.php'; ?>
         <div class="row">
             <div class="col-md-12">
                 <div class="alert alert-info">
@@ -114,13 +120,23 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
 
         <!-- Stats Cards -->
         <div class="row mb-4">
+            <?php
+            $p_pending   = $appointment_stats['pending_count']   ?? 0;
+            $p_approved  = $appointment_stats['approved_count']  ?? 0;
+            $p_completed = $appointment_stats['completed_count'] ?? 0;
+            $p_total     = array_sum($appointment_stats);
+            $p_max       = max($p_pending, $p_approved, $p_completed, $p_total, 1);
+            function patientBarWidth($val, $max) {
+                return $max > 0 ? round(($val / $max) * 100) : 0;
+            }
+            ?>
             <div class="col-md-3">
                 <div class="card card-stats h-100">
                     <div class="card-body">
                         <h6>Pending</h6>
-                        <h2><?php echo $appointment_stats['pending_count'] ?? 0; ?></h2>
+                        <h2><?php echo $p_pending; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar bg-warning" style="width: 40%"></div>
+                            <div class="progress-bar" style="width: <?php echo patientBarWidth($p_pending, $p_max); ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -129,9 +145,9 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                 <div class="card card-stats h-100">
                     <div class="card-body">
                         <h6>Approved</h6>
-                        <h2><?php echo $appointment_stats['approved_count'] ?? 0; ?></h2>
+                        <h2><?php echo $p_approved; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar bg-success" style="width: 70%"></div>
+                            <div class="progress-bar" style="width: <?php echo patientBarWidth($p_approved, $p_max); ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -140,9 +156,9 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                 <div class="card card-stats h-100">
                     <div class="card-body">
                         <h6>Completed</h6>
-                        <h2><?php echo $appointment_stats['completed_count'] ?? 0; ?></h2>
+                        <h2><?php echo $p_completed; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar bg-info" style="width: 90%"></div>
+                            <div class="progress-bar" style="width: <?php echo patientBarWidth($p_completed, $p_max); ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -151,9 +167,9 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                 <div class="card card-stats h-100">
                     <div class="card-body">
                         <h6>Total Appointments</h6>
-                        <h2><?php echo array_sum($appointment_stats); ?></h2>
+                        <h2><?php echo $p_total; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar" style="width: 100%"></div>
+                            <div class="progress-bar" style="width: <?php echo patientBarWidth($p_total, $p_max); ?>%"></div>
                         </div>
                     </div>
                 </div>

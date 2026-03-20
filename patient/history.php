@@ -47,6 +47,7 @@ $medical = $stmt->get_result()->fetch_assoc();
                         <?php endif; ?>
                     </a>
                 </li>
+                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="profile.php"><i class="bi bi-person"></i> Profile</a></li>
                 <li class="nav-item"><a class="nav-link active" href="history.php"><i class="bi bi-clock-history"></i> History</a></li>
                 <li class="nav-item logout-nav-item">
@@ -55,6 +56,7 @@ $medical = $stmt->get_result()->fetch_assoc();
             </ul>
         </nav>
         <div class="main-content">
+            <?php include '../includes/patient-topbar.php'; ?>
             <div class="container-fluid my-4">
                 <h2 class="mb-4">Appointment History & Medical Records</h2>
 

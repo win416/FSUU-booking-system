@@ -66,6 +66,7 @@ $appointments = $stmt->get_result();
                         <?php endif; ?>
                     </a>
                 </li>
+                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
                 <li class="nav-item">
                     <a class="nav-link" href="profile.php">
                         <i class="bi bi-person"></i> Profile
@@ -85,6 +86,7 @@ $appointments = $stmt->get_result();
         </nav>
 
         <div class="main-content">
+            <?php include '../includes/patient-topbar.php'; ?>
             <div class="container-fluid my-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>My Appointments</h2>

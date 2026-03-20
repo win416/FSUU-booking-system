@@ -40,6 +40,7 @@
 /* ── Stat cards ──────────────────────────────────────────────────────── */
 .card-stats {
     border: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color) !important;
     border-radius: 14px;
     background: #fff;
     box-shadow: var(--card-shadow);
@@ -48,13 +49,10 @@
     position: relative;
 }
 
-/* Accent top bar */
-.card-stats::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #0d6efd 0%, #6ea8fe 100%);
+.card-stats::before,
+.card-stats::after {
+    display: none !important;
+    content: none !important;
 }
 
 .card-stats:hover {
@@ -235,10 +233,6 @@
         break-inside: avoid;
         box-shadow: none !important;
         border: 1px solid #dee2e6 !important;
-    }
-
-    .card-stats::before {
-        display: none;
     }
 
     .chart-container {

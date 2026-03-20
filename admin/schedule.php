@@ -101,6 +101,7 @@ $all_events = array_merge($block_events, $appt_events);
                 <li class="nav-item"><a class="nav-link" href="patients.php"><i class="bi bi-people"></i> Patients</a></li>
                 <li class="nav-item"><a class="nav-link active" href="schedule.php"><i class="bi bi-clock"></i> Schedule</a></li>
                 <li class="nav-item"><a class="nav-link" href="reports.php"><i class="bi bi-graph-up"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="users.php"><i class="bi bi-person-badge"></i> Users</a></li>
                 <li class="nav-item"><a class="nav-link" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
                 <li class="nav-item logout-nav-item">
@@ -113,6 +114,7 @@ $all_events = array_merge($block_events, $appt_events);
 
         <!-- Main Content -->
         <div class="main-content">
+            <?php include '../includes/admin-topbar.php'; ?>
             <div class="container-fluid my-4">
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -130,13 +132,17 @@ $all_events = array_merge($block_events, $appt_events);
 
                 <!-- Stat Cards -->
                 <div class="row mb-4">
+                    <?php
+                    $maxSched = max($today_appts, $upcoming_blocks, $fullday_blocks, $partial_blocks, 1);
+                    function schedBar($v, $m) { return $m > 0 ? round(($v / $m) * 100) : 0; }
+                    ?>
                     <div class="col-md-3">
                         <div class="card card-stats h-100">
                             <div class="card-body">
                                 <h6>Today's Appointments</h6>
                                 <h2><?php echo $today_appts; ?></h2>
                                 <div class="progress">
-                                    <div class="progress-bar" class="w-100"></div>
+                                    <div class="progress-bar" style="width:<?php echo schedBar($today_appts, $maxSched); ?>%"></div>
                                 </div>
                             </div>
                         </div>
@@ -147,7 +153,7 @@ $all_events = array_merge($block_events, $appt_events);
                                 <h6>Upcoming Blocks</h6>
                                 <h2><?php echo $upcoming_blocks; ?></h2>
                                 <div class="progress">
-                                    <div class="progress-bar bg-danger" class="w-100"></div>
+                                    <div class="progress-bar" style="width:<?php echo schedBar($upcoming_blocks, $maxSched); ?>%"></div>
                                 </div>
                             </div>
                         </div>
@@ -158,7 +164,7 @@ $all_events = array_merge($block_events, $appt_events);
                                 <h6>Full Day Blocks</h6>
                                 <h2><?php echo $fullday_blocks; ?></h2>
                                 <div class="progress">
-                                    <div class="progress-bar bg-warning" class="w-100"></div>
+                                    <div class="progress-bar" style="width:<?php echo schedBar($fullday_blocks, $maxSched); ?>%"></div>
                                 </div>
                             </div>
                         </div>
@@ -169,7 +175,7 @@ $all_events = array_merge($block_events, $appt_events);
                                 <h6>Partial Blocks</h6>
                                 <h2><?php echo $partial_blocks; ?></h2>
                                 <div class="progress">
-                                    <div class="progress-bar bg-info" class="w-100"></div>
+                                    <div class="progress-bar" style="width:<?php echo schedBar($partial_blocks, $maxSched); ?>%"></div>
                                 </div>
                             </div>
                         </div>
