@@ -15,9 +15,20 @@ SessionManager::requireAdmin();
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link href="../assets/css/admin-reports.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+    <style>
+        @media print {
+            .sidebar, .no-print { display: none !important; }
+            .main-content { margin-left: 0 !important; }
+            .print-header { display: block !important; }
+            .card { break-inside: avoid; }
+        }
+        .print-header { display: none; }
+        .export-badge { font-size: 0.7rem; vertical-align: middle; }
+    </style>
 </head>
 <body>
     <div class="dashboard-wrapper">
+        <nav class="sidebar no-print">
         <nav class="sidebar no-print">
             <div class="brand">
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
@@ -38,6 +49,7 @@ SessionManager::requireAdmin();
                 </li>
             </ul>
         </nav>
+
 
         <div class="main-content">
             <div class="container-fluid my-4">
