@@ -29,7 +29,6 @@ SessionManager::requireAdmin();
 <body>
     <div class="dashboard-wrapper">
         <nav class="sidebar no-print">
-        <nav class="sidebar no-print">
             <div class="brand">
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
                 FSUU Admin

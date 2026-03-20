@@ -1,4 +1,217 @@
-/* ── Print styles ─────────────────────────────────────────────────── */
+/* ── Reports page — enhanced styles ─────────────────────────────────── */
+
+/* ── Page header bar ─────────────────────────────────────────────────── */
+.reports-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.75rem;
+}
+
+.reports-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-text);
+    margin: 0;
+}
+
+/* ── Date filter bar ─────────────────────────────────────────────────── */
+.report-date-input {
+    width: 155px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
+    color: var(--primary-text);
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.report-date-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0,174,239,0.12);
+    outline: none;
+}
+
+/* ── Stat cards ──────────────────────────────────────────────────────── */
+.card-stats {
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Accent top bar */
+.card-stats::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0d6efd 0%, #6ea8fe 100%);
+}
+
+.card-stats:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.card-stats .card-body {
+    padding: 1.35rem 1.4rem 1.1rem;
+}
+
+.card-stats h6 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-light);
+    margin-bottom: 0.4rem;
+}
+
+.card-stats h2 {
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 0.75rem;
+    line-height: 1;
+}
+
+.card-stats .progress {
+    height: 4px;
+    border-radius: 4px;
+    background: #e9ecef;
+}
+
+.card-stats .progress-bar {
+    border-radius: 4px;
+    transition: width 0.9s ease;
+}
+
+/* ── Chart cards ─────────────────────────────────────────────────────── */
+.card.border-0.shadow-sm {
+    border-radius: 14px !important;
+    box-shadow: var(--card-shadow) !important;
+    border: 1px solid var(--border-color) !important;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.card.border-0.shadow-sm:hover {
+    box-shadow: var(--card-shadow-hover) !important;
+}
+
+.card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary-text);
+}
+
+.chart-container {
+    height: 290px;
+    position: relative;
+}
+
+/* Trends & Status Distribution — compact for a cleaner look */
+.chart-container:has(#trendsChart),
+.chart-container:has(#statusChart) {
+    height: 200px;
+}
+
+/* ── Card header (Appointment Details) ───────────────────────────────── */
+.card-header.bg-white {
+    background: #fff !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.9rem 1.25rem;
+}
+
+.card-header.bg-white h5 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary-text);
+}
+
+/* ── Service breakdown progress ──────────────────────────────────────── */
+.service-progress {
+    height: 6px;
+    border-radius: 3px;
+    background: #f1f5f9;
+}
+
+.service-progress .progress-bar {
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────── */
+.table-hover thead th {
+    background: #f8fafc;
+    color: var(--text-light);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.table-hover tbody td {
+    padding: 0.7rem 1rem;
+    vertical-align: middle;
+    font-size: 0.86rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--primary-text);
+}
+
+.table-hover tbody td code {
+    font-size: 0.8rem;
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.table-hover tbody tr:last-child td { border-bottom: none; }
+
+.table-hover tbody tr:hover td {
+    background: #f0f6ff;
+}
+
+/* Status badges inside table */
+.table .badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.32em 0.72em;
+    border-radius: 20px;
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+}
+
+/* ── Export badge ────────────────────────────────────────────────────── */
+.export-badge {
+    font-size: 0.7rem;
+    vertical-align: middle;
+}
+
+/* ── Record count badge ──────────────────────────────────────────────── */
+#detail-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35em 0.75em;
+    border-radius: 20px;
+    background: #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+/* ── Print styles ────────────────────────────────────────────────────── */
 .print-header {
     display: none;
 }
@@ -11,6 +224,7 @@
 
     .main-content {
         margin-left: 0 !important;
+        padding: 1rem !important;
     }
 
     .print-header {
@@ -19,26 +233,41 @@
 
     .card {
         break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .card-stats::before {
+        display: none;
+    }
+
+    .chart-container {
+        height: 220px;
     }
 }
 
-/* ── Export button badge ──────────────────────────────────────────── */
-.export-badge {
-    font-size: 0.7rem;
-    vertical-align: middle;
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 991.98px) {
+    .reports-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .report-date-input {
+        width: 140px;
+    }
+
+    .chart-container {
+        height: 220px;
+    }
 }
 
-/* ── Date filter inputs ───────────────────────────────────────────── */
-.report-date-input {
-    width: 160px;
-}
+@media (max-width: 575.98px) {
+    .report-date-input {
+        width: 100%;
+    }
 
-/* ── Chart containers ─────────────────────────────────────────────── */
-.chart-container {
-    height: 300px;
-}
-
-/* ── Service breakdown progress bar ──────────────────────────────── */
-.service-progress {
-    height: 5px;
+    .card-stats h2 {
+        font-size: 1.6rem;
+    }
 }
