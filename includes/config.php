@@ -32,10 +32,13 @@ define('OTP_EXPIRY_MINUTES', 5);
 define('CLINIC_EMAIL', SMTP_USER); // Dental clinic contact email
 
 // Google OAuth configuration
-// To get these credentials:
-// 1. Go to https://console.cloud.google.com/
-// 2. Create a project → APIs & Services → Credentials → Create OAuth 2.0 Client ID
-// 3. Set Authorized redirect URI to: http://localhost/FSUU-booking-system-1/auth/google_auth.php
-define('GOOGLE_CLIENT_ID',     '957700597513-3rmp02pd4md0vvsrirju98ledluc8o68.apps.googleusercontent.com');
+// To get credentials: https://console.cloud.google.com/
+// Set redirect URI to: http://localhost/FSUU-booking-system-1/auth/google_auth.php
+define('GOOGLE_CLIENT_ID',     'YOUR_GOOGLE_CLIENT_ID');
 define('GOOGLE_CLIENT_SECRET', 'YOUR_GOOGLE_CLIENT_SECRET');
 define('GOOGLE_REDIRECT_URI',  SITE_URL . '/auth/google_auth.php');
+
+// Load real credentials from secrets file (gitignored)
+if (file_exists(__DIR__ . '/config.secrets.php')) {
+    require_once __DIR__ . '/config.secrets.php';
+}

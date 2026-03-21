@@ -1,0 +1,10 @@
+# Secrets - never commit this
+includes/config.secrets.php
+
+# Debug logs
+*.log
+debug_api.log
+
+# OS files
+.DS_Store
+Thumbs.db
