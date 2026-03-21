@@ -39,6 +39,18 @@ function serviceIcon(string $name): string {
     if (str_contains($n, 'implant'))                                return 'bi-plus-circle-dotted';
     return 'bi-hospital';
 }
+
+/**
+ * Map service name keywords to background image paths.
+ */
+function serviceBgImage(string $name): string {
+    $n = strtolower($name);
+    if (str_contains($n, 'clean') || str_contains($n, 'prophyl'))  return '../img/cleaning.jpg';
+    if (str_contains($n, 'consult') || str_contains($n, 'exam'))   return '../img/consultation.jpg';
+    if (str_contains($n, 'extract') || str_contains($n, 'remov'))  return '../img/extractions.jpg';
+    if (str_contains($n, 'fill') || str_contains($n, 'restor') || str_contains($n, 'pasta'))    return '../img/filling.jpg';
+    return '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,7 +63,7 @@ function serviceIcon(string $name): string {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/patient-dashboard.css">
-    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css">
+    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=2">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -135,16 +147,19 @@ function serviceIcon(string $name): string {
                             <?php else: ?>
                             <div class="row g-3" id="servicesGrid">
                                 <?php foreach ($services as $svc):
-                                    $icon = serviceIcon($svc['service_name']);
+                                    $bgImg = serviceBgImage($svc['service_name']);
+                                    $bgStyle = $bgImg ? "style=\"background-image:url('{$bgImg}')\"" : '';
+                                    $hasBg = $bgImg ? ' has-bg-image' : '';
                                 ?>
-                                <div class="col-md-6 col-lg-4">
-                                    <div class="service-card"
+                                <div class="col-6 col-md-3">
+                                    <div class="service-card<?php echo $hasBg; ?>"
                                          data-service-id="<?php echo $svc['service_id']; ?>"
                                          data-service-name="<?php echo htmlspecialchars($svc['service_name']); ?>"
-                                         data-service-duration="<?php echo $svc['duration_minutes']; ?>">
-                                        <div class="service-card-icon">
-                                            <i class="bi <?php echo $icon; ?>"></i>
-                                        </div>
+                                         data-service-duration="<?php echo $svc['duration_minutes']; ?>"
+                                         <?php echo $bgStyle; ?>>
+                                        <?php if ($bgImg): ?>
+                                        <div class="service-card-overlay"></div>
+                                        <?php endif; ?>
                                         <div class="service-check"><i class="bi bi-check-circle-fill"></i></div>
                                         <h6 class="service-card-title"><?php echo htmlspecialchars($svc['service_name']); ?></h6>
                                         <p class="service-card-desc"><?php echo htmlspecialchars($svc['description'] ?? ''); ?></p>

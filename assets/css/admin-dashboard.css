@@ -15,7 +15,7 @@ body {
 
 /* Sidebar Styling - Dark Theme */
 .sidebar {
-    width: 280px;
+    width: 240px;
     background: #1e293b;
     color: #cbd5e1;
     min-height: 100vh;
@@ -29,17 +29,20 @@ body {
 }
 
 .sidebar .brand {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    padding: 0 1.5rem 2.5rem;
+    padding: 0 1rem 2rem;
     color: #ffffff;
     display: flex;
     align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .sidebar .brand i {
     color: #00aeef;
-    margin-right: 12px;
+    margin-right: 8px;
+    flex-shrink: 0;
 }
 
 .sidebar-nav {
@@ -100,9 +103,9 @@ body {
 /* Main Content Area */
 .main-content {
     flex-grow: 1;
-    margin-left: 280px;
+    margin-left: 240px;
     padding: 2.5rem;
-    width: calc(100% - 280px);
+    width: calc(100% - 240px);
     background-color: #f8fafc;
 }
 
@@ -194,7 +197,7 @@ body {
     position: fixed;
     top: 0;
     right: 0;
-    left: 280px;
+    left: 240px;
     height: 56px;
     background: #fff;
     border-bottom: 1px solid #e2e8f0;

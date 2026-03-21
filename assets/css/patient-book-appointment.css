@@ -270,14 +270,64 @@
     text-align: center;
     transition: all 0.25s ease;
     background: #fff;
-    width: 100%;  /* fill the flex column */
+    width: 100%;
     overflow: hidden;
 }
+
+/* Background-image variant */
+.service-card.has-bg-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 180px;
+    border-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 1.1rem;
+}
+
+/* Dark overlay so text stays readable */
+.service-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.62) 100%);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+    transition: background 0.25s;
+}
+.service-card.has-bg-image:hover .service-card-overlay {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.75) 100%);
+}
+.service-card.has-bg-image.selected .service-card-overlay {
+    background: linear-gradient(to bottom, rgba(0,174,239,0.35) 0%, rgba(0,174,239,0.72) 100%);
+}
+
+/* Ensure content sits above the overlay */
+.service-card.has-bg-image > *:not(.service-card-overlay) { position: relative; z-index: 1; }
+
+/* White text on image cards */
+.service-card.has-bg-image .service-card-icon { color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+.service-card.has-bg-image .service-card-title { color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+.service-card.has-bg-image .service-card-desc  { color: rgba(255,255,255,0.85); text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+.service-card.has-bg-image .service-card-duration {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(4px);
+}
+.service-card.has-bg-image .service-check { color: #fff; }
 
 .service-card:hover {
     border-color: var(--primary-color);
     transform: translateY(-4px);
     box-shadow: 0 8px 20px rgba(0,174,239,0.12);
+}
+.service-card.has-bg-image:hover {
+    border-color: transparent;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.28);
 }
 
 .service-card.selected {
@@ -285,15 +335,12 @@
     background: var(--accent-color);
     box-shadow: 0 8px 24px rgba(0,174,239,0.18);
 }
-
-.service-card-icon {
-    font-size: 2rem;
-    color: var(--primary-color);
-    margin-bottom: 0.6rem;
-    line-height: 1;
+.service-card.has-bg-image.selected {
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 28px rgba(0,174,239,0.35);
 }
 
-.service-card.selected .service-card-icon { color: var(--primary-color-hover); }
+/* icon removed */
 
 .service-card-title {
     font-size: 0.95rem;

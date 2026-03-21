@@ -31,15 +31,26 @@ $pending = $db->query("
 ");
 
 // Statistics
-$stats = $db->query("
+$stats_today = $db->query("
     SELECT 
         COUNT(*) as total_today,
-        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count,
         SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved_count,
         SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count
     FROM appointments
     WHERE appointment_date = CURDATE()
 ")->fetch_assoc();
+
+// Pending = ALL pending regardless of date
+$stats_pending = $db->query("
+    SELECT COUNT(*) as pending_count FROM appointments WHERE status = 'pending'
+")->fetch_assoc();
+
+$stats = [
+    'total_today'     => $stats_today['total_today']    ?? 0,
+    'pending_count'   => $stats_pending['pending_count'] ?? 0,
+    'approved_count'  => $stats_today['approved_count']  ?? 0,
+    'completed_count' => $stats_today['completed_count'] ?? 0,
+];
 
 // Weekly stats
 $weekly_data = [];
@@ -178,7 +189,7 @@ foreach ($weekly_data as $date => $count) {
                         <h6>Pending Approval</h6>
                         <h2><?php echo $pending_count; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar" style="width: <?php echo adminBarWidth($pending_count, $max_stat); ?>%"></div>
+                            <div class="progress-bar bg-warning" style="width: <?php echo adminBarWidth($pending_count, $max_stat); ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -189,7 +200,7 @@ foreach ($weekly_data as $date => $count) {
                         <h6>Approved Today</h6>
                         <h2><?php echo $approved_count; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar" style="width: <?php echo adminBarWidth($approved_count, $max_stat); ?>%"></div>
+                            <div class="progress-bar bg-success" style="width: <?php echo adminBarWidth($approved_count, $max_stat); ?>%"></div>
                         </div>
                     </div>
                 </div>
@@ -197,10 +208,10 @@ foreach ($weekly_data as $date => $count) {
             <div class="col-md-3">
                 <div class="card card-stats h-100">
                     <div class="card-body">
-                        <h6>Completed</h6>
+                        <h6>Completed Today</h6>
                         <h2><?php echo $completed_count; ?></h2>
                         <div class="progress">
-                            <div class="progress-bar" style="width: <?php echo adminBarWidth($completed_count, $max_stat); ?>%"></div>
+                            <div class="progress-bar bg-info" style="width: <?php echo adminBarWidth($completed_count, $max_stat); ?>%"></div>
                         </div>
                     </div>
                 </div>

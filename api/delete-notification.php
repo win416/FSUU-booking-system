@@ -13,6 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
+// Delete all
+if (isset($_POST['all']) && $_POST['all']) {
+    $stmt = $db->prepare("DELETE FROM notifications WHERE user_id = ?");
+    $stmt->bind_param("i", $user['user_id']);
+    echo json_encode(['success' => $stmt->execute()]);
+    exit();
+}
+
 $notification_id = intval($_POST['notification_id'] ?? 0);
 if (!$notification_id) {
     echo json_encode(['success' => false, 'message' => 'Missing notification ID']);

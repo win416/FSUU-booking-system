@@ -14,7 +14,7 @@ $user = SessionManager::getUser();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
-    <link href="../assets/css/admin-messages.css" rel="stylesheet">
+    <link href="../assets/css/admin-messages.css?v=3" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -310,7 +310,7 @@ function loadThread(silent) {
                 const timeStr = new Date(m.created_at.replace(' ','T')).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
                 html += `<div class="msg-row ${mine ? 'mine' : 'theirs'}">
                     ${av}
-                    <div>
+                    <div class="msg-content">
                         <div class="msg-bubble">${escHtml(m.message_text)}</div>
                         <div class="msg-time ${mine ? 'text-end' : ''}">${timeStr}</div>
                     </div>
@@ -360,8 +360,10 @@ document.getElementById('replyInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
 });
 document.getElementById('replyInput').addEventListener('input', function() {
-    this.style.height = '';
-    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    this.style.height = 'auto';
+    const newH = Math.min(this.scrollHeight, 160);
+    this.style.height = newH + 'px';
+    this.style.overflowY = this.scrollHeight > 160 ? 'auto' : 'hidden';
 });
 
 // ── Compose – autocomplete ───────────────────────────────────────────────────

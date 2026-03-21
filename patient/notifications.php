@@ -45,6 +45,20 @@ function getNotifStyle(array $notif): array {
     }
     return ['icon' => 'bi-bell-fill', 'color' => 'secondary', 'bg' => 'bg-secondary'];
 }
+
+/**
+ * Returns a date-group label for a notification's created_at timestamp.
+ */
+function getDateGroup(string $dateStr): string {
+    $ts    = strtotime($dateStr);
+    $today = strtotime('today');
+    $diff  = $today - strtotime(date('Y-m-d', $ts));
+    if ($diff === 0) return 'Today';
+    if ($diff === 86400) return 'Yesterday';
+    if ($diff < 7 * 86400) return 'This Week';
+    if ($diff < 30 * 86400) return 'This Month';
+    return 'Older';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,7 +70,7 @@ function getNotifStyle(array $notif): array {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
-    <link href="../assets/css/patient-notifications.css" rel="stylesheet">
+    <link href="../assets/css/patient-notifications.css?v=2" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -97,10 +111,10 @@ function getNotifStyle(array $notif): array {
         <div class="container-fluid my-4">
 
             <!-- Page Header -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="notif-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
-                    <h4 class="mb-1 fw-bold"><i class="bi bi-bell me-2 text-primary"></i>Notifications</h4>
-                    <div class="notif-summary d-flex gap-2 flex-wrap">
+                    <h4 class="fw-bold mb-1"><i class="bi bi-bell me-2 text-primary"></i>Notifications</h4>
+                    <div class="notif-summary d-flex gap-2 flex-wrap mt-1">
                         <span class="badge bg-light text-dark border">
                             <span id="count-all"><?php echo $total_count; ?></span> Total
                         </span>
@@ -112,16 +126,18 @@ function getNotifStyle(array $notif): array {
                         </span>
                     </div>
                 </div>
-                <div class="d-flex gap-2">
-                    <?php if ($unread_count > 0): ?>
-                    <button id="markAllRead" class="btn btn-sm btn-outline-primary">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <!-- Search -->
+                    <div class="notif-search-wrap">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="notifSearch" placeholder="Search notifications…" autocomplete="off">
+                    </div>
+                    <button id="markAllRead" class="btn btn-sm btn-outline-primary <?php echo $unread_count > 0 ? '' : 'd-none'; ?>">
                         <i class="bi bi-check2-all me-1"></i>Mark All Read
                     </button>
-                    <?php else: ?>
-                    <button id="markAllRead" class="btn btn-sm btn-outline-primary" style="display:none">
-                        <i class="bi bi-check2-all me-1"></i>Mark All Read
+                    <button id="clearAll" class="btn btn-sm btn-outline-danger <?php echo $total_count > 0 ? '' : 'd-none'; ?>">
+                        <i class="bi bi-trash3 me-1"></i>Clear All
                     </button>
-                    <?php endif; ?>
                 </div>
             </div>
 
@@ -146,16 +162,34 @@ function getNotifStyle(array $notif): array {
 
             <!-- Notifications List -->
             <div id="notifList">
-                <?php if ($total_count > 0): ?>
-                    <?php foreach ($all_notifications as $notif):
-                        $style   = getNotifStyle($notif);
+                <?php if ($total_count > 0):
+                    $lastGroup = '';
+                    foreach ($all_notifications as $notif):
+                        $style    = getNotifStyle($notif);
                         $isUnread = !$notif['is_read'];
-                    ?>
+                        $group    = getDateGroup($notif['created_at']);
+                        if ($group !== $lastGroup):
+                            $lastGroup = $group;
+                ?>
+                    <div class="notif-date-group" data-group="<?php echo htmlspecialchars($group); ?>">
+                        <span><?php echo htmlspecialchars($group); ?></span>
+                    </div>
+                <?php endif; ?>
                     <div class="notif-card notif-<?php echo $style['color']; ?> <?php echo $isUnread ? 'unread' : ''; ?>"
                          data-id="<?php echo $notif['notification_id']; ?>"
-                         data-read="<?php echo $notif['is_read'] ? '1' : '0'; ?>">
-                        <div class="card-body py-3 px-4">
+                         data-read="<?php echo $notif['is_read'] ? '1' : '0'; ?>"
+                         data-group="<?php echo htmlspecialchars($group); ?>"
+                         data-subject="<?php echo strtolower(htmlspecialchars($notif['subject'])); ?>"
+                         data-body="<?php echo strtolower(htmlspecialchars($notif['message'])); ?>">
+                        <div class="card-body">
                             <div class="d-flex gap-3 align-items-start">
+
+                                <!-- Unread dot -->
+                                <?php if ($isUnread): ?>
+                                <div class="unread-dot"></div>
+                                <?php else: ?>
+                                <div style="width:8px;min-width:8px;"></div>
+                                <?php endif; ?>
 
                                 <!-- Icon -->
                                 <div class="notif-icon <?php echo $style['bg']; ?> bg-opacity-15 text-<?php echo $style['color']; ?>">
@@ -170,29 +204,30 @@ function getNotifStyle(array $notif): array {
                                         </h6>
                                         <div class="d-flex align-items-center gap-1 flex-shrink-0">
                                             <?php if ($isUnread): ?>
-                                                <span class="badge-new badge bg-primary" style="font-size:0.68rem">New</span>
+                                                <span class="badge-new badge bg-primary">New</span>
                                             <?php endif; ?>
                                             <!-- Actions (visible on hover) -->
                                             <div class="notif-actions">
                                                 <?php if ($isUnread): ?>
                                                 <button class="btn btn-sm btn-link p-0 text-success btn-mark-read"
-                                                        title="Mark as read" style="line-height:1">
-                                                    <i class="bi bi-check2-circle fs-5"></i>
+                                                        title="Mark as read">
+                                                    <i class="bi bi-check2-circle"></i>
                                                 </button>
                                                 <?php endif; ?>
                                                 <button class="btn btn-sm btn-link p-0 text-danger btn-delete-notif"
-                                                        title="Delete" style="line-height:1">
-                                                    <i class="bi bi-trash3 fs-5"></i>
+                                                        title="Delete">
+                                                    <i class="bi bi-trash3"></i>
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-                                    <p class="mb-1 <?php echo $isUnread ? '' : 'text-muted'; ?>" style="font-size:0.9rem">
+                                    <p class="notif-body mb-1 <?php echo $isUnread ? '' : 'text-muted'; ?>">
                                         <?php echo htmlspecialchars($notif['message']); ?>
                                     </p>
                                     <span class="notif-time"
                                           data-ts="<?php echo $notif['created_at']; ?>"
                                           title="<?php echo date('F d, Y h:i A', strtotime($notif['created_at'])); ?>">
+                                        <i class="bi bi-clock"></i>
                                         <?php echo date('M d, Y h:i A', strtotime($notif['created_at'])); ?>
                                     </span>
                                 </div>
@@ -200,13 +235,13 @@ function getNotifStyle(array $notif): array {
                             </div>
                         </div>
                     </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                <?php endforeach; endif; ?>
 
                 <!-- Empty State -->
-                <div id="emptyState" class="card notif-empty <?php echo $total_count > 0 ? 'd-none' : ''; ?>">
+                <div id="emptyState" class="notif-empty <?php echo $total_count > 0 ? 'd-none' : ''; ?>">
                     <i class="bi bi-bell-slash notif-empty-icon"></i>
-                    <p class="mb-0 fw-semibold" id="emptyStateMsg">You have no notifications yet.</p>
+                    <p class="fw-semibold" id="emptyStateMsg">You have no notifications yet.</p>
+                    <p class="small">When you receive notifications about your appointments, they will appear here.</p>
                 </div>
             </div>
 
@@ -214,8 +249,26 @@ function getNotifStyle(array $notif): array {
     </div>
 </div>
 
+<!-- Toast -->
+<div id="notifToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+        <div class="toast-body" id="notifToastBody">Done.</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// ── Toast helper ─────────────────────────────────────────────────────
+const toastEl  = document.getElementById('notifToast');
+const toastObj = new bootstrap.Toast(toastEl, { delay: 2500 });
+function showToast(msg, type = 'success') {
+    toastEl.className = `toast align-items-center text-white border-0 bg-${type}`;
+    document.getElementById('notifToastBody').textContent = msg;
+    toastObj.show();
+}
+
 // ── Relative timestamps ──────────────────────────────────────────────
 function timeAgo(dateStr) {
     const date = new Date(dateStr.replace(' ', 'T'));
@@ -229,7 +282,7 @@ function timeAgo(dateStr) {
 
 function refreshTimestamps() {
     $('[data-ts]').each(function () {
-        $(this).text(timeAgo($(this).data('ts')));
+        $(this).html('<i class="bi bi-clock"></i> ' + timeAgo($(this).data('ts')));
     });
 }
 refreshTimestamps();
@@ -237,48 +290,67 @@ setInterval(refreshTimestamps, 60000);
 
 // ── Counts ───────────────────────────────────────────────────────────
 function updateCounts() {
-    const total   = $('.notif-card').length;
-    const unread  = $('.notif-card.unread').length;
-    const read    = total - unread;
+    const total   = $('.notif-card:not([style*="display: none"])').length || $('.notif-card').length;
+    const allCards = $('.notif-card');
+    const unread  = allCards.filter('.unread').length;
+    const read    = allCards.length - unread;
 
-    $('#count-all').text(total);
+    $('#count-all').text(allCards.length);
     $('#count-unread').text(unread);
     $('#count-read').text(read);
-    $('#tab-count-all').text(total);
+    $('#tab-count-all').text(allCards.length);
     $('#tab-count-unread').text(unread);
     $('#tab-count-read').text(read);
 
     if (unread > 0) {
         $('#sidebarNotifBadge').text(unread).show();
-        $('#markAllRead').show();
+        $('#markAllRead').removeClass('d-none');
     } else {
         $('#sidebarNotifBadge').hide();
-        $('#markAllRead').hide();
+        $('#markAllRead').addClass('d-none');
+    }
+    if (allCards.length > 0) {
+        $('#clearAll').removeClass('d-none');
+    } else {
+        $('#clearAll').addClass('d-none');
     }
 }
 
 // ── Filter tabs ──────────────────────────────────────────────────────
 let activeFilter = 'all';
+let searchQuery  = '';
 
-function applyFilter(filter) {
-    activeFilter = filter;
+function applyFilter() {
     let visible = 0;
+    // Hide all date-group dividers first
+    $('.notif-date-group').hide();
+
     $('.notif-card').each(function () {
-        const isRead = $(this).data('read') === 1 || $(this).data('read') === '1';
-        let show = (filter === 'all') ||
-                   (filter === 'unread' && !isRead) ||
-                   (filter === 'read'   && isRead);
+        const isRead    = $(this).data('read') === 1 || $(this).data('read') === '1';
+        const subject   = ($(this).data('subject') || '').toLowerCase();
+        const body      = ($(this).data('body') || '').toLowerCase();
+        const q         = searchQuery.toLowerCase();
+        const matchSearch = !q || subject.includes(q) || body.includes(q);
+        const matchFilter = activeFilter === 'all' ||
+                            (activeFilter === 'unread' && !isRead) ||
+                            (activeFilter === 'read' && isRead);
+        const show = matchFilter && matchSearch;
         $(this).toggle(show);
-        if (show) visible++;
+        if (show) {
+            visible++;
+            // Show the date-group divider for this group
+            const group = $(this).data('group');
+            $(`.notif-date-group[data-group="${group}"]`).show();
+        }
     });
 
     const emptyMessages = {
-        all:    'You have no notifications yet.',
-        unread: 'No unread notifications.',
-        read:   'No read notifications yet.'
+        all:    q => q ? 'No notifications match your search.' : 'You have no notifications yet.',
+        unread: q => q ? 'No unread notifications match your search.' : 'No unread notifications.',
+        read:   q => q ? 'No read notifications match your search.' : 'No read notifications yet.'
     };
     if (visible === 0) {
-        $('#emptyStateMsg').text(emptyMessages[filter]);
+        $('#emptyStateMsg').text(emptyMessages[activeFilter](searchQuery));
         $('#emptyState').removeClass('d-none');
     } else {
         $('#emptyState').addClass('d-none');
@@ -288,7 +360,28 @@ function applyFilter(filter) {
 $(document).on('click', '.notif-filter-tabs button', function () {
     $('.notif-filter-tabs button').removeClass('active');
     $(this).addClass('active');
-    applyFilter($(this).data('filter'));
+    activeFilter = $(this).data('filter');
+    applyFilter();
+});
+
+// ── Search ───────────────────────────────────────────────────────────
+$('#notifSearch').on('input', function () {
+    searchQuery = $(this).val().trim();
+    applyFilter();
+});
+
+// ── Click to expand + auto-mark read ────────────────────────────────
+$(document).on('click', '.notif-card', function (e) {
+    if ($(e.target).closest('.notif-actions').length) return; // ignore action btns
+    const card = $(this);
+    card.toggleClass('expanded');
+    // Auto-mark as read on click if unread
+    if (card.hasClass('unread')) {
+        const id = card.data('id');
+        $.post('../api/mark-notifications-read.php', { notification_id: id }, function (res) {
+            if (res.success) markCardAsRead(card);
+        }, 'json');
+    }
 });
 
 // ── Mark single as read ──────────────────────────────────────────────
@@ -297,21 +390,25 @@ $(document).on('click', '.btn-mark-read', function (e) {
     const card = $(this).closest('.notif-card');
     const id   = card.data('id');
     $.post('../api/mark-notifications-read.php', { notification_id: id }, function (res) {
-        if (res.success) markCardAsRead(card);
+        if (res.success) {
+            markCardAsRead(card);
+            showToast('Marked as read', 'success');
+        }
     }, 'json');
 });
 
 function markCardAsRead(card) {
     card.removeClass('unread').attr('data-read', '1');
     card.find('.notif-subject').removeClass('fw-bold').addClass('fw-semibold text-muted');
-    card.find('p').addClass('text-muted');
+    card.find('.notif-body').addClass('text-muted');
     card.find('.badge-new').remove();
     card.find('.btn-mark-read').remove();
+    card.find('.unread-dot').css('background', 'transparent');
     if (activeFilter === 'unread') {
         card.slideUp(250, function () {
             $(this).remove();
             updateCounts();
-            applyFilter(activeFilter);
+            applyFilter();
         });
         return;
     }
@@ -324,25 +421,52 @@ $('#markAllRead').on('click', function () {
         if (res.success) {
             $('.notif-card.unread').each(function () { markCardAsRead($(this)); });
             updateCounts();
+            showToast('All notifications marked as read', 'success');
         }
     }, 'json');
 });
 
-// ── Delete notification ──────────────────────────────────────────────
+// ── Delete single notification ───────────────────────────────────────
 $(document).on('click', '.btn-delete-notif', function (e) {
     e.stopPropagation();
     const card = $(this).closest('.notif-card');
     const id   = card.data('id');
     card.addClass('notif-removing');
+    $.post('../api/delete-notification.php', { notification_id: id });
     setTimeout(function () {
         card.slideUp(200, function () {
             $(this).remove();
             updateCounts();
-            applyFilter(activeFilter);
+            applyFilter();
         });
     }, 300);
-    $.post('../api/delete-notification.php', { notification_id: id });
+    showToast('Notification deleted', 'danger');
 });
+
+// ── Clear all notifications ──────────────────────────────────────────
+$('#clearAll').on('click', function () {
+    if (!confirm('Delete all notifications? This cannot be undone.')) return;
+    $.post('../api/delete-notification.php', { all: true }, function (res) {
+        if (res.success) {
+            $('.notif-card, .notif-date-group').fadeOut(200, function () {
+                $(this).remove();
+                updateCounts();
+                applyFilter();
+            });
+            showToast('All notifications cleared', 'danger');
+        }
+    }, 'json');
+});
+
+// ── Poll for new notifications ───────────────────────────────────────
+setInterval(function () {
+    $.getJSON('../api/mark-notifications-read.php?check=1', function (res) {
+        if (res && res.unread !== undefined) {
+            const current = $('.notif-card.unread').length;
+            if (res.unread > current) location.reload(); // new notification arrived
+        }
+    });
+}, 30000);
 </script>
 </body>
 </html>
