@@ -211,7 +211,8 @@ body {
 /* Hero Section Enhancement */
 .hero-section {
     position: relative;
-    background: url('../../img/inside%20clinic.jpg') center/cover no-repeat;
+    background: url('../../img/inside%20clinic.jpg') center center / cover no-repeat;
+    background-attachment: scroll;
     min-height: 88vh;
     display: flex;
     flex-direction: column;
@@ -298,6 +299,8 @@ body {
     font-size: 0.85rem;
     color: #64748b;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .hero-bar-divider {
@@ -472,26 +475,10 @@ body {
         font-size: 2.2rem;
     }
 
-    .hero-bar {
-        flex-wrap: wrap;
-        border-radius: 20px;
-        padding: 1rem 1.25rem;
-        gap: 0.5rem;
-    }
-
-    .hero-bar-divider { display: none; }
-
-    .hero-bar-item {
-        flex: 0 0 calc(50% - 0.5rem);
-    }
-
-    .hero-bar-btn {
-        margin-left: auto;
-        margin-top: 0.5rem;
-    }
+    .hero-bar-divider { display: none !important; }
 
     .hero-bar-wrap {
-        position: static;
+        position: static !important;
         margin-top: 1.5rem;
         padding: 0 1rem;
     }
@@ -505,5 +492,167 @@ body {
     .about-section {
         margin-top: 0;
         padding: 60px 0;
+    }
+}
+
+/* Phone screens */
+@media (max-width: 767px) {
+    /* Keep navbar on ONE row: brand left, buttons right */
+    .navbar .container {
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+    }
+
+    .navbar-brand {
+        font-size: 0.88rem !important;
+        flex-shrink: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: visible !important;
+        text-overflow: unset !important;
+        margin-right: auto;
+    }
+
+    .navbar-logo {
+        height: 28px !important;
+        width: 28px !important;
+        flex-shrink: 0;
+        margin-right: 6px !important;
+    }
+
+    .navbar-right {
+        flex-shrink: 0;
+        margin-left: 0.4rem;
+        gap: 0.25rem !important;
+    }
+
+    .navbar-auth-btn {
+        font-size: 0.72rem !important;
+        padding: 4px 8px !important;
+    }
+
+    .navbar-toggler {
+        padding: 4px 7px !important;
+    }
+
+    .hero-title {
+        font-size: 1.9rem !important;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem !important;
+    }
+
+    .hero-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        border-radius: 16px !important;
+        padding: 1rem 1.25rem !important;
+        gap: 0 !important;
+    }
+
+    .hero-bar-item {
+        flex: unset !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        padding: 0.6rem 0 !important;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .hero-bar-item:last-of-type {
+        border-bottom: none;
+    }
+
+    .hero-bar-value {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow: visible !important;
+        text-overflow: unset !important;
+        font-size: 0.88rem !important;
+    }
+
+    .hero-bar-label {
+        font-size: 0.7rem !important;
+        margin-bottom: 2px;
+    }
+
+    .hero-bar-btn {
+        width: 100% !important;
+        border-radius: 10px !important;
+        margin: 0.75rem 0 0 0 !important;
+        height: 44px !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* Phone landscape fix — ensure background image is visible */
+@media (max-width: 767px) and (orientation: landscape) {
+    .hero-section {
+        min-height: 100vw;
+        padding: 80px 0 2rem;
+        background-position: center top !important;
+        background-size: cover !important;
+    }
+}
+
+/* Ensure background always renders on mobile (fixes iOS blank bg bug) */
+@media (max-width: 767px) {
+    .hero-section {
+        background-attachment: scroll !important;
+        background-position: center center !important;
+        background-size: cover !important;
+        -webkit-background-size: cover !important;
+    }
+
+    /* Scale down all page text to match navbar proportions */
+    .display-4 {
+        font-size: 1.4rem !important;
+    }
+
+    .display-5 {
+        font-size: 1.25rem !important;
+    }
+
+    .lead {
+        font-size: 0.85rem !important;
+    }
+
+    h2, .h2 {
+        font-size: 1.25rem !important;
+    }
+
+    h4, .h4 {
+        font-size: 0.95rem !important;
+    }
+
+    h5, .h5 {
+        font-size: 0.88rem !important;
+    }
+
+    p, li {
+        font-size: 0.82rem !important;
+        line-height: 1.5;
+    }
+
+    .feature-card h4 {
+        font-size: 0.95rem !important;
+    }
+
+    .feature-card p {
+        font-size: 0.82rem !important;
+    }
+
+    .feature-icon {
+        font-size: 2rem !important;
+    }
+
+    .features-section,
+    #about,
+    #contact {
+        padding: 40px 0 !important;
+    }
+
+    .footer {
+        padding: 40px 0 20px !important;
     }
 }
