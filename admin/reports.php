@@ -33,6 +33,7 @@ SessionManager::requireAdmin();
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
                 FSUU Admin
             </div>
+            <div class="sidebar-nav-wrap">
             <ul class="sidebar-nav">
                 <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" href="appointments.php"><i class="bi bi-calendar-check"></i> Appointments</a></li>
@@ -48,6 +49,7 @@ SessionManager::requireAdmin();
                     </a>
                 </li>
             </ul>
+            </div>
         </nav>
 
 
@@ -63,27 +65,35 @@ SessionManager::requireAdmin();
                 </div>
 
                 <!-- Top Bar -->
-                <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-                    <h2>Reports & Analytics</h2>
+                <div class="d-flex justify-content-between align-items-center mb-4 no-print flex-wrap gap-3">
+                        <div>
+                            <h2 class="mb-0">
+                                Reports & Analytics
+                            </h2>
+                            <small class="text-muted" style="font-size:0.8rem;">Appointment statistics and trends</small>
+                        </div>
                     <div class="d-flex gap-2 flex-wrap align-items-center">
-                        <input type="date" id="start_date" class="form-control report-date-input" value="<?php echo date('Y-m-d', strtotime('-30 days')); ?>">
-                        <input type="date" id="end_date" class="form-control report-date-input" value="<?php echo date('Y-m-d'); ?>">
-                        <button id="update-reports" class="btn btn-primary">
+                        <div class="d-flex align-items-center gap-1 bg-white border rounded-3 px-2 py-1" style="border-color:#e2e8f0!important;">
+                            <i class="bi bi-calendar3 text-muted" style="font-size:0.8rem;"></i>
+                            <input type="date" id="start_date" class="report-date-input border-0 p-0 ps-1" value="<?php echo date('Y-m-d', strtotime('-30 days')); ?>">
+                            <span class="text-muted" style="font-size:0.8rem;">—</span>
+                            <input type="date" id="end_date" class="report-date-input border-0 p-0" value="<?php echo date('Y-m-d'); ?>">
+                        </div>
+                        <button id="update-reports" class="btn btn-primary btn-sm px-3" style="border-radius:8px;">
                             <i class="bi bi-funnel-fill me-1"></i>Filter
                         </button>
-                        <!-- Export Dropdown -->
                         <div class="dropdown">
-                            <button class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+                            <button class="btn btn-sm btn-outline-success dropdown-toggle px-3" data-bs-toggle="dropdown" style="border-radius:8px;">
                                 <i class="bi bi-download me-1"></i>Export
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:12px;">
                                 <li>
-                                    <a class="dropdown-item" href="#" id="export-csv">
+                                    <a class="dropdown-item rounded-2" href="#" id="export-csv">
                                         <i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i>Export as CSV
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="#" id="export-pdf">
+                                    <a class="dropdown-item rounded-2" href="#" id="export-pdf">
                                         <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export as PDF / Print
                                     </a>
                                 </li>
@@ -93,49 +103,72 @@ SessionManager::requireAdmin();
                 </div>
 
                 <!-- Summary Cards -->
-                <div class="row mb-4">
+                <div class="row g-3 mb-4">
                     <div class="col-md-3">
-                        <div class="card card-stats h-100">
+                        <div class="card card-stats stat-blue h-100">
                             <div class="card-body">
-                                <h6>Total Appointments</h6>
-                                <h2 id="stat-total">—</h2>
+                                <div class="stat-top">
+                                    <div>
+                                        <h6>Total Appointments</h6>
+                                        <h2 id="stat-total">—</h2>
+                                    </div>
+                                    <div class="stat-icon"><i class="bi bi-calendar2-check"></i></div>
+                                </div>
                                 <div class="progress">
                                     <div class="progress-bar" id="progress-total"></div>
                                 </div>
-                                <small class="text-info d-block mt-1" id="stat-monthly-diff"></small>
+                                <small id="stat-monthly-diff"></small>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card card-stats h-100">
+                        <div class="card card-stats stat-green h-100">
                             <div class="card-body">
-                                <h6>Completed</h6>
-                                <h2 id="stat-completed">—</h2>
+                                <div class="stat-top">
+                                    <div>
+                                        <h6>Completed</h6>
+                                        <h2 id="stat-completed">—</h2>
+                                    </div>
+                                    <div class="stat-icon"><i class="bi bi-patch-check"></i></div>
+                                </div>
                                 <div class="progress">
                                     <div class="progress-bar" id="progress-completed"></div>
                                 </div>
+                                <small>Successfully completed visits</small>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card card-stats h-100">
+                        <div class="card card-stats stat-amber h-100">
                             <div class="card-body">
-                                <h6>Pending Approval</h6>
-                                <h2 id="stat-pending">—</h2>
+                                <div class="stat-top">
+                                    <div>
+                                        <h6>Pending Approval</h6>
+                                        <h2 id="stat-pending">—</h2>
+                                    </div>
+                                    <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+                                </div>
                                 <div class="progress">
                                     <div class="progress-bar" id="progress-pending"></div>
                                 </div>
+                                <small>Awaiting confirmation</small>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card card-stats h-100">
+                        <div class="card card-stats stat-violet h-100">
                             <div class="card-body">
-                                <h6>New Patients</h6>
-                                <h2 id="stat-new-patients">—</h2>
+                                <div class="stat-top">
+                                    <div>
+                                        <h6>New Patients</h6>
+                                        <h2 id="stat-new-patients">—</h2>
+                                    </div>
+                                    <div class="stat-icon"><i class="bi bi-person-plus"></i></div>
+                                </div>
                                 <div class="progress">
                                     <div class="progress-bar" id="progress-new-patients"></div>
                                 </div>
+                                <small>First-time bookings</small>
                             </div>
                         </div>
                     </div>
@@ -144,17 +177,19 @@ SessionManager::requireAdmin();
                 <!-- Charts Row 1 -->
                 <div class="row g-4">
                     <div class="col-lg-8">
-                        <div class="card border-0 shadow-sm mb-4">
+                        <div class="card chart-card mb-4">
                             <div class="card-body">
-                                <h5 class="card-title mb-4">Appointment Trends</h5>
+                                <div class="card-title">Appointment Trends</div>
+                                <span class="chart-sub">Daily bookings over the selected period</span>
                                 <div class="chart-container"><canvas id="trendsChart"></canvas></div>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-4">
-                        <div class="card border-0 shadow-sm mb-4">
+                        <div class="card chart-card mb-4">
                             <div class="card-body">
-                                <h5 class="card-title mb-4">Status Distribution</h5>
+                                <div class="card-title">Status Distribution</div>
+                                <span class="chart-sub">Breakdown by appointment status</span>
                                 <div class="chart-container"><canvas id="statusChart"></canvas></div>
                             </div>
                         </div>
@@ -164,21 +199,23 @@ SessionManager::requireAdmin();
                 <!-- Charts Row 2 -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card chart-card">
                             <div class="card-body">
-                                <h5 class="card-title mb-4">Most Popular Services</h5>
+                                <div class="card-title">Most Popular Services</div>
+                                <span class="chart-sub">Top services by number of bookings</span>
                                 <div class="chart-container"><canvas id="servicesChart"></canvas></div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card chart-card">
                             <div class="card-body">
-                                <h5 class="card-title mb-4">Service Breakdown</h5>
+                                <div class="card-title">Service Breakdown</div>
+                                <span class="chart-sub">Appointments per service with share %</span>
                                 <div class="table-responsive">
                                     <table class="table table-hover table-sm" id="services-table">
-                                        <thead class="table-light">
-                                            <tr><th>Service</th><th>Appointments</th><th>Share</th></tr>
+                                        <thead>
+                                            <tr><th>Service</th><th>Count</th><th>Share</th></tr>
                                         </thead>
                                         <tbody></tbody>
                                     </table>
@@ -189,10 +226,10 @@ SessionManager::requireAdmin();
                 </div>
 
                 <!-- Detailed Appointments Table -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Appointment Details</h5>
-                        <span class="badge bg-secondary" id="detail-count">0 records</span>
+                <div class="card detail-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-table me-2" style="color:#00aeef;"></i>Appointment Details</h5>
+                        <span id="detail-count">0 records</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -318,57 +355,174 @@ SessionManager::requireAdmin();
 
             const diff = data.current_month_count - data.last_month_count;
             const pct = data.last_month_count > 0 ? (diff / data.last_month_count * 100).toFixed(1) : (diff > 0 ? 100 : 0);
-            document.getElementById('stat-monthly-diff').textContent =
-                `${diff >= 0 ? '+' : ''}${diff} vs last month (${pct}%)`;
+            const diffEl = document.getElementById('stat-monthly-diff');
+            diffEl.textContent = `${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff)} vs last month (${Math.abs(pct)}%)`;
+            diffEl.style.color = diff >= 0 ? '#16a34a' : '#dc3545';
 
-            // Trends
+            // ── Trends Chart ──────────────────────────────────────────────────
             if (trendsChart) trendsChart.destroy();
-            trendsChart = new Chart(document.getElementById('trendsChart'), {
+            const tCanvas = document.getElementById('trendsChart');
+            const tCtx = tCanvas.getContext('2d');
+            const tGrad = tCtx.createLinearGradient(0, 0, 0, 220);
+            tGrad.addColorStop(0, 'rgba(0,174,239,0.25)');
+            tGrad.addColorStop(1, 'rgba(0,174,239,0.0)');
+            trendsChart = new Chart(tCanvas, {
                 type: 'line',
                 data: {
                     labels: data.trends.map(t => t.appointment_date),
-                    datasets: [{ label: 'Appointments', data: data.trends.map(t => t.count),
-                        borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,0.1)', fill: true, tension: 0.4 }]
+                    datasets: [{
+                        label: 'Appointments',
+                        data: data.trends.map(t => t.count),
+                        borderColor: '#00aeef',
+                        backgroundColor: tGrad,
+                        fill: true,
+                        tension: 0.42,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#00aeef',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 6
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#94a3b8',
+                            bodyColor: '#fff',
+                            bodyFont: { weight: 'bold', size: 13 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.y} appointment${ctx.parsed.y !== 1 ? 's' : ''}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } }, border: { display: false } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8', font: { size: 11 } }, grid: { color: '#f1f5f9' }, border: { display: false } }
+                    }
+                }
             });
 
-            // Status Doughnut
+            // ── Status Doughnut ───────────────────────────────────────────────
             const sLabels = Object.keys(data.status_breakdown);
+            const sValues = Object.values(data.status_breakdown);
+            const sTotal  = sValues.reduce((a, b) => a + b, 0);
             if (statusChart) statusChart.destroy();
             statusChart = new Chart(document.getElementById('statusChart'), {
                 type: 'doughnut',
-                data: { labels: sLabels, datasets: [{
-                    data: Object.values(data.status_breakdown),
-                    backgroundColor: sLabels.map(l => statusColors[l] || '#adb5bd')
-                }]},
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                data: {
+                    labels: sLabels,
+                    datasets: [{
+                        data: sValues,
+                        backgroundColor: sLabels.map(l => statusColors[l] || '#adb5bd'),
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 10, boxHeight: 10,
+                                borderRadius: 3,
+                                padding: 12,
+                                font: { size: 11 },
+                                color: '#475569'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#94a3b8',
+                            bodyColor: '#fff',
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: ctx => ` ${ctx.label}: ${ctx.parsed} (${sTotal > 0 ? ((ctx.parsed / sTotal) * 100).toFixed(1) : 0}%)`
+                            }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'centerText',
+                    afterDraw(chart) {
+                        const { ctx, chartArea: { top, bottom, left, right } } = chart;
+                        const cx = (left + right) / 2, cy = (top + bottom) / 2;
+                        ctx.save();
+                        ctx.font = 'bold 24px sans-serif'; ctx.fillStyle = '#1e293b';
+                        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.fillText(sTotal, cx, cy - 8);
+                        ctx.font = '11px sans-serif'; ctx.fillStyle = '#94a3b8';
+                        ctx.fillText('total', cx, cy + 14);
+                        ctx.restore();
+                    }
+                }]
             });
 
-            // Services Bar
+            // ── Services Bar ──────────────────────────────────────────────────
             if (servicesChart) servicesChart.destroy();
+            const barColors = data.services.map((_, i) => {
+                const blues = ['#00aeef','#0095cc','#007aaa','#005f87','#004a6a'];
+                return blues[i % blues.length];
+            });
             servicesChart = new Chart(document.getElementById('servicesChart'), {
                 type: 'bar',
-                data: { labels: data.services.map(s => s.service_name), datasets: [{
-                    label: 'Bookings', data: data.services.map(s => s.count), backgroundColor: '#0d6efd'
-                }]},
-                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }
+                data: {
+                    labels: data.services.map(s => s.service_name),
+                    datasets: [{
+                        label: 'Bookings',
+                        data: data.services.map(s => s.count),
+                        backgroundColor: barColors,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#94a3b8',
+                            bodyColor: '#fff',
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.x} booking${ctx.parsed.x !== 1 ? 's' : ''}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8', font: { size: 11 } }, grid: { color: '#f1f5f9' }, border: { display: false } },
+                        y: { grid: { display: false }, ticks: { color: '#475569', font: { size: 11 } }, border: { display: false } }
+                    }
+                }
             });
 
-            // Services Table
+            // ── Services Table ────────────────────────────────────────────────
             const servicesTotal = data.services.reduce((acc, s) => acc + parseInt(s.count), 0);
             document.querySelector('#services-table tbody').innerHTML = data.services.map(s => {
                 const pct = servicesTotal > 0 ? (parseInt(s.count) / servicesTotal * 100).toFixed(1) : 0;
                 return `<tr>
                     <td>${escHtml(s.service_name)}</td>
-                    <td>${s.count}</td>
+                    <td><strong>${s.count}</strong></td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <div class="progress flex-grow-1 service-progress">
-                                <div class="progress-bar bg-primary" style="width:${pct}%"></div>
+                            <div class="progress service-progress flex-grow-1">
+                                <div class="progress-bar" style="width:${pct}%"></div>
                             </div>
-                            <small>${pct}%</small>
+                            <small class="text-muted" style="min-width:32px;">${pct}%</small>
                         </div>
                     </td></tr>`;
             }).join('');

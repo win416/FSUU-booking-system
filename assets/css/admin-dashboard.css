@@ -18,25 +18,28 @@ body {
     width: 240px;
     background: #1e293b;
     color: #cbd5e1;
-    min-height: 100vh;
-    padding-top: 2rem;
+    height: 100vh;
+    padding-top: 0;
     position: fixed;
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow: hidden;
     border-right: none;
 }
 
 .sidebar .brand {
     font-size: 1.1rem;
     font-weight: 700;
-    padding: 0 1rem 2rem;
+    padding: 2rem 1rem 1.25rem;
     color: #ffffff;
     display: flex;
     align-items: center;
     white-space: nowrap;
     overflow: hidden;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 0.5rem;
 }
 
 .sidebar .brand i {
@@ -45,11 +48,48 @@ body {
     flex-shrink: 0;
 }
 
+.sidebar-nav-wrap {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+.sidebar-nav-wrap::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: linear-gradient(to bottom, transparent, #1e293b);
+    pointer-events: none;
+    z-index: 2;
+}
+
 .sidebar-nav {
     list-style: none;
     padding: 0 0.75rem;
     margin: 0;
-    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.28);
 }
 
 .sidebar-nav .nav-item {
@@ -89,8 +129,7 @@ body {
 }
 
 .logout-nav-item {
-    margin-top: auto;
-    padding: 1.5rem 0.75rem;
+    padding: 0.5rem 0.75rem 1.5rem;
 }
 
 .logout-nav-item .nav-link {
@@ -133,12 +172,12 @@ body {
 }
 
 .card-stats h6 {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 0.72rem;
+    font-weight: 600;
     text-transform: uppercase;
     color: var(--primary-color);
     margin-bottom: 1rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
 }
 
 .card-stats h2 {
@@ -183,13 +222,15 @@ body {
     color: var(--text-light);
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.75rem;
-    padding: 1rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    padding: 0.65rem 1rem;
 }
 
 .table td {
-    padding: 1rem;
+    padding: 0.65rem 1rem;
     vertical-align: middle;
+    font-size: 0.875rem;
 }
 
 /* ── Admin Top Bar & Notification Bell ─────────────────────────────────── */

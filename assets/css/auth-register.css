@@ -19,7 +19,7 @@ body {
 }
 .card-header { 
     background: #ffffff; 
-    color: #2d3e50; 
+    color: #1e293b; 
     border-bottom: 1px solid #e1effe;
     padding: 40px 20px 20px !important; 
     text-align: center;
@@ -34,7 +34,7 @@ body {
 }
 .form-label, label {
     font-weight: 600;
-    color: #2d3e50;
+    color: #475569;
     margin-bottom: 8px;
 }
 .form-control {

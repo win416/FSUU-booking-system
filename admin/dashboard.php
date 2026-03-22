@@ -100,6 +100,7 @@ foreach ($weekly_data as $date => $count) {
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
                 FSUU Admin
             </div>
+            <div class="sidebar-nav-wrap">
             <ul class="sidebar-nav">
                 <li class="nav-item">
                     <a class="nav-link active" href="dashboard.php">
@@ -147,6 +148,7 @@ foreach ($weekly_data as $date => $count) {
                     </a>
                 </li>
             </ul>
+            </div>
         </nav>
 
         <!-- Main Content -->
@@ -315,12 +317,20 @@ foreach ($weekly_data as $date => $count) {
         <div class="row">
             <!-- Weekly Chart -->
             <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Weekly Appointments</h5>
+                <div class="card" style="border-radius:14px; border:none; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+                    <div class="card-header d-flex align-items-center justify-content-between" style="background:#fff; border-bottom:1px solid #f1f5f9; border-radius:14px 14px 0 0; padding:1rem 1.5rem;">
+                        <div>
+                            <h5 class="mb-0" style="font-weight:700; color:#1e293b; font-size:1rem;">
+                                <i class="bi bi-bar-chart-line me-2" style="color:#00aeef;"></i>Weekly Appointments
+                            </h5>
+                            <small class="text-muted" style="font-size:0.75rem;">Last 7 days overview</small>
+                        </div>
+                        <span class="badge" style="background:#e0f5fd; color:#00aeef; font-size:0.75rem; font-weight:600; border-radius:20px; padding:0.35rem 0.85rem;">
+                            This Week
+                        </span>
                     </div>
-                    <div class="card-body">
-                        <canvas id="weeklyChart"></canvas>
+                    <div class="card-body" style="padding:1.25rem 1.5rem 1rem;">
+                        <canvas id="weeklyChart" height="100"></canvas>
                     </div>
                 </div>
             </div>
@@ -360,7 +370,11 @@ foreach ($weekly_data as $date => $count) {
     // Weekly Chart
     const ctx = document.getElementById('weeklyChart').getContext('2d');
     const weeklyData = <?php echo json_encode(['dates' => $chart_labels, 'counts' => $chart_values]); ?>;
-    
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+    gradient.addColorStop(0, 'rgba(0, 174, 239, 0.25)');
+    gradient.addColorStop(1, 'rgba(0, 174, 239, 0.0)');
+
     new Chart(ctx, {
         type: 'line',
         data: {
@@ -369,17 +383,53 @@ foreach ($weekly_data as $date => $count) {
                 label: 'Appointments',
                 data: weeklyData.counts,
                 borderColor: '#00aeef',
-                backgroundColor: 'rgba(0, 174, 239, 0.1)',
+                backgroundColor: gradient,
                 fill: true,
-                tension: 0.3
+                tension: 0.42,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#00aeef',
+                pointBorderWidth: 2.5,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                pointHoverBackgroundColor: '#00aeef',
+                pointHoverBorderColor: '#fff',
+                borderWidth: 2.5
             }]
         },
         options: {
             responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleColor: '#94a3b8',
+                    bodyColor: '#fff',
+                    padding: 12,
+                    cornerRadius: 10,
+                    displayColors: false,
+                    callbacks: {
+                        title: ctx => ctx[0].label,
+                        label: ctx => `  ${ctx.parsed.y} appointment${ctx.parsed.y !== 1 ? 's' : ''}`
+                    }
+                }
+            },
             scales: {
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: { color: '#94a3b8', font: { size: 12 } }
+                },
                 y: {
                     beginAtZero: true,
-                    stepSize: 1
+                    ticks: {
+                        stepSize: 1,
+                        color: '#94a3b8',
+                        font: { size: 12 },
+                        padding: 8
+                    },
+                    grid: { color: '#f1f5f9', drawBorder: false },
+                    border: { display: false, dash: [4, 4] }
                 }
             }
         }

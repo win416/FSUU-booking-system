@@ -92,35 +92,33 @@ if ($action === 'unread_count') {
 if ($action === 'get_conversations') {
     if (!$isAdmin) { echo json_encode(['success' => false]); exit(); }
 
+    $id = $user['user_id'];
     $stmt = $db->prepare("
         SELECT
             u.user_id, u.first_name, u.last_name, u.fsuu_id, u.profile_picture,
-            (SELECT message_text FROM messages
-             WHERE (sender_id = u.user_id AND receiver_id = ?)
-                OR (sender_id = ? AND receiver_id = u.user_id)
-             ORDER BY created_at DESC LIMIT 1) as last_msg,
-            (SELECT created_at FROM messages
-             WHERE (sender_id = u.user_id AND receiver_id = ?)
-                OR (sender_id = ? AND receiver_id = u.user_id)
-             ORDER BY created_at DESC LIMIT 1) as last_at,
-            (SELECT COUNT(*) FROM messages
-             WHERE sender_id = u.user_id AND receiver_id = ? AND is_read = 0) as unread,
-            (SELECT subject FROM messages
-             WHERE ((sender_id = u.user_id AND receiver_id = ?)
-                OR (sender_id = ? AND receiver_id = u.user_id))
-               AND subject != ''
-             ORDER BY created_at ASC LIMIT 1) as subject
-        FROM users u
+            grp.subject,
+            grp.last_at,
+            grp.unread,
+            (SELECT m2.message_text FROM messages m2
+             WHERE ((m2.sender_id = u.user_id AND m2.receiver_id = ?)
+                 OR (m2.sender_id = ? AND m2.receiver_id = u.user_id))
+               AND IFNULL(m2.subject, '') = grp.subject
+             ORDER BY m2.created_at DESC LIMIT 1) AS last_msg
+        FROM (
+            SELECT
+                IF(sender_id = ?, receiver_id, sender_id) AS other_id,
+                IFNULL(subject, '') AS subject,
+                MAX(created_at) AS last_at,
+                SUM(receiver_id = ? AND is_read = 0) AS unread
+            FROM messages
+            WHERE sender_id = ? OR receiver_id = ?
+            GROUP BY IF(sender_id = ?, receiver_id, sender_id), IFNULL(subject, '')
+        ) grp
+        JOIN users u ON u.user_id = grp.other_id
         WHERE u.role != 'admin'
-          AND EXISTS (
-              SELECT 1 FROM messages
-              WHERE (sender_id = u.user_id AND receiver_id = ?)
-                 OR (sender_id = ? AND receiver_id = u.user_id)
-          )
-        ORDER BY last_at DESC
+        ORDER BY grp.last_at DESC
     ");
-    $id = $user['user_id'];
-    $stmt->bind_param("iiiiiiiii", $id, $id, $id, $id, $id, $id, $id, $id, $id);
+    $stmt->bind_param("iiiiiii", $id, $id, $id, $id, $id, $id, $id);
     $stmt->execute();
     $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -131,23 +129,42 @@ if ($action === 'get_conversations') {
 // ── get_thread ──────────────────────────────────────────────────────────────
 if ($action === 'get_thread') {
     $otherId = (int)($_GET['with'] ?? 0);
+    $subject = isset($_GET['subject']) ? trim($_GET['subject']) : null;
     if (!$otherId) { echo json_encode(['success' => false, 'message' => 'Missing user']); exit(); }
 
-    // Mark messages from other as read
-    $mark = $db->prepare("UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ?");
-    $mark->bind_param("ii", $otherId, $user['user_id']);
+    // Mark messages from other as read (scoped to subject if provided)
+    if ($subject !== null) {
+        $mark = $db->prepare("UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND IFNULL(subject,'') = ?");
+        $mark->bind_param("iis", $otherId, $user['user_id'], $subject);
+    } else {
+        $mark = $db->prepare("UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ?");
+        $mark->bind_param("ii", $otherId, $user['user_id']);
+    }
     $mark->execute();
 
-    $stmt = $db->prepare("
-        SELECT m.message_id, m.sender_id, m.message_text, m.is_read, m.created_at,
-               u.first_name, u.last_name, u.profile_picture
-        FROM messages m
-        JOIN users u ON u.user_id = m.sender_id
-        WHERE (m.sender_id = ? AND m.receiver_id = ?)
-           OR (m.sender_id = ? AND m.receiver_id = ?)
-        ORDER BY m.created_at ASC
-    ");
-    $stmt->bind_param("iiii", $user['user_id'], $otherId, $otherId, $user['user_id']);
+    // Fetch messages, filtered by subject when provided
+    if ($subject !== null) {
+        $stmt = $db->prepare("
+            SELECT m.message_id, m.sender_id, m.message_text, m.subject, m.is_read, m.created_at,
+                   u.first_name, u.last_name, u.profile_picture
+            FROM messages m
+            JOIN users u ON u.user_id = m.sender_id
+            WHERE ((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?))
+              AND IFNULL(m.subject,'') = ?
+            ORDER BY m.created_at ASC
+        ");
+        $stmt->bind_param("iiiis", $user['user_id'], $otherId, $otherId, $user['user_id'], $subject);
+    } else {
+        $stmt = $db->prepare("
+            SELECT m.message_id, m.sender_id, m.message_text, m.subject, m.is_read, m.created_at,
+                   u.first_name, u.last_name, u.profile_picture
+            FROM messages m
+            JOIN users u ON u.user_id = m.sender_id
+            WHERE (m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?)
+            ORDER BY m.created_at ASC
+        ");
+        $stmt->bind_param("iiii", $user['user_id'], $otherId, $otherId, $user['user_id']);
+    }
     $stmt->execute();
     $msgs = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -249,54 +266,59 @@ if ($action === 'send') {
     exit();
 }
 
-// ── get_sent (patient: all messages I sent) ────────────────────────────────
+// ── get_sent (grouped by recipient + subject) ─────────────────────────────
 if ($action === 'get_sent') {
     $uid = $user['user_id'];
     $stmt = $db->prepare("
-        SELECT m.message_id, m.message_text, m.subject, m.created_at, m.is_read,
-               u.first_name, u.last_name, u.profile_picture
+        SELECT
+            u.user_id, u.first_name, u.last_name, u.profile_picture,
+            IFNULL(m.subject, '') AS subject,
+            MAX(m.created_at) AS last_at,
+            (SELECT m2.message_text FROM messages m2
+             WHERE m2.sender_id = ? AND m2.receiver_id = u.user_id
+               AND IFNULL(m2.subject,'') = IFNULL(m.subject,'')
+             ORDER BY m2.created_at DESC LIMIT 1) AS last_msg
         FROM messages m
         JOIN users u ON u.user_id = m.receiver_id
         WHERE m.sender_id = ?
-        ORDER BY m.created_at DESC
+        GROUP BY u.user_id, IFNULL(m.subject, '')
+        ORDER BY last_at DESC
     ");
-    $stmt->bind_param("i", $uid);
+    $stmt->bind_param("ii", $uid, $uid);
     $stmt->execute();
     $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     echo json_encode(['success' => true, 'sent' => $rows]);
     exit();
 }
 
-// ── get_inbox (patient: all threads I'm part of) ───────────────────────────
+// ── get_inbox (patient: all threads I'm part of, grouped by subject) ───────────────────────
 if ($action === 'get_inbox') {
     $uid = $user['user_id'];
     $stmt = $db->prepare("
         SELECT
             u.user_id, u.first_name, u.last_name, u.profile_picture, u.role,
-            (SELECT message_text FROM messages
-             WHERE (sender_id = u.user_id AND receiver_id = ?)
-                OR (sender_id = ? AND receiver_id = u.user_id)
-             ORDER BY created_at DESC LIMIT 1) as last_msg,
-            (SELECT created_at FROM messages
-             WHERE (sender_id = u.user_id AND receiver_id = ?)
-                OR (sender_id = ? AND receiver_id = u.user_id)
-             ORDER BY created_at DESC LIMIT 1) as last_at,
-            (SELECT COUNT(*) FROM messages
-             WHERE sender_id = u.user_id AND receiver_id = ? AND is_read = 0) as unread,
-            (SELECT subject FROM messages
-             WHERE ((sender_id = u.user_id AND receiver_id = ?)
-                OR (sender_id = ? AND receiver_id = u.user_id))
-               AND subject != ''
-             ORDER BY created_at ASC LIMIT 1) as subject
-        FROM users u
-        WHERE EXISTS (
-            SELECT 1 FROM messages
-            WHERE (sender_id = u.user_id AND receiver_id = ?)
-               OR (sender_id = ? AND receiver_id = u.user_id)
-        )
-        ORDER BY last_at DESC
+            grp.subject,
+            grp.last_at,
+            grp.unread,
+            (SELECT m2.message_text FROM messages m2
+             WHERE ((m2.sender_id = u.user_id AND m2.receiver_id = ?)
+                 OR (m2.sender_id = ? AND m2.receiver_id = u.user_id))
+               AND IFNULL(m2.subject,'') = grp.subject
+             ORDER BY m2.created_at DESC LIMIT 1) AS last_msg
+        FROM (
+            SELECT
+                IF(sender_id = ?, receiver_id, sender_id) AS other_id,
+                IFNULL(subject, '') AS subject,
+                MAX(created_at) AS last_at,
+                SUM(receiver_id = ? AND is_read = 0) AS unread
+            FROM messages
+            WHERE sender_id = ? OR receiver_id = ?
+            GROUP BY IF(sender_id = ?, receiver_id, sender_id), IFNULL(subject, '')
+        ) grp
+        JOIN users u ON u.user_id = grp.other_id
+        ORDER BY grp.last_at DESC
     ");
-    $stmt->bind_param("iiiiiiiii", $uid, $uid, $uid, $uid, $uid, $uid, $uid, $uid, $uid);
+    $stmt->bind_param("iiiiiii", $uid, $uid, $uid, $uid, $uid, $uid, $uid);
     $stmt->execute();
     $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     echo json_encode(['success' => true, 'threads' => $rows]);

@@ -45,6 +45,7 @@ $result = $db->query($query);
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
                 FSUU Admin
             </div>
+            <div class="sidebar-nav-wrap">
             <ul class="sidebar-nav">
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">
@@ -92,6 +93,7 @@ $result = $db->query($query);
                     </a>
                 </li>
             </ul>
+            </div>
         </nav>
 
         <!-- Main Content -->
@@ -153,9 +155,6 @@ $result = $db->query($query);
                                             <td>
                                                 <a href="patient-profile.php?id=<?php echo $patient['user_id']; ?>" class="btn btn-sm btn-outline-primary" title="View Profile">
                                                     <i class="bi bi-person-lines-fill"></i>
-                                                </a>
-                                                <a href="appointments.php?search=<?php echo urlencode($patient['fsuu_id']); ?>" class="btn btn-sm btn-outline-info" title="View Appointments">
-                                                    <i class="bi bi-calendar2-week"></i>
                                                 </a>
                                             </td>
                                         </tr>

@@ -44,6 +44,7 @@ $result = $db->query($query);
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
                 FSUU Admin
             </div>
+            <div class="sidebar-nav-wrap">
             <ul class="sidebar-nav">
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">
@@ -91,6 +92,7 @@ $result = $db->query($query);
                     </a>
                 </li>
             </ul>
+            </div>
         </nav>
 
         <!-- Main Content -->

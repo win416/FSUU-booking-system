@@ -82,6 +82,7 @@ function getDateGroup(string $dateStr): string {
             <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
             FSUU Dental
         </div>
+        <div class="sidebar-nav-wrap">
         <ul class="sidebar-nav">
             <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="book-appointment.php"><i class="bi bi-calendar-plus"></i> Book Appointment</a></li>
@@ -103,6 +104,7 @@ function getDateGroup(string $dateStr): string {
                 <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
             </li>
         </ul>
+        </div>
     </nav>
 
     <!-- Main Content -->
@@ -114,17 +116,6 @@ function getDateGroup(string $dateStr): string {
             <div class="notif-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h4 class="fw-bold mb-1"><i class="bi bi-bell me-2 text-primary"></i>Notifications</h4>
-                    <div class="notif-summary d-flex gap-2 flex-wrap mt-1">
-                        <span class="badge bg-light text-dark border">
-                            <span id="count-all"><?php echo $total_count; ?></span> Total
-                        </span>
-                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">
-                            <span id="count-unread"><?php echo $unread_count; ?></span> Unread
-                        </span>
-                        <span class="badge bg-light text-secondary border">
-                            <span id="count-read"><?php echo $read_count; ?></span> Read
-                        </span>
-                    </div>
                 </div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <!-- Search -->

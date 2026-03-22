@@ -4,15 +4,7 @@ require_once '../includes/db_connection.php';
 SessionManager::requireAdmin();
 
 $db = getDB();
-
-// Stat counts
-$upcoming_blocks = $db->query("SELECT COUNT(*) as cnt FROM blocked_schedules WHERE block_date >= CURDATE()")->fetch_assoc()['cnt'] ?? 0;
-$fullday_blocks  = $db->query("SELECT COUNT(*) as cnt FROM blocked_schedules WHERE block_date >= CURDATE() AND is_full_day = 1")->fetch_assoc()['cnt'] ?? 0;
-$partial_blocks  = $db->query("SELECT COUNT(*) as cnt FROM blocked_schedules WHERE block_date >= CURDATE() AND is_full_day = 0")->fetch_assoc()['cnt'] ?? 0;
-
-// Today's appointment count
 $today = date('Y-m-d');
-$today_appts = $db->query("SELECT COUNT(*) as cnt FROM appointments WHERE appointment_date = '$today' AND status IN ('pending','approved')")->fetch_assoc()['cnt'] ?? 0;
 
 // Fetch upcoming blocks
 $upcoming = $db->query("
@@ -95,6 +87,7 @@ $all_events = array_merge($block_events, $appt_events);
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
                 FSUU Admin
             </div>
+            <div class="sidebar-nav-wrap">
             <ul class="sidebar-nav">
                 <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" href="appointments.php"><i class="bi bi-calendar-check"></i> Appointments</a></li>
@@ -110,6 +103,7 @@ $all_events = array_merge($block_events, $appt_events);
                     </a>
                 </li>
             </ul>
+            </div>
         </nav>
 
         <!-- Main Content -->
@@ -129,58 +123,6 @@ $all_events = array_merge($block_events, $appt_events);
 
                 <!-- Alert container -->
                 <div id="alertContainer" class="mb-3"></div>
-
-                <!-- Stat Cards -->
-                <div class="row mb-4">
-                    <?php
-                    $maxSched = max($today_appts, $upcoming_blocks, $fullday_blocks, $partial_blocks, 1);
-                    function schedBar($v, $m) { return $m > 0 ? round(($v / $m) * 100) : 0; }
-                    ?>
-                    <div class="col-md-3">
-                        <div class="card card-stats h-100">
-                            <div class="card-body">
-                                <h6>Today's Appointments</h6>
-                                <h2><?php echo $today_appts; ?></h2>
-                                <div class="progress">
-                                    <div class="progress-bar" style="width:<?php echo schedBar($today_appts, $maxSched); ?>%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card card-stats h-100">
-                            <div class="card-body">
-                                <h6>Upcoming Blocks</h6>
-                                <h2><?php echo $upcoming_blocks; ?></h2>
-                                <div class="progress">
-                                    <div class="progress-bar" style="width:<?php echo schedBar($upcoming_blocks, $maxSched); ?>%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card card-stats h-100">
-                            <div class="card-body">
-                                <h6>Full Day Blocks</h6>
-                                <h2><?php echo $fullday_blocks; ?></h2>
-                                <div class="progress">
-                                    <div class="progress-bar" style="width:<?php echo schedBar($fullday_blocks, $maxSched); ?>%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card card-stats h-100">
-                            <div class="card-body">
-                                <h6>Partial Blocks</h6>
-                                <h2><?php echo $partial_blocks; ?></h2>
-                                <div class="progress">
-                                    <div class="progress-bar" style="width:<?php echo schedBar($partial_blocks, $maxSched); ?>%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Calendar -->
                 <div class="card mb-4">
@@ -203,7 +145,6 @@ $all_events = array_merge($block_events, $appt_events);
                             <li class="nav-item">
                                 <a class="nav-link active" data-bs-toggle="tab" href="#tab-upcoming">
                                     Upcoming Blocks
-                                    <span class="badge bg-danger ms-1"><?php echo $upcoming_blocks; ?></span>
                                 </a>
                             </li>
                             <li class="nav-item">

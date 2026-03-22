@@ -11,17 +11,23 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <nav class="navbar fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <img src="img/fsuu%20dental.jpg" alt="Logo" class="navbar-logo me-2">
                 FSUU Dental Clinic
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <!-- Right side: auth buttons + hamburger -->
+            <div class="navbar-right">
+                <a class="btn navbar-auth-btn" href="auth/login.php">Login</a>
+                <a class="btn navbar-auth-btn" href="auth/register.php">Register</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+            <!-- Hamburger dropdown: nav links only -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link" href="#features">Services</a>
                     </li>
@@ -31,12 +37,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#contact">Contact</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="btn btn-custom ms-3" href="auth/login.php">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-custom ms-2" href="auth/register.php">Register</a>
-                    </li>
                 </ul>
             </div>
         </div>
@@ -44,14 +44,36 @@
 
     <!-- Hero Section -->
     <section class="hero-section">
-        <div class="container">
-            <div class="hero-content">
-                <h2 class="hero-title">Welcome to FSUU Dental Clinic</h2>
-                <p class="hero-subtitle">Professional dental care with modern technology and compassionate service</p>
-                <div class="d-flex justify-content-center flex-wrap">
-                    <a href="auth/login.php" class="btn btn-light btn-custom">Login to Your Account</a>
-                    <a href="auth/register.php" class="btn btn-outline-light btn-custom">Create New Account</a>
+        <div class="hero-overlay"></div>
+        <div class="container hero-body">
+            <h2 class="hero-title">Welcome to FSUU Dental Clinic</h2>
+            <p class="hero-subtitle">Professional dental care with modern technology and compassionate service</p>
+        </div>
+        <!-- Floating action bar -->
+        <div class="hero-bar-wrap">
+            <div class="hero-bar">
+                <div class="hero-bar-item">
+                    <span class="hero-bar-label">Location</span>
+                    <span class="hero-bar-value">FSUU, CB Bldg 1F, Butuan City</span>
                 </div>
+                <div class="hero-bar-divider"></div>
+                <div class="hero-bar-item">
+                    <span class="hero-bar-label">Schedule</span>
+                    <span class="hero-bar-value">Mon–Fri: 1:00 PM – 3:30 PM</span>
+                </div>
+                <div class="hero-bar-divider"></div>
+                <div class="hero-bar-item">
+                    <span class="hero-bar-label">Saturday</span>
+                    <span class="hero-bar-value">9:00 AM – 12:00 PM</span>
+                </div>
+                <div class="hero-bar-divider"></div>
+                <div class="hero-bar-item">
+                    <span class="hero-bar-label">Contact</span>
+                    <span class="hero-bar-value">+63 951 250 4812</span>
+                </div>
+                <a href="auth/login.php" class="hero-bar-btn">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
         </div>
     </section>
@@ -175,10 +197,9 @@
                 <div class="col-lg-3">
                     <h5>Follow Us</h5>
                     <div class="social-links">
-                        <a href="#" class="text-white me-3"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="text-white me-3"><i class="bi bi-twitter"></i></a>
-                        <a href="#" class="text-white me-3"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="text-white"><i class="bi bi-linkedin"></i></a>
+                        <a href="https://www.facebook.com/p/FSUU-Medical-Dental-Clinic-100057208429140/" target="_blank" class="social-icon-btn">
+                            <i class="bi bi-facebook"></i> Facebook
+                        </a>
                     </div>
                 </div>
             </div>

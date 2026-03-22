@@ -54,6 +54,7 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
                 FSUU Dental
             </div>
+            <div class="sidebar-nav-wrap">
             <ul class="sidebar-nav">
                 <li class="nav-item">
                     <a class="nav-link active" href="dashboard.php">
@@ -104,6 +105,7 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                     </a>
                 </li>
             </ul>
+            </div>
         </nav>
 
         <!-- Main Content -->

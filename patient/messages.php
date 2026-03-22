@@ -33,6 +33,7 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
             <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
             FSUU Dental
         </div>
+        <div class="sidebar-nav-wrap">
         <ul class="sidebar-nav">
             <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="book-appointment.php"><i class="bi bi-calendar-plus"></i> Book Appointment</a></li>
@@ -54,6 +55,7 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
                 <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
             </li>
         </ul>
+        </div>
     </nav>
 
     <div class="main-content" style="padding: 56px 0 0 0 !important;">
@@ -90,10 +92,7 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
                 <!-- Empty state (default) -->
                 <div class="empty-state" id="emptyState">
                     <i class="bi bi-chat-square-dots"></i>
-                    <p>Select a conversation or compose a new message</p>
-                    <button class="compose-btn" onclick="showCompose()">
-                        <i class="bi bi-pencil-square"></i> Compose new message
-                    </button>
+                    <p>Select a conversation to start messaging</p>
                 </div>
 
                 <!-- Thread view (hidden by default) -->
@@ -170,8 +169,10 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
 const ME         = <?php echo $user['user_id']; ?>;
 const MY_EMAIL   = <?php echo json_encode($user['email']); ?>;
 
-let RECIPIENT_ID   = null;
-let _threadTimer   = null;
+let RECIPIENT_ID    = null;
+let CURRENT_SUBJECT = '';
+let _threadTimer    = null;
+let _allThreads     = [];
 
 function escHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -193,6 +194,8 @@ function showEmpty() {
     document.getElementById('threadView').style.display  = 'none';
     document.getElementById('composeView').style.display = 'none';
     clearInterval(_threadTimer);
+    RECIPIENT_ID    = null;
+    CURRENT_SUBJECT = '';
     document.querySelectorAll('.thread-item').forEach(el => el.classList.remove('active'));
 }
 function showCompose() {
@@ -205,14 +208,15 @@ function showCompose() {
     resetComposeForm();
     document.getElementById('msgTo').focus();
 }
-function showThread(userId, name, avatarHtml, sub) {
+function showThread(userId, name, avatarHtml, subject) {
     document.getElementById('emptyState').style.display  = 'none';
     document.getElementById('composeView').style.display = 'none';
     document.getElementById('threadView').style.display  = 'flex';
-    document.getElementById('threadName').textContent    = name;
-    document.getElementById('threadSub').textContent     = sub || '';
+    document.getElementById('threadName').textContent    = subject || '(No subject)';
+    document.getElementById('threadSub').textContent     = name;
     document.getElementById('threadAvatar').outerHTML    = avatarHtml;
-    RECIPIENT_ID = userId;
+    RECIPIENT_ID    = userId;
+    CURRENT_SUBJECT = subject || '';
     clearInterval(_threadTimer);
     loadThread(false);
     _threadTimer = setInterval(() => loadThread(true), 5000);
@@ -223,62 +227,70 @@ function loadInbox() {
     fetch('../api/messages.php?action=get_inbox')
         .then(r => r.json())
         .then(res => {
-            const list = document.getElementById('inboxList');
-            if (!res.success || !res.threads.length) {
-                list.innerHTML = '<div class="inbox-empty"><i class="bi bi-inbox" style="font-size:1.8rem;display:block;margin-bottom:0.5rem;"></i>No messages yet</div>';
-                return;
-            }
-            list.innerHTML = res.threads.map(t => {
-                const ini  = (t.first_name[0] + t.last_name[0]).toUpperCase();
-                const av   = t.profile_picture
-                    ? `<div class="ti-avatar"><img src="../${escHtml(t.profile_picture)}" alt=""></div>`
-                    : `<div class="ti-avatar">${ini}</div>`;
-                const unreadCls = parseInt(t.unread) > 0 ? 'unread' : '';
-                const badge    = parseInt(t.unread) > 0
-                    ? `<span class="ti-badge">${t.unread}</span>` : '';
-                const preview  = t.last_msg ? escHtml(t.last_msg.substring(0,60)) : '<em>No messages</em>';
-                const subject  = t.subject ? escHtml(t.subject) : '(No subject)';
-                return `<div class="thread-item ${unreadCls}"
-                              data-id="${t.user_id}"
-                              data-name="${escHtml(t.first_name + ' ' + t.last_name)}"
-                              data-ini="${ini}"
-                              data-pic="${escHtml(t.profile_picture||'')}">
-                    ${av}
-                    <div class="ti-body">
-                        <div class="ti-top">
-                            <span class="ti-name">${subject}</span>
-                            <span class="ti-time">${timeAgo(t.last_at)}</span>
-                        </div>
-                        <div class="ti-preview">${preview}</div>
-                    </div>
-                    ${badge}
-                </div>`;
-            }).join('');
-
-            list.querySelectorAll('.thread-item').forEach(el => {
-                el.addEventListener('click', function() {
-                    list.querySelectorAll('.thread-item').forEach(x => x.classList.remove('active'));
-                    this.classList.add('active');
-                    this.classList.remove('unread');
-                    this.querySelector('.ti-badge') && this.querySelector('.ti-badge').remove();
-
-                    const uid  = parseInt(this.dataset.id);
-                    const name = this.dataset.name;
-                    const ini  = this.dataset.ini;
-                    const pic  = this.dataset.pic;
-                    const avHtml = pic
-                        ? `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;overflow:hidden;padding:0;background:transparent;"><img src="../${escHtml(pic)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
-                        : `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
-                    showThread(uid, name, avHtml, '');
-                });
-            });
+            if (!res.success) return;
+            _allThreads = res.threads;
+            renderInbox(_allThreads);
         });
+}
+
+function renderInbox(list) {
+    const el = document.getElementById('inboxList');
+    if (!list.length) {
+        el.innerHTML = '<div class="inbox-empty"><i class="bi bi-inbox" style="font-size:1.8rem;display:block;margin-bottom:0.5rem;"></i>No messages yet</div>';
+        return;
+    }
+    el.innerHTML = list.map(t => {
+        const ini  = (t.first_name[0] + t.last_name[0]).toUpperCase();
+        const av   = t.profile_picture
+            ? `<div class="ti-avatar"><img src="../${escHtml(t.profile_picture)}" alt=""></div>`
+            : `<div class="ti-avatar">${ini}</div>`;
+        const unreadCls    = parseInt(t.unread) > 0 ? 'unread' : '';
+        const badge        = parseInt(t.unread) > 0 ? `<span class="ti-badge">${t.unread}</span>` : '';
+        const preview      = t.last_msg ? escHtml(t.last_msg.substring(0,60)) : '<em>No messages</em>';
+        const subjectLabel = t.subject ? escHtml(t.subject) : '(No subject)';
+        return `<div class="thread-item ${unreadCls} ${t.user_id == RECIPIENT_ID && (t.subject||'') == CURRENT_SUBJECT ? 'active' : ''}"
+                      data-id="${t.user_id}"
+                      data-subject="${escHtml(t.subject || '')}"
+                      data-name="${escHtml(t.first_name + ' ' + t.last_name)}"
+                      data-ini="${ini}"
+                      data-pic="${escHtml(t.profile_picture||'')}">
+            ${av}
+            <div class="ti-body">
+                <div class="ti-top">
+                    <span class="ti-name">${subjectLabel}</span>
+                    <span class="ti-time">${timeAgo(t.last_at)}</span>
+                </div>
+                <div class="ti-sub">${escHtml(t.first_name + ' ' + t.last_name)}</div>
+                <div class="ti-preview">${preview}</div>
+            </div>
+            ${badge}
+        </div>`;
+    }).join('');
+
+    el.querySelectorAll('.thread-item').forEach(item => {
+        item.addEventListener('click', function() {
+            el.querySelectorAll('.thread-item').forEach(x => x.classList.remove('active'));
+            this.classList.add('active');
+            this.classList.remove('unread');
+            this.querySelector('.ti-badge') && this.querySelector('.ti-badge').remove();
+
+            const uid     = parseInt(this.dataset.id);
+            const name    = this.dataset.name;
+            const ini     = this.dataset.ini;
+            const pic     = this.dataset.pic;
+            const subject = this.dataset.subject;
+            const avHtml = pic
+                ? `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;overflow:hidden;padding:0;background:transparent;"><img src="../${escHtml(pic)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
+                : `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
+            showThread(uid, name, avHtml, subject);
+        });
+    });
 }
 
 // ── Thread ───────────────────────────────────────────────────────────────────
 function loadThread(silent) {
     if (!RECIPIENT_ID) return;
-    fetch(`../api/messages.php?action=get_thread&with=${RECIPIENT_ID}`)
+    fetch(`../api/messages.php?action=get_thread&with=${RECIPIENT_ID}&subject=${encodeURIComponent(CURRENT_SUBJECT)}`)
         .then(r => r.json())
         .then(res => {
             if (!res.success) return;
@@ -310,7 +322,7 @@ function loadThread(silent) {
             if (!silent || wasAtBottom) container.scrollTop = container.scrollHeight;
 
             // Refresh inbox to clear unread badge
-            if (!silent) loadInbox();
+            if (!silent) loadInbox(true);
         })
         .catch(() => {
             if (!silent) document.getElementById('chatMessages').innerHTML =
@@ -331,7 +343,7 @@ function sendReply() {
     fd.append('action', 'send');
     fd.append('receiver_id', RECIPIENT_ID);
     fd.append('message', msg);
-    fd.append('subject', '');
+    fd.append('subject', CURRENT_SUBJECT);
     fetch('../api/messages.php', { method:'POST', body:fd })
         .then(r => r.json())
         .then(res => {
@@ -436,14 +448,14 @@ document.getElementById('chatSendBtn').addEventListener('click', function() {
         .then(r => r.json())
         .then(res => {
             if (res.success) {
-                const sentId   = RECIPIENT_ID;
-                const sentName = document.getElementById('toChipName').textContent;
-                const ini      = sentName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+                const sentId      = RECIPIENT_ID;
+                const sentName    = document.getElementById('toChipName').textContent;
+                const sentSubject = document.getElementById('msgSubject').value.trim();
+                const ini         = sentName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                 resetComposeForm();
-                loadInbox();
-                // Open thread immediately
+                loadInbox(false);
                 const avHtml = `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
-                showThread(sentId, sentName, avHtml, '');
+                showThread(sentId, sentName, avHtml, sentSubject);
             } else {
                 alert('Failed: ' + (res.message || 'Unknown error'));
             }
@@ -463,7 +475,7 @@ function switchTab(tab) {
     _activeTab = tab;
     document.getElementById('tabInbox').classList.toggle('active', tab === 'inbox');
     document.getElementById('tabSent').classList.toggle('active', tab === 'sent');
-    if (tab === 'inbox') loadInbox();
+    if (tab === 'inbox') loadInbox(false);
     else loadSent();
 }
 
@@ -479,20 +491,45 @@ function loadSent() {
                 return;
             }
             list.innerHTML = res.sent.map(m => {
-                const preview = escHtml(m.message_text.substring(0, 60));
-                const subject = m.subject ? escHtml(m.subject) : '(No subject)';
-                const timeStr = timeAgo(m.created_at);
-                return `<div class="thread-item sent-item">
-                    <div class="ti-avatar"><i class="bi bi-send" style="font-size:0.9rem;"></i></div>
+                const ini          = (m.first_name[0] + m.last_name[0]).toUpperCase();
+                const av           = m.profile_picture
+                    ? `<div class="ti-avatar"><img src="../${escHtml(m.profile_picture)}" alt=""></div>`
+                    : `<div class="ti-avatar">${ini}</div>`;
+                const subjectLabel = m.subject ? escHtml(m.subject) : '(No subject)';
+                const preview      = m.last_msg ? escHtml(m.last_msg.substring(0, 60)) : '';
+                return `<div class="thread-item"
+                             data-id="${m.user_id}"
+                             data-subject="${escHtml(m.subject || '')}"
+                             data-name="${escHtml(m.first_name + ' ' + m.last_name)}"
+                             data-ini="${ini}"
+                             data-pic="${escHtml(m.profile_picture || '')}">
+                    ${av}
                     <div class="ti-body">
                         <div class="ti-top">
-                            <span class="ti-name">${subject}</span>
-                            <span class="ti-time">${timeStr}</span>
+                            <span class="ti-name">${subjectLabel}</span>
+                            <span class="ti-time">${timeAgo(m.last_at)}</span>
                         </div>
+                        <div class="ti-sub">To: ${escHtml(m.first_name + ' ' + m.last_name)}</div>
                         <div class="ti-preview">${preview}</div>
                     </div>
                 </div>`;
             }).join('');
+
+            list.querySelectorAll('.thread-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    list.querySelectorAll('.thread-item').forEach(x => x.classList.remove('active'));
+                    this.classList.add('active');
+                    const uid     = parseInt(this.dataset.id);
+                    const name    = this.dataset.name;
+                    const ini     = this.dataset.ini;
+                    const pic     = this.dataset.pic;
+                    const subject = this.dataset.subject;
+                    const avHtml  = pic
+                        ? `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;overflow:hidden;padding:0;background:transparent;"><img src="../${escHtml(pic)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
+                        : `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
+                    showThread(uid, name, avHtml, subject);
+                });
+            });
         })
         .catch(() => {
             list.innerHTML = '<div class="inbox-empty text-danger">Could not load sent messages.</div>';
@@ -500,8 +537,8 @@ function loadSent() {
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
-loadInbox();
-setInterval(() => { if (_activeTab === 'inbox') loadInbox(); }, 15000);
+loadInbox(false);
+setInterval(() => { if (_activeTab === 'inbox') loadInbox(true); }, 15000);
 </script>
 </body>
 </html>

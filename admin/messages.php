@@ -24,6 +24,7 @@ $user = SessionManager::getUser();
             <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
             FSUU Admin
         </div>
+        <div class="sidebar-nav-wrap">
         <ul class="sidebar-nav">
             <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="appointments.php"><i class="bi bi-calendar-check"></i> Appointments</a></li>
@@ -37,13 +38,14 @@ $user = SessionManager::getUser();
                 <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
             </li>
         </ul>
+        </div>
     </nav>
 
     <div class="main-content" style="padding: 56px 0 0 0 !important;">
         <?php include '../includes/admin-topbar.php'; ?>
         <div class="msg-layout">
 
-            <!-- ── Inbox Panel ───────────────────────────────────────────── -->
+            <!-- ── Left Panel (tabs + thread list) ──────────────────────── -->
             <div class="inbox-panel">
                 <div class="inbox-header">
                     <span class="inbox-title"><i class="bi bi-envelope me-2"></i>Messages</span>
@@ -59,10 +61,6 @@ $user = SessionManager::getUser();
                         <i class="bi bi-send me-1"></i>Sent
                     </button>
                 </div>
-                <div class="inbox-search" id="inboxSearchWrap">
-                    <input type="text" id="inboxSearch" class="form-control form-control-sm"
-                           placeholder="Search conversations…">
-                </div>
                 <div class="inbox-list" id="inboxList">
                     <div class="inbox-empty">
                         <i class="bi bi-hourglass-split d-block mb-1" style="font-size:1.4rem"></i>
@@ -71,16 +69,13 @@ $user = SessionManager::getUser();
                 </div>
             </div>
 
-            <!-- ── Right Panel ───────────────────────────────────────────── -->
+            <!-- ── Right Panel (thread / compose) ───────────────────────── -->
             <div class="right-panel" id="rightPanel">
 
                 <!-- Empty state -->
                 <div class="empty-state" id="emptyState">
                     <i class="bi bi-chat-square-dots"></i>
-                    <p>Select a conversation or compose a new message</p>
-                    <button class="compose-btn" onclick="showCompose()">
-                        <i class="bi bi-pencil-square"></i> Compose new message
-                    </button>
+                    <p>Select a conversation to start messaging</p>
                 </div>
 
                 <!-- Thread view -->
@@ -156,9 +151,10 @@ $user = SessionManager::getUser();
 <script>
 const ME = <?php echo $user['user_id']; ?>;
 
-let RECIPIENT_ID  = null;
-let _threadTimer  = null;
-let _allThreads   = [];
+let RECIPIENT_ID    = null;
+let CURRENT_SUBJECT = '';
+let _threadTimer    = null;
+let _allThreads     = [];
 
 function escHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -180,6 +176,8 @@ function showEmpty() {
     document.getElementById('threadView').style.display  = 'none';
     document.getElementById('composeView').style.display = 'none';
     clearInterval(_threadTimer);
+    RECIPIENT_ID    = null;
+    CURRENT_SUBJECT = '';
     document.querySelectorAll('.thread-item').forEach(el => el.classList.remove('active'));
 }
 function showCompose() {
@@ -192,32 +190,28 @@ function showCompose() {
     resetComposeForm();
     document.getElementById('msgTo').focus();
 }
-function showThread(userId, name, avatarHtml, sub) {
+function showThread(userId, name, avatarHtml, subject) {
     document.getElementById('emptyState').style.display  = 'none';
     document.getElementById('composeView').style.display = 'none';
     document.getElementById('threadView').style.display  = 'flex';
-    document.getElementById('threadName').textContent    = name;
-    document.getElementById('threadSub').textContent     = sub || '';
+    document.getElementById('threadName').textContent    = subject || '(No subject)';
+    document.getElementById('threadSub').textContent     = name;
     document.getElementById('threadAvatar').outerHTML    = avatarHtml;
-    RECIPIENT_ID = userId;
+    RECIPIENT_ID    = userId;
+    CURRENT_SUBJECT = subject || '';
     clearInterval(_threadTimer);
     loadThread(false);
     _threadTimer = setInterval(() => loadThread(true), 5000);
 }
 
 // ── Inbox ────────────────────────────────────────────────────────────────────
-function loadInbox(keepSearch) {
+function loadInbox() {
     fetch('../api/messages.php?action=get_conversations')
         .then(r => r.json())
         .then(res => {
             if (!res.success) return;
             _allThreads = res.conversations;
-            const q = keepSearch ? document.getElementById('inboxSearch').value.toLowerCase() : '';
-            renderInbox(q ? _allThreads.filter(t =>
-                (t.first_name + ' ' + t.last_name).toLowerCase().includes(q) ||
-                (t.fsuu_id || '').toLowerCase().includes(q) ||
-                (t.subject || '').toLowerCase().includes(q)
-            ) : _allThreads);
+            renderInbox(_allThreads);
         });
 }
 
@@ -228,17 +222,18 @@ function renderInbox(list) {
         return;
     }
     el.innerHTML = list.map(t => {
-        const ini     = (t.first_name[0] + t.last_name[0]).toUpperCase();
-        const av      = t.profile_picture
+        const ini          = (t.first_name[0] + t.last_name[0]).toUpperCase();
+        const av           = t.profile_picture
             ? `<div class="ti-avatar"><img src="../${escHtml(t.profile_picture)}" alt=""></div>`
             : `<div class="ti-avatar">${ini}</div>`;
-        const unread  = parseInt(t.unread) > 0;
-        const badge   = unread ? `<span class="ti-badge">${t.unread}</span>` : '';
-        const preview = t.last_msg ? escHtml(t.last_msg.substring(0,60)) : '<em>No messages</em>';
-        const subject = t.subject ? escHtml(t.subject) : escHtml(t.first_name + ' ' + t.last_name);
-        const fsuu    = t.fsuu_id ? `<div class="ti-sub">FSUU ID: ${escHtml(t.fsuu_id)}</div>` : '';
-        return `<div class="thread-item ${unread ? 'unread' : ''} ${t.user_id == RECIPIENT_ID ? 'active' : ''}"
+        const unread       = parseInt(t.unread) > 0;
+        const badge        = unread ? `<span class="ti-badge">${t.unread}</span>` : '';
+        const preview      = t.last_msg ? escHtml(t.last_msg.substring(0,60)) : '<em>No messages</em>';
+        const subjectLabel = t.subject ? escHtml(t.subject) : '(No subject)';
+        const senderInfo   = `<div class="ti-sub">${escHtml(t.first_name + ' ' + t.last_name)}${t.fsuu_id ? ' · ' + escHtml(t.fsuu_id) : ''}</div>`;
+        return `<div class="thread-item ${unread ? 'unread' : ''} ${t.user_id == RECIPIENT_ID && t.subject == CURRENT_SUBJECT ? 'active' : ''}"
                      data-id="${t.user_id}"
+                     data-subject="${escHtml(t.subject || '')}"
                      data-name="${escHtml(t.first_name + ' ' + t.last_name)}"
                      data-ini="${ini}"
                      data-pic="${escHtml(t.profile_picture || '')}"
@@ -246,10 +241,10 @@ function renderInbox(list) {
             ${av}
             <div class="ti-body">
                 <div class="ti-top">
-                    <span class="ti-name">${subject}</span>
+                    <span class="ti-name">${subjectLabel}</span>
                     <span class="ti-time">${t.last_at ? timeAgo(t.last_at) : ''}</span>
                 </div>
-                ${fsuu}
+                ${senderInfo}
                 <div class="ti-preview">${preview}</div>
             </div>
             ${badge}
@@ -263,31 +258,23 @@ function renderInbox(list) {
             this.classList.remove('unread');
             this.querySelector('.ti-badge') && this.querySelector('.ti-badge').remove();
 
-            const uid  = parseInt(this.dataset.id);
-            const name = this.dataset.name;
-            const ini  = this.dataset.ini;
-            const pic  = this.dataset.pic;
-            const fsuu = this.dataset.fsuu;
+            const uid     = parseInt(this.dataset.id);
+            const name    = this.dataset.name;
+            const ini     = this.dataset.ini;
+            const pic     = this.dataset.pic;
+            const subject = this.dataset.subject;
             const avHtml = pic
                 ? `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;overflow:hidden;padding:0;background:transparent;"><img src="../${escHtml(pic)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
                 : `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
-            showThread(uid, name, avHtml, fsuu ? 'FSUU ID: ' + fsuu : 'Patient');
+            showThread(uid, name, avHtml, subject);
         });
     });
 }
 
-document.getElementById('inboxSearch').addEventListener('input', function() {
-    const q = this.value.toLowerCase();
-    renderInbox(q ? _allThreads.filter(t =>
-        (t.first_name + ' ' + t.last_name).toLowerCase().includes(q) ||
-        (t.fsuu_id || '').toLowerCase().includes(q)
-    ) : _allThreads);
-});
-
 // ── Thread ───────────────────────────────────────────────────────────────────
 function loadThread(silent) {
     if (!RECIPIENT_ID) return;
-    fetch(`../api/messages.php?action=get_thread&with=${RECIPIENT_ID}`)
+    fetch(`../api/messages.php?action=get_thread&with=${RECIPIENT_ID}&subject=${encodeURIComponent(CURRENT_SUBJECT)}`)
         .then(r => r.json())
         .then(res => {
             if (!res.success) return;
@@ -339,7 +326,7 @@ function sendReply() {
     fd.append('action', 'send');
     fd.append('receiver_id', RECIPIENT_ID);
     fd.append('message', msg);
-    fd.append('subject', '');
+    fd.append('subject', CURRENT_SUBJECT);
     fetch('../api/messages.php', { method:'POST', body:fd })
         .then(r => r.json())
         .then(res => {
@@ -445,13 +432,14 @@ document.getElementById('chatSendBtn').addEventListener('click', function() {
         .then(r => r.json())
         .then(res => {
             if (res.success) {
-                const sentId   = RECIPIENT_ID;
-                const sentName = document.getElementById('toChipName').textContent;
-                const ini      = sentName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+                const sentId      = RECIPIENT_ID;
+                const sentName    = document.getElementById('toChipName').textContent;
+                const sentSubject = document.getElementById('msgSubject').value.trim();
+                const ini         = sentName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                 resetComposeForm();
                 loadInbox(false);
                 const avHtml = `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
-                showThread(sentId, sentName, avHtml, 'Patient');
+                showThread(sentId, sentName, avHtml, sentSubject);
             } else {
                 alert('Failed: ' + (res.message || 'Unknown error'));
             }
@@ -471,7 +459,6 @@ function switchTab(tab) {
     _activeTab = tab;
     document.getElementById('tabInbox').classList.toggle('active', tab === 'inbox');
     document.getElementById('tabSent').classList.toggle('active', tab === 'sent');
-    document.getElementById('inboxSearchWrap').style.display = tab === 'inbox' ? '' : 'none';
     if (tab === 'inbox') loadInbox(false);
     else loadSent();
 }
@@ -488,25 +475,45 @@ function loadSent() {
                 return;
             }
             list.innerHTML = res.sent.map(m => {
-                const ini  = (m.first_name[0] + m.last_name[0]).toUpperCase();
-                const av   = m.profile_picture
+                const ini          = (m.first_name[0] + m.last_name[0]).toUpperCase();
+                const av           = m.profile_picture
                     ? `<div class="ti-avatar"><img src="../${escHtml(m.profile_picture)}" alt=""></div>`
                     : `<div class="ti-avatar">${ini}</div>`;
-                const subject = m.subject ? escHtml(m.subject) : '(No subject)';
-                const preview = escHtml(m.message_text.substring(0, 60));
-                const timeStr = timeAgo(m.created_at);
-                return `<div class="thread-item">
+                const subjectLabel = m.subject ? escHtml(m.subject) : '(No subject)';
+                const preview      = m.last_msg ? escHtml(m.last_msg.substring(0, 60)) : '';
+                return `<div class="thread-item"
+                             data-id="${m.user_id}"
+                             data-subject="${escHtml(m.subject || '')}"
+                             data-name="${escHtml(m.first_name + ' ' + m.last_name)}"
+                             data-ini="${ini}"
+                             data-pic="${escHtml(m.profile_picture || '')}">
                     ${av}
                     <div class="ti-body">
                         <div class="ti-top">
-                            <span class="ti-name">${subject}</span>
-                            <span class="ti-time">${timeStr}</span>
+                            <span class="ti-name">${subjectLabel}</span>
+                            <span class="ti-time">${timeAgo(m.last_at)}</span>
                         </div>
                         <div class="ti-sub">To: ${escHtml(m.first_name + ' ' + m.last_name)}</div>
                         <div class="ti-preview">${preview}</div>
                     </div>
                 </div>`;
             }).join('');
+
+            list.querySelectorAll('.thread-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    list.querySelectorAll('.thread-item').forEach(x => x.classList.remove('active'));
+                    this.classList.add('active');
+                    const uid     = parseInt(this.dataset.id);
+                    const name    = this.dataset.name;
+                    const ini     = this.dataset.ini;
+                    const pic     = this.dataset.pic;
+                    const subject = this.dataset.subject;
+                    const avHtml  = pic
+                        ? `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;overflow:hidden;padding:0;background:transparent;"><img src="../${escHtml(pic)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
+                        : `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
+                    showThread(uid, name, avHtml, subject);
+                });
+            });
         })
         .catch(() => {
             list.innerHTML = '<div class="inbox-empty text-danger">Could not load sent messages.</div>';
@@ -517,12 +524,14 @@ function loadSent() {
 const urlParams = new URLSearchParams(window.location.search);
 const openWith  = urlParams.get('with');
 
+
 loadInbox(false);
 setInterval(() => { if (_activeTab === 'inbox') loadInbox(true); }, 15000);
 
 // Auto-open conversation if ?with=ID in URL
 if (openWith) {
-    fetch('../api/messages.php?action=get_thread&with=' + parseInt(openWith))
+    const openSubject = urlParams.get('subject') || '';
+    fetch('../api/messages.php?action=get_thread&with=' + parseInt(openWith) + '&subject=' + encodeURIComponent(openSubject))
         .then(r => r.json())
         .then(res => {
             if (res.success && res.other) {
@@ -532,7 +541,7 @@ if (openWith) {
                 const avHtml = u.profile_picture
                     ? `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;overflow:hidden;padding:0;background:transparent;"><img src="../${escHtml(u.profile_picture)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
                     : `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
-                showThread(parseInt(openWith), name, avHtml, u.fsuu_id ? 'FSUU ID: ' + u.fsuu_id : 'Patient');
+                showThread(parseInt(openWith), name, avHtml, openSubject);
             }
         });
 }

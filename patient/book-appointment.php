@@ -75,6 +75,7 @@ function serviceBgImage(string $name): string {
             <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
             FSUU Dental
         </div>
+        <div class="sidebar-nav-wrap">
         <ul class="sidebar-nav">
             <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
             <li class="nav-item"><a class="nav-link active" href="book-appointment.php"><i class="bi bi-calendar-plus"></i> Book Appointment</a></li>
@@ -94,6 +95,7 @@ function serviceBgImage(string $name): string {
                 <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
             </li>
         </ul>
+        </div>
     </nav>
 
     <!-- Main Content -->
@@ -302,7 +304,7 @@ function serviceBgImage(string $name): string {
 
                 <!-- Right: Booking Summary -->
                 <div class="col-lg-4" id="summaryCol" style="display:none">
-                    <div class="booking-summary sticky-top" style="top: 1.5rem">
+                    <div class="booking-summary summary-sticky">
                         <div class="booking-summary-header">
                             <i class="bi bi-receipt me-2"></i>Booking Summary
                         </div>
@@ -343,7 +345,23 @@ function serviceBgImage(string $name): string {
 
 </div><!-- /dashboard-wrapper -->
 
-<!-- PHP data passed to JS -->
+<!-- Sunday Closed Modal -->
+<div class="modal fade" id="sundayModal" tabindex="-1" aria-labelledby="sundayModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-body text-center py-4 px-4">
+                <div class="mb-3">
+                    <span style="font-size:3rem;">🚫</span>
+                </div>
+                <h5 class="fw-bold mb-2">Clinic Closed on Sundays</h5>
+                <p class="text-muted mb-4">We're sorry, the clinic is not available on Sundays. Please select a <strong>Monday – Saturday</strong> date instead.</p>
+                <button type="button" class="btn btn-primary px-4 rounded-pill" data-bs-dismiss="modal">Got it</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
 const SERVICES = <?php echo json_encode(array_column($services, null, 'service_id')); ?>;
 </script>
@@ -479,7 +497,7 @@ function initCalendar() {
         dateClick: function (info) {
             // Reject Sundays
             const dow = new Date(info.dateStr + 'T00:00:00').getDay();
-            if (dow === 0) { showToast('warning', 'The clinic is closed on Sundays.'); return; }
+            if (dow === 0) { new bootstrap.Modal(document.getElementById('sundayModal')).show(); return; }
 
             // Check blocked — silently ignore, tooltip already shown on hover
             const blocked = calendar.getEvents().find(e =>

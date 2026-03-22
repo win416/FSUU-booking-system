@@ -1,267 +1,189 @@
-/* ── Reports page — enhanced styles ─────────────────────────────────── */
+/* =============================================================================
+   Admin Reports — Enhanced
+   ============================================================================= */
 
-/* ── Page header bar ─────────────────────────────────────────────────── */
-.reports-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1.75rem;
-}
-
-.reports-header h2 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--primary-text);
-    margin: 0;
-}
-
-/* ── Date filter bar ─────────────────────────────────────────────────── */
+/* ── Date filter inputs ─────────────────────────────────────────────────── */
 .report-date-input {
-    width: 155px;
+    width: 148px;
     font-size: 0.85rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 0.4rem 0.75rem;
-    color: var(--primary-text);
+    padding: 0.42rem 0.75rem;
+    color: #1e293b;
     background: #fff;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.report-date-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0,174,239,0.12);
+    transition: border-color 0.15s, box-shadow 0.15s;
     outline: none;
 }
+.report-date-input:focus {
+    border-color: #00aeef;
+    box-shadow: 0 0 0 3px rgba(0,174,239,0.12);
+}
 
-/* ── Stat cards ──────────────────────────────────────────────────────── */
+/* ── Stat Cards ─────────────────────────────────────────────────────────── */
 .card-stats {
-    border: 1px solid var(--border-color);
-    border-top: 1px solid var(--border-color) !important;
-    border-radius: 14px;
-    background: #fff;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.2s, box-shadow 0.2s;
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.07) !important;
     overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
     position: relative;
 }
-
-.card-stats::before,
-.card-stats::after {
-    display: none !important;
-    content: none !important;
+.card-stats::before, .card-stats::after { display: none !important; content: none !important; }
+.card-stats:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.12) !important; }
+.card-stats .card-body { padding: 1.3rem 1.4rem 1.1rem; }
+.card-stats .stat-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
 }
-
-.card-stats:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--card-shadow-hover);
+.card-stats .stat-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
 }
-
-.card-stats .card-body {
-    padding: 1.35rem 1.4rem 1.1rem;
-}
-
 .card-stats h6 {
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: 0.72rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-light);
-    margin-bottom: 0.4rem;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    margin-bottom: 0.3rem;
 }
-
 .card-stats h2 {
     font-size: 2.1rem;
     font-weight: 800;
     color: #1e293b;
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.7rem;
     line-height: 1;
 }
-
 .card-stats .progress {
-    height: 4px;
-    border-radius: 4px;
-    background: #e9ecef;
-}
-
-.card-stats .progress-bar {
-    border-radius: 4px;
-    transition: width 0.9s ease;
-}
-
-/* ── Chart cards ─────────────────────────────────────────────────────── */
-.card.border-0.shadow-sm {
-    border-radius: 14px !important;
-    box-shadow: var(--card-shadow) !important;
-    border: 1px solid var(--border-color) !important;
-    overflow: hidden;
-    transition: box-shadow 0.2s;
-}
-
-.card.border-0.shadow-sm:hover {
-    box-shadow: var(--card-shadow-hover) !important;
-}
-
-.card-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--primary-text);
-}
-
-.chart-container {
-    height: 290px;
-    position: relative;
-}
-
-/* Trends & Status Distribution — compact for a cleaner look */
-.chart-container:has(#trendsChart),
-.chart-container:has(#statusChart) {
-    height: 200px;
-}
-
-/* ── Card header (Appointment Details) ───────────────────────────────── */
-.card-header.bg-white {
-    background: #fff !important;
-    border-bottom: 1px solid var(--border-color);
-    padding: 0.9rem 1.25rem;
-}
-
-.card-header.bg-white h5 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--primary-text);
-}
-
-/* ── Service breakdown progress ──────────────────────────────────────── */
-.service-progress {
-    height: 6px;
-    border-radius: 3px;
+    height: 5px;
+    border-radius: 10px;
     background: #f1f5f9;
+    margin-bottom: 0.5rem;
 }
+.card-stats .progress-bar { border-radius: 10px; transition: width 0.9s ease; }
+.card-stats small { font-size: 0.74rem; color: #94a3b8; }
 
+/* Icon color variants */
+.stat-blue  .stat-icon { background: #e0f5fd; color: #00aeef; }
+.stat-blue  .progress-bar { background: #00aeef !important; }
+.stat-green .stat-icon { background: #dcfce7; color: #16a34a; }
+.stat-green .progress-bar { background: #16a34a !important; }
+.stat-amber .stat-icon { background: #fef9c3; color: #ca8a04; }
+.stat-amber .progress-bar { background: #ca8a04 !important; }
+.stat-violet .stat-icon { background: #f3e8ff; color: #9333ea; }
+.stat-violet .progress-bar { background: #9333ea !important; }
+
+/* ── Chart Cards ────────────────────────────────────────────────────────── */
+.chart-card {
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.07) !important;
+    overflow: hidden;
+    transition: box-shadow 0.18s;
+}
+.chart-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.11) !important; }
+.chart-card .card-body { padding: 1.4rem 1.5rem; }
+.chart-card .card-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.18rem;
+}
+.chart-card .chart-sub {
+    font-size: 0.74rem;
+    color: #94a3b8;
+    display: block;
+    margin-bottom: 1.1rem;
+}
+.chart-container { height: 240px; position: relative; }
+.chart-container-sm { height: 220px; position: relative; }
+
+/* ── Service breakdown table ────────────────────────────────────────────── */
+.service-progress { height: 7px; border-radius: 10px; background: #f1f5f9; }
 .service-progress .progress-bar {
-    border-radius: 3px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #00aeef, #0095cc) !important;
     transition: width 0.6s ease;
 }
 
-/* ── Tables ──────────────────────────────────────────────────────────── */
+/* ── Detail card ────────────────────────────────────────────────────────── */
+.detail-card {
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.07) !important;
+    overflow: hidden;
+}
+.detail-card .card-header {
+    background: #fff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1rem 1.4rem;
+}
+.detail-card .card-header h5 { font-size: 0.92rem; font-weight: 700; color: #1e293b; margin: 0; }
+
+/* ── Tables ─────────────────────────────────────────────────────────────── */
 .table-hover thead th {
     background: #f8fafc;
-    color: var(--text-light);
+    color: #64748b;
     font-size: 0.72rem;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 0.75rem 1rem;
-    border-bottom: 2px solid var(--border-color);
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
     white-space: nowrap;
 }
-
 .table-hover tbody td {
-    padding: 0.7rem 1rem;
+    padding: 0.65rem 1rem;
     vertical-align: middle;
-    font-size: 0.86rem;
-    border-bottom: 1px solid #f1f5f9;
-    color: var(--primary-text);
+    font-size: 0.875rem;
+    border-bottom: 1px solid #f8fafc;
+    color: #1e293b;
 }
-
 .table-hover tbody td code {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     background: #eef2ff;
     color: #4f46e5;
     padding: 1px 6px;
     border-radius: 4px;
     font-weight: 600;
 }
-
 .table-hover tbody tr:last-child td { border-bottom: none; }
-
-.table-hover tbody tr:hover td {
-    background: #f0f6ff;
-}
-
-/* Status badges inside table */
+.table-hover tbody tr:hover td { background: #f0f9ff; }
 .table .badge {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    padding: 0.32em 0.72em;
+    padding: 0.3em 0.7em;
     border-radius: 20px;
     text-transform: capitalize;
-    letter-spacing: 0.02em;
 }
 
-/* ── Export badge ────────────────────────────────────────────────────── */
-.export-badge {
-    font-size: 0.7rem;
-    vertical-align: middle;
-}
-
-/* ── Record count badge ──────────────────────────────────────────────── */
+/* ── Record count badge ─────────────────────────────────────────────────── */
 #detail-count {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    padding: 0.35em 0.75em;
+    padding: 0.3em 0.8em;
     border-radius: 20px;
-    background: #e2e8f0 !important;
-    color: #475569 !important;
+    background: #e0f5fd !important;
+    color: #00aeef !important;
 }
 
-/* ── Print styles ────────────────────────────────────────────────────── */
-.print-header {
-    display: none;
-}
-
+/* ── Print ──────────────────────────────────────────────────────────────── */
+.print-header { display: none; }
 @media print {
-    .sidebar,
-    .no-print {
-        display: none !important;
-    }
-
-    .main-content {
-        margin-left: 0 !important;
-        padding: 1rem !important;
-    }
-
-    .print-header {
-        display: block !important;
-    }
-
-    .card {
-        break-inside: avoid;
-        box-shadow: none !important;
-        border: 1px solid #dee2e6 !important;
-    }
-
-    .chart-container {
-        height: 220px;
-    }
+    .sidebar, .no-print { display: none !important; }
+    .main-content { margin-left: 0 !important; padding: 1rem !important; }
+    .print-header { display: block !important; }
+    .card { break-inside: avoid; box-shadow: none !important; border: 1px solid #dee2e6 !important; }
+    .chart-container { height: 200px; }
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 991.98px) {
-    .reports-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .report-date-input {
-        width: 140px;
-    }
-
-    .chart-container {
-        height: 220px;
-    }
+    .report-date-input { width: 135px; }
+    .chart-container { height: 200px; }
 }
 
-@media (max-width: 575.98px) {
-    .report-date-input {
-        width: 100%;
-    }
-
-    .card-stats h2 {
-        font-size: 1.6rem;
-    }
-}

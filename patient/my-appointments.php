@@ -37,6 +37,7 @@ $appointments = $stmt->get_result();
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
                 FSUU Dental
             </div>
+            <div class="sidebar-nav-wrap">
             <ul class="sidebar-nav">
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">
@@ -83,6 +84,7 @@ $appointments = $stmt->get_result();
                     </a>
                 </li>
             </ul>
+            </div>
         </nav>
 
         <div class="main-content">

@@ -5,26 +5,131 @@
     --primary-color: #00aeef;
     --primary-color-hover: #0096ce;
     --secondary-bg: #f8fbff;
-    --primary-text: #2d3e50;
+    --primary-text: #1e293b;
     --accent-color: #eef7ff;
     --bg-white: #ffffff;
     --text-light: #64748b;
+    --text-muted: #94a3b8;
     --border-color: #e2e8f0;
     --sidebar-dark: #1e293b;
     --sidebar-text: #94a3b8;
     --sidebar-active: #00aeef;
     --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    /* Typography scale */
+    --fs-xs:   0.7rem;
+    --fs-sm:   0.8rem;
+    --fs-base: 0.875rem;
+    --fs-md:   0.95rem;
+    --fs-lg:   1.1rem;
+    --fs-xl:   1.35rem;
+    --fs-2xl:  1.6rem;
+    --fw-normal: 400;
+    --fw-medium: 500;
+    --fw-semi:  600;
+    --fw-bold:  700;
 }
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: var(--fs-base);
     background-color: #f1f5f9;
     color: var(--primary-text);
-    line-height: 1.5;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Navbar Enhancement */
+/* ── Heading Scale ─────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.25;
+    color: var(--primary-text);
+    margin-top: 0;
+}
+h1 { font-size: 1.75rem; font-weight: var(--fw-bold); }
+h2 { font-size: var(--fs-xl);  font-weight: var(--fw-bold); }
+h3 { font-size: 1.1rem;  font-weight: var(--fw-bold); }
+h4 { font-size: 1rem;    font-weight: var(--fw-bold); }
+h5 { font-size: 0.925rem; font-weight: var(--fw-bold); }
+h6 { font-size: var(--fs-xs);  font-weight: var(--fw-semi); color: var(--text-light); letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* ── Utility text classes ─────────────────────────────────────────────────── */
+.page-title {
+    font-size: var(--fs-xl);
+    font-weight: var(--fw-bold);
+    color: var(--primary-text);
+    line-height: 1.25;
+}
+.section-title {
+    font-size: 0.925rem;
+    font-weight: var(--fw-bold);
+    color: var(--primary-text);
+}
+.card-label {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semi);
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.text-caption {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+}
+
+/* ── Form Labels ──────────────────────────────────────────────────────────── */
+.form-label, label {
+    font-size: var(--fs-base);
+    font-weight: var(--fw-semi);
+    color: #475569;
+    margin-bottom: 0.4rem;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+.btn {
+    font-size: var(--fs-base);
+    font-weight: var(--fw-semi);
+    letter-spacing: 0.01em;
+}
+.btn-lg { font-size: var(--fs-md); }
+.btn-sm { font-size: var(--fs-sm); }
+
+/* ── Badges ───────────────────────────────────────────────────────────────── */
+.badge {
+    font-size: 0.72rem;
+    font-weight: var(--fw-semi);
+    padding: 0.3em 0.7em;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+}
+
+/* ── Tables ───────────────────────────────────────────────────────────────── */
+.table thead th {
+    background-color: #f8fafc;
+    color: var(--text-light);
+    font-weight: var(--fw-semi);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.65rem 1rem;
+    white-space: nowrap;
+}
+.table tbody td {
+    font-size: var(--fs-base);
+    color: var(--primary-text);
+    vertical-align: middle;
+    padding: 0.65rem 1rem;
+}
+.table tbody tr:last-child td { border-bottom: none; }
+
+/* ── Small / muted ────────────────────────────────────────────────────────── */
+small, .small { font-size: var(--fs-xs); }
+
+/* ── Navbar Enhancement ───────────────────────────────────────────────────── */
 .navbar {
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
     background-color: rgba(255, 255, 255, 0.9) !important;
@@ -49,7 +154,7 @@ body {
     margin-right: 12px;
 }
 
-/* Cards Redesign */
+/* ── Cards ────────────────────────────────────────────────────────────────── */
 .card {
     border: 1px solid var(--border-color);
     border-radius: 12px;
@@ -70,7 +175,7 @@ body {
     font-weight: 600;
 }
 
-/* Buttons Transformation */
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-color) 0%, #0096ce 100%);
     border: none;
@@ -93,22 +198,7 @@ body {
     background: transparent;
 }
 
-/* Tables and Badges */
-.table thead th {
-    background-color: #f8fafc;
-    color: var(--text-light);
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.badge {
-    padding: 6px 12px;
-    font-weight: 500;
-    border-radius: 9999px;
-}
+/* ── Badge color variants (layout in typography block above) ─────────────── */
 
 .bg-warning { background-color: #fef3c7 !important; color: #92400e !important; }
 .bg-success { background-color: #dcfce7 !important; color: #166534 !important; }

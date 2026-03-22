@@ -31,14 +31,12 @@ define('SMTP_FROM_NAME', 'FSUU Dental Clinic');
 define('OTP_EXPIRY_MINUTES', 5);
 define('CLINIC_EMAIL', SMTP_USER); // Dental clinic contact email
 
-// Google OAuth configuration
-// To get credentials: https://console.cloud.google.com/
-// Set redirect URI to: http://localhost/FSUU-booking-system-1/auth/google_auth.php
-define('GOOGLE_CLIENT_ID',     'YOUR_GOOGLE_CLIENT_ID');
-define('GOOGLE_CLIENT_SECRET', 'YOUR_GOOGLE_CLIENT_SECRET');
-define('GOOGLE_REDIRECT_URI',  SITE_URL . '/auth/google_auth.php');
-
-// Load real credentials from secrets file (gitignored)
+// Google OAuth — real credentials loaded from gitignored config.secrets.php
+// To create credentials: https://console.cloud.google.com/
+// Redirect URI: http://localhost/FSUU-booking-system-1/auth/google_auth.php
 if (file_exists(__DIR__ . '/config.secrets.php')) {
     require_once __DIR__ . '/config.secrets.php';
 }
+if (!defined('GOOGLE_CLIENT_ID'))     define('GOOGLE_CLIENT_ID',     'YOUR_GOOGLE_CLIENT_ID');
+if (!defined('GOOGLE_CLIENT_SECRET')) define('GOOGLE_CLIENT_SECRET', 'YOUR_GOOGLE_CLIENT_SECRET');
+define('GOOGLE_REDIRECT_URI', SITE_URL . '/auth/google_auth.php');
