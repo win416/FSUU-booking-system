@@ -9,9 +9,7 @@ debug_api.log
 .DS_Store
 Thumbs.db
 
-# Client ID files
-957700597513-3rmp02pd4md0vvsrirju98ledluc8o68.apps.googleusercontent.com
-
-# Client secret files
-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
+# Google OAuth credential files
+*.apps.googleusercontent.com
+GOCSPX-*
 
