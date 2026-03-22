@@ -1,5 +1,108 @@
 /* Patient Dashboard Specific Styles */
 
+/* ── Clinic Facilities Slideshow ─────────────────────────────────────────── */
+.fac-slideshow {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+}
+/* Hero variant — slightly taller than base to fit text */
+.fac-hero {
+    height: 250px;
+}
+.fac-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.9s ease;
+}
+.fac-slide.active {
+    opacity: 1;
+}
+.fac-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+/* Gradient overlay for text readability */
+.fac-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.18) 55%, transparent 100%);
+    z-index: 3;
+    pointer-events: none;
+}
+/* Title + welcome text */
+.fac-hero-text {
+    position: absolute;
+    bottom: 36px;
+    left: 32px;
+    z-index: 11;
+    color: #fff !important;
+}
+.fac-hero-text h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #fff !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+}
+.fac-hero-text p {
+    font-size: 1rem;
+    margin: 0;
+    color: #fff !important;
+    opacity: 0.95;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+.fac-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 12;
+    background: rgba(255,255,255,0.25);
+    border: none;
+    color: #fff;
+    font-size: 1.4rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s;
+}
+.fac-arrow:hover { background: rgba(255,255,255,0.45); }
+.fac-prev { left: 14px; }
+.fac-next { right: 14px; }
+.fac-dots {
+    position: absolute;
+    bottom: 14px;
+    right: 24px;
+    z-index: 12;
+    display: flex;
+    gap: 8px;
+}
+.fac-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+.fac-dot.active {
+    background: #fff;
+    transform: scale(1.3);
+}
+
 /* Sidebar Layout Base */
 body {
     background-color: var(--bg-white);
@@ -237,6 +340,10 @@ body {
         margin-left: 0;
         width: 100%;
         padding: 1.5rem;
+    }
+
+    .dash-bg-slideshow {
+        left: 0; /* sidebar stacks on mobile */
     }
 }
 

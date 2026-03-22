@@ -154,71 +154,33 @@ foreach ($weekly_data as $date => $count) {
         <!-- Main Content -->
         <div class="main-content">
             <?php include '../includes/admin-topbar.php'; ?>
-            <div class="container-fluid my-4">
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Admin Dashboard</h2>
-                <p>Welcome, <?php echo SessionManager::getUser()['first_name']; ?></p>
+
+        <!-- Hero Slideshow -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="fac-slideshow">
+                    <div class="fac-slide active">
+                        <img src="../img/fas1.jpg" alt="Clinic Facility 1">
+                    </div>
+                    <div class="fac-slide">
+                        <img src="../img/fas2.jpg" alt="Clinic Facility 2">
+                    </div>
+                    <div class="fac-hero-overlay"></div>
+                    <div class="fac-hero-text">
+                        <h2>Admin Dashboard</h2>
+                        <p>Welcome back, <strong><?php echo htmlspecialchars(SessionManager::getUser()['first_name']); ?></strong>!</p>
+                    </div>
+                    <button class="fac-arrow fac-prev" onclick="facSlide(-1)"><i class="bi bi-chevron-left"></i></button>
+                    <button class="fac-arrow fac-next" onclick="facSlide(1)"><i class="bi bi-chevron-right"></i></button>
+                    <div class="fac-dots">
+                        <span class="fac-dot active" onclick="facGoTo(0)"></span>
+                        <span class="fac-dot" onclick="facGoTo(1)"></span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <?php
-            $total_today    = $stats['total_today']     ?? 0;
-            $pending_count  = $stats['pending_count']   ?? 0;
-            $approved_count = $stats['approved_count']  ?? 0;
-            $completed_count= $stats['completed_count'] ?? 0;
-            $max_stat = max($total_today, $pending_count, $approved_count, $completed_count, 1);
-            function adminBarWidth($val, $max) {
-                return $max > 0 ? round(($val / $max) * 100) : 0;
-            }
-            ?>
-            <div class="col-md-3">
-                <div class="card card-stats h-100">
-                    <div class="card-body">
-                        <h6>Today's Appointments</h6>
-                        <h2><?php echo $total_today; ?></h2>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: <?php echo adminBarWidth($total_today, $max_stat); ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats h-100">
-                    <div class="card-body">
-                        <h6>Pending Approval</h6>
-                        <h2><?php echo $pending_count; ?></h2>
-                        <div class="progress">
-                            <div class="progress-bar bg-warning" style="width: <?php echo adminBarWidth($pending_count, $max_stat); ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats h-100">
-                    <div class="card-body">
-                        <h6>Approved Today</h6>
-                        <h2><?php echo $approved_count; ?></h2>
-                        <div class="progress">
-                            <div class="progress-bar bg-success" style="width: <?php echo adminBarWidth($approved_count, $max_stat); ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats h-100">
-                    <div class="card-body">
-                        <h6>Completed Today</h6>
-                        <h2><?php echo $completed_count; ?></h2>
-                        <div class="progress">
-                            <div class="progress-bar bg-info" style="width: <?php echo adminBarWidth($completed_count, $max_stat); ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <div class="row">
             <!-- Today's Schedule -->
@@ -356,12 +318,12 @@ foreach ($weekly_data as $date => $count) {
                                 <i class="bi bi-person-plus"></i> Add User
                             </a>
                         </div>
-                </div> <!-- closing Quick Actions -->
+        </div> <!-- closing Quick Actions card-body -->
+            </div> <!-- closing Quick Actions card -->
             </div> <!-- closing Quick Actions col -->
         </div> <!-- closing row -->
 
-    </div> <!-- closing container-fluid -->
-</div> <!-- closing main-content -->
+    </div> <!-- closing main-content -->
 </div> <!-- closing dashboard-wrapper -->
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -476,6 +438,22 @@ foreach ($weekly_data as $date => $count) {
             });
         }
     });
+    </script>
+
+    <script>
+    // Hero Facilities Slideshow
+    let facIdx = 0;
+    const facSlides = document.querySelectorAll('.fac-slide');
+    const facDots   = document.querySelectorAll('.fac-dot');
+    function facGoTo(n) {
+        facSlides[facIdx].classList.remove('active');
+        facDots[facIdx].classList.remove('active');
+        facIdx = (n + facSlides.length) % facSlides.length;
+        facSlides[facIdx].classList.add('active');
+        facDots[facIdx].classList.add('active');
+    }
+    function facSlide(dir) { facGoTo(facIdx + dir); }
+    setInterval(() => facSlide(1), 5000);
     </script>
 
 </body>

@@ -45,6 +45,15 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+    <style>
+    /* Hero text always white */
+    .fac-hero-text h2,
+    .fac-hero-text p,
+    .fac-hero-text strong {
+        color: #fff !important;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.6) !important;
+    }
+    </style>
 </head>
 <body>
     <div class="dashboard-wrapper">
@@ -111,68 +120,31 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
         <!-- Main Content -->
         <div class="main-content">
             <?php include '../includes/patient-topbar.php'; ?>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="alert alert-info">
-                    <h2>User Dashboard</h2>
-                    Welcome back, <strong><?php echo $user['first_name'] . ' ' . $user['last_name']; ?></strong>!
-                </div>
-            </div>
-        </div>
 
-        <!-- Stats Cards -->
+        <!-- Hero Slideshow -->
         <div class="row mb-4">
-            <?php
-            $p_pending   = $appointment_stats['pending_count']   ?? 0;
-            $p_approved  = $appointment_stats['approved_count']  ?? 0;
-            $p_completed = $appointment_stats['completed_count'] ?? 0;
-            $p_total     = array_sum($appointment_stats);
-            $p_max       = max($p_pending, $p_approved, $p_completed, $p_total, 1);
-            function patientBarWidth($val, $max) {
-                return $max > 0 ? round(($val / $max) * 100) : 0;
-            }
-            ?>
-            <div class="col-md-3">
-                <div class="card card-stats h-100">
-                    <div class="card-body">
-                        <h6>Pending</h6>
-                        <h2><?php echo $p_pending; ?></h2>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: <?php echo patientBarWidth($p_pending, $p_max); ?>%"></div>
-                        </div>
+            <div class="col-12">
+                <div class="fac-slideshow fac-hero">
+                    <div class="fac-slide active">
+                        <img src="../img/fas1.jpg" alt="Clinic Facility 1">
                     </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats h-100">
-                    <div class="card-body">
-                        <h6>Approved</h6>
-                        <h2><?php echo $p_approved; ?></h2>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: <?php echo patientBarWidth($p_approved, $p_max); ?>%"></div>
-                        </div>
+                    <div class="fac-slide">
+                        <img src="../img/fas2.jpg" alt="Clinic Facility 2">
                     </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats h-100">
-                    <div class="card-body">
-                        <h6>Completed</h6>
-                        <h2><?php echo $p_completed; ?></h2>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: <?php echo patientBarWidth($p_completed, $p_max); ?>%"></div>
-                        </div>
+                    <!-- Dark gradient overlay -->
+                    <div class="fac-hero-overlay"></div>
+                    <!-- Title & Welcome text -->
+                    <div class="fac-hero-text">
+                        <h2>User Dashboard</h2>
+                        <p>Welcome back, <strong><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></strong>!</p>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats h-100">
-                    <div class="card-body">
-                        <h6>Total Appointments</h6>
-                        <h2><?php echo $p_total; ?></h2>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: <?php echo patientBarWidth($p_total, $p_max); ?>%"></div>
-                        </div>
+                    <!-- Arrows -->
+                    <button class="fac-arrow fac-prev" onclick="facSlide(-1)"><i class="bi bi-chevron-left"></i></button>
+                    <button class="fac-arrow fac-next" onclick="facSlide(1)"><i class="bi bi-chevron-right"></i></button>
+                    <!-- Dots -->
+                    <div class="fac-dots">
+                        <span class="fac-dot active" onclick="facGoTo(0)"></span>
+                        <span class="fac-dot" onclick="facGoTo(1)"></span>
                     </div>
                 </div>
             </div>
@@ -299,7 +271,21 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Facilities Slideshow
+    let facIdx = 0;
+    const facSlides = document.querySelectorAll('.fac-slide');
+    const facDots   = document.querySelectorAll('.fac-dot');
+    function facGoTo(n) {
+        facSlides[facIdx].classList.remove('active');
+        facDots[facIdx].classList.remove('active');
+        facIdx = (n + facSlides.length) % facSlides.length;
+        facSlides[facIdx].classList.add('active');
+        facDots[facIdx].classList.add('active');
+    }
+    function facSlide(dir) { facGoTo(facIdx + dir); }
+    setInterval(() => facSlide(1), 5000);
+    </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
     $(document).ready(function() {
