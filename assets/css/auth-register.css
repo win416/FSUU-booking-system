@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 body { 
-    background: linear-gradient(135deg, #f1faff 0%, #dff5ff 100%); 
+    background: #f1f5f9; 
     min-height: 100vh; 
     font-family: 'Inter', sans-serif;
     padding: 40px 0;

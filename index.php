@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
-    <link rel="stylesheet" href="assets/css/index.css?v=7">
+    <link rel="stylesheet" href="assets/css/index.css?v=9">
 </head>
 <body>
     <!-- Navigation -->
@@ -132,7 +132,7 @@
                     </ul>
                 </div>
                 <div class="col-lg-6">
-                    <img src="img/inside clinic.jpg" alt="Dental Clinic" class="img-fluid rounded shadow">
+                    <img src="img/insidefsuudental.jpg" alt="Dental Clinic" class="img-fluid rounded shadow" style="max-width: 80%; height: auto;">
                 </div>
             </div>
         </div>

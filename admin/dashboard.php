@@ -160,10 +160,13 @@ foreach ($weekly_data as $date => $count) {
             <div class="col-12">
                 <div class="fac-slideshow">
                     <div class="fac-slide active">
-                        <img src="../img/fas1.jpg" alt="Clinic Facility 1">
+                        <img src="../img/insidefsuudental.jpg" alt="Inside FSUU Dental">
                     </div>
                     <div class="fac-slide">
-                        <img src="../img/fas2.jpg" alt="Clinic Facility 2">
+                        <img src="../img/counter1.jpg" alt="Clinic Counter">
+                    </div>
+                    <div class="fac-slide">
+                        <img src="../img/outside.jpg" alt="Clinic Outside">
                     </div>
                     <div class="fac-hero-overlay"></div>
                     <div class="fac-hero-text">
@@ -175,6 +178,7 @@ foreach ($weekly_data as $date => $count) {
                     <div class="fac-dots">
                         <span class="fac-dot active" onclick="facGoTo(0)"></span>
                         <span class="fac-dot" onclick="facGoTo(1)"></span>
+                        <span class="fac-dot" onclick="facGoTo(2)"></span>
                     </div>
                 </div>
             </div>
