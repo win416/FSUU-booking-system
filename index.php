@@ -47,7 +47,7 @@
         <div class="hero-overlay"></div>
         <div class="container hero-body">
             <h2 class="hero-title">Welcome to FSUU Dental Clinic</h2>
-            <p class="hero-subtitle">Professional dental care with modern technology and compassionate service</p>
+            <p class="hero-subtitle">Provides primary health care services to students and staff of Fr. Saturnino Urios University.</p>
         </div>
         <!-- Floating action bar -->
         <div class="hero-bar-wrap">

@@ -398,7 +398,7 @@ msgToInput.addEventListener('input', function() {
                 }).join('');
                 toSuggestions.style.display = 'block';
                 toSuggestions.querySelectorAll('.si-item').forEach(el => {
-                    el.addEventListener('click', function() { setRecipient(parseInt(this.dataset.id), this.dataset.name); });
+                    el.addEventListener('mousedown', function(e) { e.preventDefault(); setRecipient(parseInt(this.dataset.id), this.dataset.name); });
                 });
             });
     }, 220);
