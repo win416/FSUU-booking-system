@@ -151,11 +151,24 @@ body {
     flex-shrink: 0;
 }
 
+/* "Menu" section label */
+.sidebar-section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #475569;
+    padding: 0.5rem 1.35rem 0.35rem;
+    flex-shrink: 0;
+}
+
 /* Wrapper gives us a clean fade at the bottom */
 .sidebar-nav-wrap {
     flex: 1;
     min-height: 0;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-nav-wrap::after {
@@ -174,7 +187,8 @@ body {
     list-style: none;
     padding: 0 0.75rem;
     margin: 0;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -234,6 +248,7 @@ body {
 
 .logout-nav-item {
     padding: 0.5rem 0.75rem 1.5rem;
+    flex-shrink: 0;
 }
 
 .logout-nav-item .nav-link {
@@ -241,6 +256,26 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0;
     padding-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.logout-nav-item .nav-link i {
+    font-size: 1.25rem;
+    margin-right: 12px;
+    width: 24px;
+}
+
+.logout-nav-item .nav-link:hover {
+    background: rgba(248, 113, 113, 0.1);
+    color: #fca5a5;
+    border-radius: 8px;
+}
+
+.logout-nav-item .nav-link:hover i {
+    color: #fca5a5;
 }
 
 /* Main Content Area */

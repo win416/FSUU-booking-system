@@ -38,10 +38,10 @@ $appointments = $stmt->get_result();
                 FSUU Dental
             </div>
             <div class="sidebar-nav-wrap">
+            <div class="sidebar-section-label">Menu</div>
             <ul class="sidebar-nav">
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">
-                        <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
@@ -78,12 +78,12 @@ $appointments = $stmt->get_result();
                         <i class="bi bi-clock-history"></i> History
                     </a>
                 </li>
-                <li class="nav-item logout-nav-item">
-                    <a class="nav-link text-danger" href="../auth/logout.php">
-                        <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                    </a>
-                </li>
             </ul>
+            </div>
+            <div class="logout-nav-item">
+                <a class="nav-link text-danger" href="../auth/logout.php">
+                    <i class="bi bi-box-arrow-right text-danger"></i> Logout
+                </a>
             </div>
         </nav>
 

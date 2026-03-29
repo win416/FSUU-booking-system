@@ -46,6 +46,7 @@ $result = $db->query($query);
                 FSUU Admin
             </div>
             <div class="sidebar-nav-wrap">
+            <div class="sidebar-section-label">Menu</div>
             <ul class="sidebar-nav">
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">

@@ -31,6 +31,7 @@ $medical = $stmt->get_result()->fetch_assoc();
                 FSUU Dental
             </div>
             <div class="sidebar-nav-wrap">
+            <div class="sidebar-section-label">Menu</div>
             <ul class="sidebar-nav">
                 <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" href="book-appointment.php"><i class="bi bi-calendar-plus"></i> Book Appointment</a></li>
@@ -51,10 +52,10 @@ $medical = $stmt->get_result()->fetch_assoc();
                 <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="profile.php"><i class="bi bi-person"></i> Profile</a></li>
                 <li class="nav-item"><a class="nav-link active" href="history.php"><i class="bi bi-clock-history"></i> History</a></li>
-                <li class="nav-item logout-nav-item">
-                    <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
-                </li>
             </ul>
+            </div>
+            <div class="logout-nav-item">
+                <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
             </div>
         </nav>
         <div class="main-content">

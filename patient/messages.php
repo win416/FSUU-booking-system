@@ -34,14 +34,9 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
             FSUU Dental
         </div>
         <div class="sidebar-nav-wrap">
+        <div class="sidebar-section-label">Menu</div>
         <ul class="sidebar-nav">
             <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="book-appointment.php"><i class="bi bi-calendar-plus"></i> Book Appointment</a></li>
-            <li class="nav-item"><a class="nav-link" href="my-appointments.php"><i class="bi bi-calendar-check"></i> My Appointments</a></li>
-            <li class="nav-item">
-                <a class="nav-link" href="notifications.php">
-                    <i class="bi bi-bell"></i> Notifications
-                    <?php if ($unread_notif > 0): ?>
                         <span id="sidebarNotifBadge" class="badge bg-danger rounded-pill ms-2"><?php echo $unread_notif; ?></span>
                     <?php else: ?>
                         <span id="sidebarNotifBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span>
@@ -51,10 +46,10 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
             <li class="nav-item"><a class="nav-link active" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
             <li class="nav-item"><a class="nav-link" href="profile.php"><i class="bi bi-person"></i> Profile</a></li>
             <li class="nav-item"><a class="nav-link" href="history.php"><i class="bi bi-clock-history"></i> History</a></li>
-            <li class="nav-item logout-nav-item">
-                <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
-            </li>
         </ul>
+        </div>
+        <div class="logout-nav-item">
+            <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
         </div>
     </nav>
 
@@ -414,7 +409,7 @@ msgToInput.addEventListener('input', function() {
                 }).join('');
                 toSuggestions.style.display = 'block';
                 toSuggestions.querySelectorAll('.si-item').forEach(el => {
-                    el.addEventListener('click', function() { setRecipient(parseInt(this.dataset.id), this.dataset.name); });
+                    el.addEventListener('mousedown', function(e) { e.preventDefault(); setRecipient(parseInt(this.dataset.id), this.dataset.name); });
                 });
             });
     }, 220);

@@ -1,4 +1,45 @@
-<?php /* Admin Top Bar — include inside .main-content, before container-fluid */ ?>
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);" id="logoutOverlay"></div>
+    <div style="position:relative;background:#fff;border-radius:16px;padding:2rem 2rem 1.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;z-index:1;">
+        <div style="width:56px;height:56px;background:#fef2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+            <i class="bi bi-box-arrow-right" style="font-size:1.6rem;color:#ef4444;"></i>
+        </div>
+        <h5 style="font-weight:700;color:#111827;margin-bottom:0.4rem;">Log Out?</h5>
+        <p style="color:#6b7280;font-size:0.9rem;margin-bottom:1.5rem;">Are you sure you want to log out of your account?</p>
+        <div style="display:flex;gap:0.75rem;justify-content:center;">
+            <button id="logoutCancelBtn" style="flex:1;padding:0.6rem 1rem;border:1px solid #e5e7eb;border-radius:8px;background:#fff;color:#374151;font-weight:500;cursor:pointer;font-size:0.9rem;">Cancel</button>
+            <a id="logoutConfirmBtn" href="../auth/logout.php" style="flex:1;padding:0.6rem 1rem;border:none;border-radius:8px;background:#ef4444;color:#fff;font-weight:600;cursor:pointer;font-size:0.9rem;text-decoration:none;display:flex;align-items:center;justify-content:center;">Yes, Log Out</a>
+        </div>
+    </div>
+</div>
+<script>
+(function () {
+    const modal      = document.getElementById('logoutModal');
+    const overlay    = document.getElementById('logoutOverlay');
+    const cancelBtn  = document.getElementById('logoutCancelBtn');
+
+    function openLogoutModal(e) {
+        e.preventDefault();
+        modal.style.display = 'flex';
+    }
+    function closeLogoutModal() {
+        modal.style.display = 'none';
+    }
+
+    // Attach to all logout links
+    document.querySelectorAll('a[href*="logout.php"]').forEach(function (el) {
+        el.addEventListener('click', openLogoutModal);
+    });
+
+    cancelBtn.addEventListener('click', closeLogoutModal);
+    overlay.addEventListener('click', closeLogoutModal);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeLogoutModal();
+    });
+})();
+</script>
+
 <div class="admin-topbar no-print">
     <div class="admin-topbar-inner">
         <!-- Message Icon -->

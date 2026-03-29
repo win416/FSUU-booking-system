@@ -88,6 +88,7 @@ $all_events = array_merge($block_events, $appt_events);
                 FSUU Admin
             </div>
             <div class="sidebar-nav-wrap">
+            <div class="sidebar-section-label">Menu</div>
             <ul class="sidebar-nav">
                 <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" href="appointments.php"><i class="bi bi-calendar-check"></i> Appointments</a></li>

@@ -101,6 +101,7 @@ foreach ($weekly_data as $date => $count) {
                 FSUU Admin
             </div>
             <div class="sidebar-nav-wrap">
+            <div class="sidebar-section-label">Menu</div>
             <ul class="sidebar-nav">
                 <li class="nav-item">
                     <a class="nav-link active" href="dashboard.php">
@@ -142,12 +143,12 @@ foreach ($weekly_data as $date => $count) {
                         <i class="bi bi-gear"></i> Settings
                     </a>
                 </li>
-                <li class="nav-item logout-nav-item">
-                    <a class="nav-link text-danger" href="../auth/logout.php">
-                        <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                    </a>
-                </li>
             </ul>
+            </div>
+            <div class="logout-nav-item">
+                <a class="nav-link text-danger" href="../auth/logout.php">
+                    <i class="bi bi-box-arrow-right text-danger"></i> Logout
+                </a>
             </div>
         </nav>
 
