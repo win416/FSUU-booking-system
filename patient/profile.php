@@ -8,14 +8,16 @@ $db = getDB();
 // Ensure profile_picture column exists (safe on MySQL 8+ and MariaDB 10.3+)
 $db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(255) DEFAULT NULL");
 
-// Fetch fresh profile_picture from DB
+// Fetch fresh profile_picture and password status from DB
 $profilePic = null;
-$picStmt = $db->prepare("SELECT profile_picture FROM users WHERE user_id = ?");
+$hasPassword = false;
+$picStmt = $db->prepare("SELECT profile_picture, password FROM users WHERE user_id = ?");
 if ($picStmt) {
     $picStmt->bind_param("i", $user['user_id']);
     $picStmt->execute();
     $picRow = $picStmt->get_result()->fetch_assoc();
-    $profilePic = $picRow['profile_picture'] ?? null;
+    $profilePic  = $picRow['profile_picture'] ?? null;
+    $hasPassword = !empty($picRow['password']);
 }
 ?>
 <!DOCTYPE html>
@@ -150,21 +152,30 @@ if ($picStmt) {
                                 <h5 class="mb-0 text-primary">Security</h5>
                             </div>
                             <div class="card-body">
+                                <?php if (!$hasPassword): ?>
+                                    <div class="alert alert-info py-2">
+                                        <i class="bi bi-google me-1"></i> Your account uses Google Sign-in. Set a password below to also enable manual login.
+                                    </div>
+                                <?php endif; ?>
                                 <form id="securityForm">
                                     <input type="hidden" name="action" value="update_password">
+                                    <?php if ($hasPassword): ?>
                                     <div class="mb-3">
                                         <label class="form-label">Current Password</label>
                                         <input type="password" name="current_password" class="form-control" required>
                                     </div>
+                                    <?php else: ?>
+                                    <input type="hidden" name="current_password" value="">
+                                    <?php endif; ?>
                                     <div class="mb-3">
-                                        <label class="form-label">New Password</label>
+                                        <label class="form-label"><?php echo $hasPassword ? 'New Password' : 'Set Password'; ?></label>
                                         <input type="password" name="new_password" class="form-control" minlength="8" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Confirm New Password</label>
+                                        <label class="form-label">Confirm <?php echo $hasPassword ? 'New ' : ''; ?>Password</label>
                                         <input type="password" name="confirm_password" class="form-control" minlength="8" required>
                                     </div>
-                                    <button type="submit" class="btn btn-warning">Update Password</button>
+                                    <button type="submit" class="btn btn-warning"><?php echo $hasPassword ? 'Update Password' : 'Set Password'; ?></button>
                                 </form>
                             </div>
                         </div>

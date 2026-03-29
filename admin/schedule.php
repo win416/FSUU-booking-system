@@ -98,12 +98,12 @@ $all_events = array_merge($block_events, $appt_events);
                 <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="users.php"><i class="bi bi-person-badge"></i> Users</a></li>
                 <li class="nav-item"><a class="nav-link" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
-                <li class="nav-item logout-nav-item">
-                    <a class="nav-link text-danger" href="../auth/logout.php">
-                        <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                    </a>
-                </li>
             </ul>
+            </div>
+            <div class="logout-nav-item">
+                <a class="nav-link text-danger" href="../auth/logout.php">
+                    <i class="bi bi-box-arrow-right text-danger"></i> Logout
+                </a>
             </div>
         </nav>
 

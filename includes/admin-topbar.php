@@ -27,8 +27,8 @@
         modal.style.display = 'none';
     }
 
-    // Attach to all logout links
-    document.querySelectorAll('a[href*="logout.php"]').forEach(function (el) {
+    // Attach to all logout links (but not the confirm button itself)
+    document.querySelectorAll('a[href*="logout.php"]:not(#logoutConfirmBtn)').forEach(function (el) {
         el.addEventListener('click', openLogoutModal);
     });
 

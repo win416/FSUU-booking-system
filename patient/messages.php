@@ -37,6 +37,12 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
         <div class="sidebar-section-label">Menu</div>
         <ul class="sidebar-nav">
             <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="book-appointment.php"><i class="bi bi-calendar-plus"></i> Book Appointment</a></li>
+            <li class="nav-item"><a class="nav-link" href="my-appointments.php"><i class="bi bi-calendar-check"></i> My Appointments</a></li>
+            <li class="nav-item">
+                <a class="nav-link" href="notifications.php">
+                    <i class="bi bi-bell"></i> Notifications
+                    <?php if ($unread_notif > 0): ?>
                         <span id="sidebarNotifBadge" class="badge bg-danger rounded-pill ms-2"><?php echo $unread_notif; ?></span>
                     <?php else: ?>
                         <span id="sidebarNotifBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span>

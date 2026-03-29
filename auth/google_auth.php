@@ -13,6 +13,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'redirect') {
         'scope'         => 'openid email profile',
         'state'         => $_SESSION['oauth_state'],
         'access_type'   => 'online',
+        'prompt'        => 'select_account',
     ]);
 
     header('Location: https://accounts.google.com/o/oauth2/v2/auth?' . $params);
@@ -32,40 +33,50 @@ if (!isset($_GET['state']) || !isset($_SESSION['oauth_state']) || $_GET['state']
 unset($_SESSION['oauth_state']);
 
 // Exchange authorization code for access token
-$tokenResponse = file_get_contents('https://oauth2.googleapis.com/token', false, stream_context_create([
-    'http' => [
-        'method'  => 'POST',
-        'header'  => 'Content-Type: application/x-www-form-urlencoded',
-        'content' => http_build_query([
-            'code'          => $_GET['code'],
-            'client_id'     => GOOGLE_CLIENT_ID,
-            'client_secret' => GOOGLE_CLIENT_SECRET,
-            'redirect_uri'  => GOOGLE_REDIRECT_URI,
-            'grant_type'    => 'authorization_code',
-        ]),
-    ],
-]));
+$ch = curl_init('https://oauth2.googleapis.com/token');
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST           => true,
+    CURLOPT_POSTFIELDS     => http_build_query([
+        'code'          => $_GET['code'],
+        'client_id'     => GOOGLE_CLIENT_ID,
+        'client_secret' => GOOGLE_CLIENT_SECRET,
+        'redirect_uri'  => GOOGLE_REDIRECT_URI,
+        'grant_type'    => 'authorization_code',
+    ]),
+    CURLOPT_HTTPHEADER     => ['Content-Type: application/x-www-form-urlencoded'],
+    CURLOPT_SSL_VERIFYPEER => false,
+    CURLOPT_SSL_VERIFYHOST => false,
+]);
+$tokenResponse = curl_exec($ch);
+$curlError     = curl_error($ch);
+curl_close($ch);
 
-if (!$tokenResponse) {
-    die('Failed to get access token from Google. Please try again.');
+if (!$tokenResponse || $curlError) {
+    die('Failed to get access token from Google: ' . htmlspecialchars($curlError));
 }
 
 $tokenData = json_decode($tokenResponse, true);
 
 if (empty($tokenData['access_token'])) {
-    die('Invalid token response from Google. Please try again.');
+    $errorMsg = $tokenData['error_description'] ?? $tokenData['error'] ?? 'Unknown error';
+    die('Invalid token response from Google: ' . htmlspecialchars($errorMsg));
 }
 
 // Fetch user profile from Google
-$profileResponse = file_get_contents('https://www.googleapis.com/oauth2/v3/userinfo', false, stream_context_create([
-    'http' => [
-        'method' => 'GET',
-        'header' => 'Authorization: Bearer ' . $tokenData['access_token'],
-    ],
-]));
+$ch = curl_init('https://www.googleapis.com/oauth2/v3/userinfo');
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $tokenData['access_token']],
+    CURLOPT_SSL_VERIFYPEER => false,
+    CURLOPT_SSL_VERIFYHOST => false,
+]);
+$profileResponse = curl_exec($ch);
+$curlError       = curl_error($ch);
+curl_close($ch);
 
-if (!$profileResponse) {
-    die('Failed to get user profile from Google. Please try again.');
+if (!$profileResponse || $curlError) {
+    die('Failed to get user profile from Google: ' . htmlspecialchars($curlError));
 }
 
 $profile = json_decode($profileResponse, true);

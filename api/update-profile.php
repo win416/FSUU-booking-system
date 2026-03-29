@@ -72,13 +72,14 @@ try {
             throw new Exception('Passwords do not match');
         }
 
-        // Verify current password
+        // Verify current password (skip if account has no password set, e.g. Google sign-in)
         $stmt = $db->prepare("SELECT password FROM users WHERE user_id = ?");
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $res = $stmt->get_result()->fetch_assoc();
+        $storedHash = $res['password'] ?? '';
 
-        if (!password_verify($current, $res['password'] ?? '')) {
+        if (!empty($storedHash) && !password_verify($current, $storedHash)) {
             throw new Exception('Incorrect current password');
         }
 

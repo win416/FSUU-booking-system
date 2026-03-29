@@ -41,6 +41,10 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+    <style>
+        #servicesTableBody td:last-child { white-space: nowrap; }
+        #servicesTableBody td:last-child .btn { margin: 0 1px; }
+    </style>
 </head>
 <body>
     <div class="dashboard-wrapper">
@@ -61,12 +65,12 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                 <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="users.php"><i class="bi bi-person-badge"></i> Users</a></li>
                 <li class="nav-item"><a class="nav-link active" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
-                <li class="nav-item logout-nav-item">
-                    <a class="nav-link text-danger" href="../auth/logout.php">
-                        <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                    </a>
-                </li>
             </ul>
+            </div>
+            <div class="logout-nav-item">
+                <a class="nav-link text-danger" href="../auth/logout.php">
+                    <i class="bi bi-box-arrow-right text-danger"></i> Logout
+                </a>
             </div>
         </nav>
 

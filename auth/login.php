@@ -20,8 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if ($result->num_rows == 1) {
             $user = $result->fetch_assoc();
-            
-            if (password_verify($password, $user['password'])) {
+
+            // Account was created via Google (no password set)
+            if (empty($user['password'])) {
+                $error = 'This account uses Google Sign-in. <a href="google_auth.php?action=redirect">Sign in with Google</a>, then set a password in your Profile to enable manual login.';
+            } elseif (password_verify($password, $user['password'])) {
                 SessionManager::setUser($user);
                 
                 // Redirect based on role
