@@ -43,23 +43,36 @@ while ($row = $calendar_blocks->fetch_assoc()) {
     ];
 }
 
-// Calendar events: appointments per day
-$appt_counts = $db->query("
-    SELECT appointment_date, COUNT(*) as cnt
-    FROM appointments
-    WHERE appointment_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 MONTH) AND DATE_ADD(CURDATE(), INTERVAL 3 MONTH)
-      AND status IN ('pending','approved','completed')
-    GROUP BY appointment_date
+// Calendar events: individual appointments with patient name + service
+$appt_query = $db->query("
+    SELECT a.appointment_id, a.appointment_date, a.appointment_time, a.status,
+           u.first_name, u.last_name,
+           s.service_name, s.duration_minutes
+    FROM appointments a
+    JOIN users u ON a.user_id = u.user_id
+    JOIN services s ON a.service_id = s.service_id
+    WHERE a.appointment_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 MONTH) AND DATE_ADD(CURDATE(), INTERVAL 3 MONTH)
+      AND a.status IN ('pending','approved','completed')
+    ORDER BY a.appointment_date, a.appointment_time
 ");
 $appt_events = [];
-while ($row = $appt_counts->fetch_assoc()) {
+while ($row = $appt_query->fetch_assoc()) {
+    $startDT = $row['appointment_date'] . 'T' . $row['appointment_time'];
+    $endDT   = $row['appointment_date'] . 'T' . date('H:i:s', strtotime($row['appointment_time']) + ((int)$row['duration_minutes'] * 60));
+    $colors  = ['approved' => '#198754', 'pending' => '#fd7e14', 'completed' => '#6c757d'];
+    $color   = $colors[$row['status']] ?? '#0d6efd';
     $appt_events[] = [
-        'title'           => '📅 ' . $row['cnt'] . ' Appointment' . ($row['cnt'] > 1 ? 's' : ''),
-        'start'           => $row['appointment_date'],
-        'backgroundColor' => '#0d6efd',
-        'borderColor'     => '#0d6efd',
+        'id'              => 'appt_' . $row['appointment_id'],
+        'title'           => $row['first_name'] . ' ' . $row['last_name'],
+        'start'           => $startDT,
+        'end'             => $endDT,
+        'backgroundColor' => $color,
+        'borderColor'     => $color,
         'textColor'       => '#fff',
-        'allDay'          => true,
+        'extendedProps'   => [
+            'service' => $row['service_name'],
+            'status'  => $row['status'],
+        ],
     ];
 }
 
@@ -78,6 +91,17 @@ $all_events = array_merge($block_events, $appt_events);
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link href="../assets/css/admin-schedule.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+    <style>
+        /* Calendar event styles */
+        .fc-event { cursor: pointer; }
+        .fc-timegrid-event .fc-event-main { padding: 0; }
+        /* Legend dots */
+        .legend-dot { display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px; }
+        .legend-dot--appt-pending  { background:#fd7e14; }
+        .legend-dot--appt-approved { background:#198754; }
+        .legend-dot--appt-done     { background:#6c757d; }
+        .legend-dot--blocked       { background:#dc3545; }
+    </style>
 </head>
 <body>
     <div class="dashboard-wrapper">
@@ -129,9 +153,11 @@ $all_events = array_merge($block_events, $appt_events);
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Clinic Calendar</h5>
-                        <div class="d-flex gap-3 small">
-                            <span><span class="legend-dot" class="legend-dot--appt"></span>Appointments</span>
-                            <span><span class="legend-dot" class="legend-dot--blocked"></span>Blocked</span>
+                        <div class="d-flex gap-3 small flex-wrap">
+                            <span><span class="legend-dot legend-dot--appt-approved"></span>Approved</span>
+                            <span><span class="legend-dot legend-dot--appt-pending"></span>Pending</span>
+                            <span><span class="legend-dot legend-dot--appt-done"></span>Completed</span>
+                            <span><span class="legend-dot legend-dot--blocked"></span>Blocked</span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -345,12 +371,35 @@ $all_events = array_merge($block_events, $appt_events);
     document.addEventListener('DOMContentLoaded', function () {
         const calEl = document.getElementById('clinicCalendar');
         const calendar = new FullCalendar.Calendar(calEl, {
-            initialView: 'dayGridMonth',
-            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek' },
+            initialView: 'timeGridWeek',
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' },
             height: 'auto',
+            slotMinTime: '08:00:00',
+            slotMaxTime: '18:00:00',
+            allDaySlot: true,
+            nowIndicator: true,
             events: calendarEvents,
+            eventContent: function (arg) {
+                const service = arg.event.extendedProps.service;
+                if (service) {
+                    // Appointment event: show name + service
+                    const timeText = arg.timeText ? `<div class="fc-event-time" style="font-size:0.7rem;opacity:0.85">${arg.timeText}</div>` : '';
+                    return { html: `<div style="padding:2px 4px;overflow:hidden">
+                        ${timeText}
+                        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${arg.event.title}</div>
+                        <div style="font-size:0.75rem;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${service}</div>
+                    </div>` };
+                }
+                // Blocked event: default rendering
+                return true;
+            },
             eventClick: function (info) {
-                // Do nothing on event click, date click handles it
+                const service = info.event.extendedProps.service;
+                if (service) {
+                    // Appointment clicked — open day modal for that date
+                    const dateStr = info.event.startStr.substring(0, 10);
+                    openDayModal(dateStr);
+                }
             },
             dateClick: function (info) {
                 openDayModal(info.dateStr);
