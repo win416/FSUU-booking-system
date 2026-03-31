@@ -308,9 +308,17 @@
 }
 
 /* ── Mobile ───────────────────────────────────────────────────────── */
+@media (max-width: 767.98px) {
+    .notif-page-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.75rem;
+    }
+    .notif-search-wrap { width: 100%; }
+}
+
 @media (max-width: 575.98px) {
     .notif-page-header { padding: 1rem; }
-    .notif-search-wrap { width: 100%; }
     .notif-filter-tabs { padding: 0 0.5rem; }
     .notif-filter-tabs .nav-link { padding: 0.6rem 0.65rem; font-size: 0.8rem; }
     .notif-card .card-body { padding: 0.75rem 0.85rem; }

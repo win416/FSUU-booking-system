@@ -531,8 +531,8 @@
 }
 .mobile-back-btn:hover { background: #F8F8F8; color: #1A1A1A; }
 
-/* ── Mobile Messages Layout ─────────────────────────────────────────────── */
-@media (max-width: 767.98px) {
+/* ── Mobile/Tablet Messages Layout ─────────────────────────────────────────── */
+@media (max-width: 991.98px) {
     .mobile-back-btn { display: flex; }
 
     .msg-layout {
@@ -547,7 +547,7 @@
         border-right: none;
         border-bottom: 1px solid #E0E0E0;
         flex: none;
-        max-height: 55vh;
+        max-height: 45vh;
     }
 
     .right-panel {
@@ -565,4 +565,11 @@
     .msg-layout.chat-active .inbox-panel { display: none !important; }
     .msg-layout.chat-active .right-panel { flex: 1; height: 100%; }
     .msg-layout.chat-active .msg-layout { height: 100%; }
+}
+
+@media (max-width: 575.98px) {
+    .inbox-panel { max-height: 40vh; }
+    .msg-bubble { max-width: 82%; }
+    .reply-area { padding: 0.5rem; }
+    .compose-btn { width: 100%; justify-content: center; }
 }

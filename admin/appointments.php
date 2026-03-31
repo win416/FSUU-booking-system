@@ -101,9 +101,9 @@ $result = $db->query($query);
         <div class="main-content">
             <?php include '../includes/admin-topbar.php'; ?>
             <div class="container-fluid my-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                     <h2>Manage Appointments</h2>
-                    <div class="btn-group">
+                    <div class="btn-group flex-wrap">
                         <a href="?status=all" class="btn btn-outline-dark <?php echo $status_filter == 'all' ? 'active' : ''; ?>">All</a>
                         <a href="?status=pending" class="btn btn-outline-dark <?php echo $status_filter == 'pending' ? 'active' : ''; ?>">Pending</a>
                         <a href="?status=approved" class="btn btn-outline-dark <?php echo $status_filter == 'approved' ? 'active' : ''; ?>">Approved</a>

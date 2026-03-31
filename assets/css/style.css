@@ -244,10 +244,11 @@ small, .small { font-size: var(--fs-xs); }
         padding: 1rem !important;
     }
 
-    /* Page titles smaller on mobile */
-    .page-title {
-        font-size: 1.1rem;
-    }
+    /* Page titles smaller on tablet */
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.1rem; }
+    .page-title { font-size: 1.1rem; }
 
     /* Reduce button padding on mobile */
     .btn-sm {

@@ -714,6 +714,29 @@ body {
 }
 
 /* ── Responsive adjustments ──────────────────────────────────────────────── */
+@media (max-width: 991.98px) {
+    .main-content {
+        padding: 1.5rem;
+        padding-top: calc(1.5rem + 56px) !important;
+    }
+
+    .pt-notif-dropdown {
+        width: calc(100vw - 20px);
+        right: 0;
+        left: auto;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .main-content {
+        padding: 1rem;
+        padding-top: calc(1rem + 56px) !important;
+    }
+
+    .card-stats .card-body { padding: 1rem; }
+    .card-stats h2 { font-size: 1.6rem; }
+}
+
 @media (max-width: 575.98px) {
     .main-content {
         padding: 0.75rem !important;
@@ -729,6 +752,7 @@ body {
 
     .pt-notif-dropdown {
         width: calc(100vw - 16px);
-        right: -8px;
+        right: 0;
+        left: auto;
     }
 }

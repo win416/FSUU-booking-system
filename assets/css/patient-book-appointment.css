@@ -630,6 +630,19 @@
     .step-circle { width: 38px; height: 38px; font-size: 0.9rem; }
     .step-line { margin-top: 18px; }
     .booking-summary { margin-top: 1rem; }
+
+    /* Stack booking panel + summary vertically on tablet */
+    .col-lg-8, .col-lg-4 { flex: 0 0 100%; max-width: 100%; }
+}
+
+@media (max-width: 767.98px) {
+    .main-content { padding: 1rem; }
+    .booking-steps { padding: 0 0.25rem; }
+    .service-card.has-bg-image { min-height: 160px; }
+
+    /* 2 service cards per row on phone */
+    #servicesGrid > .col-6 { flex: 0 0 50%; max-width: 50%; }
+    #servicesGrid > .col-md-3 { flex: 0 0 50%; max-width: 50%; }
 }
 
 @media (max-width: 575.98px) {
@@ -641,6 +654,7 @@
     .service-card { padding: 1rem 0.75rem 0.75rem; }
     .time-slot { min-width: 70px; font-size: 0.78rem; padding: 0.4rem 0.6rem; }
     .clinic-hours-notice { font-size: 0.78rem; }
+    .slots-grid { gap: 0.3rem; }
 }
 
 @keyframes toastIn {

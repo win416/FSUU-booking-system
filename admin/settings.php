@@ -55,6 +55,18 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
         .card.info-card { border: 1px solid #E0E0E0; border-radius: 10px; }
         .card.info-card .card-header { background: #F8F8F8; color: #1A1A1A; border-bottom: 1px solid #E0E0E0; border-radius: 10px 10px 0 0; }
         .card.info-card a { color: #1A1A1A; text-decoration: underline; }
+
+        /* ── Mobile responsiveness ── */
+        @media (max-width: 767.98px) {
+            #settingsTabs .nav-link { padding: 0.5rem 0.65rem; font-size: 0.85rem; }
+            #settingsTabs .nav-link i { display: none; }
+            .card.info-card { margin-top: 1rem; }
+        }
+        @media (max-width: 575.98px) {
+            #settingsTabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            #settingsTabs .nav-link { white-space: nowrap; font-size: 0.78rem; padding: 0.5rem 0.5rem; }
+            #servicesTableBody td:last-child { white-space: normal; }
+        }
     </style>
 </head>
 <body>
