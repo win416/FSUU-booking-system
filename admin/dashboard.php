@@ -334,8 +334,8 @@ foreach ($weekly_data as $date => $count) {
     const weeklyData = <?php echo json_encode(['dates' => $chart_labels, 'counts' => $chart_values]); ?>;
 
     const gradient = ctx.createLinearGradient(0, 0, 0, 280);
-    gradient.addColorStop(0, 'rgba(26, 26, 26, 0.15)');
-    gradient.addColorStop(1, 'rgba(26, 26, 26, 0.0)');
+    gradient.addColorStop(0, 'rgba(41, 171, 226, 0.25)');
+    gradient.addColorStop(1, 'rgba(41, 171, 226, 0.0)');
 
     new Chart(ctx, {
         type: 'line',
@@ -344,16 +344,16 @@ foreach ($weekly_data as $date => $count) {
             datasets: [{
                 label: 'Appointments',
                 data: weeklyData.counts,
-                borderColor: '#1A1A1A',
+                borderColor: '#29ABE2',
                 backgroundColor: gradient,
                 fill: true,
                 tension: 0.42,
                 pointBackgroundColor: '#fff',
-                pointBorderColor: '#1A1A1A',
+                pointBorderColor: '#29ABE2',
                 pointBorderWidth: 2.5,
                 pointRadius: 5,
                 pointHoverRadius: 7,
-                pointHoverBackgroundColor: '#1A1A1A',
+                pointHoverBackgroundColor: '#29ABE2',
                 pointHoverBorderColor: '#fff',
                 borderWidth: 2.5
             }]
@@ -364,7 +364,7 @@ foreach ($weekly_data as $date => $count) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1A1A1A',
+                    backgroundColor: '#29ABE2',
                     titleColor: '#E0E0E0',
                     bodyColor: '#fff',
                     padding: 12,

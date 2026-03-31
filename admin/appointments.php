@@ -36,7 +36,11 @@ $result = $db->query($query);
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
     <style>
-    .btn-outline-dark.active { background: #1A1A1A; color: #fff; }
+    .btn-outline-dark { color: #29ABE2; border-color: #29ABE2; }
+    .btn-outline-dark:hover { background: #29ABE2; color: #fff; border-color: #29ABE2; }
+    .btn-outline-dark.active { background: #29ABE2; color: #fff; border-color: #29ABE2; }
+    .btn-dark.complete-btn { background: #29ABE2; border-color: #1C9DD6; }
+    .btn-dark.complete-btn:hover { background: #1C9DD6; border-color: #1C9DD6; }
     </style>
 <body>
     <div class="dashboard-wrapper">

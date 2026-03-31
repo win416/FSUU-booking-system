@@ -176,7 +176,7 @@
 /* ── Step progress bar ───────────────────────────────────────────────── */
 .booking-steps {
     display: flex;
-    align-items: flex-start; /* allows precise line-to-circle alignment */
+    align-items: flex-start;
     gap: 0;
 }
 
@@ -189,8 +189,8 @@
 }
 
 .step-circle {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     border: 2px solid var(--border-color);
     background: #fff;
@@ -198,21 +198,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     transition: all 0.3s;
 }
 
 .step.active .step-circle {
-    border-color: var(--primary-color);
-    background: var(--primary-color);
+    border-color: #29ABE2;
+    background: #29ABE2;
     color: #fff;
-    box-shadow: 0 0 0 4px rgba(0,0,0,0.15);
+    box-shadow: 0 0 0 5px rgba(41,171,226,0.18);
 }
 
 .step.completed .step-circle {
-    border-color: #198754;
-    background: #198754;
-    color: #fff;
+    border-color: #29ABE2;
+    background: #E0F4FB;
+    color: #29ABE2;
 }
 
 .step-label {
@@ -222,21 +222,20 @@
     white-space: nowrap;
 }
 
-.step.active .step-label   { color: var(--primary-color); }
-.step.completed .step-label { color: #198754; }
+.step.active .step-label   { color: #29ABE2; }
+.step.completed .step-label { color: #29ABE2; }
 
 .step-line {
     flex: 1;
     height: 2px;
     background: var(--border-color);
     margin: 0 8px;
-    margin-top: 21px; /* (44px circle ÷ 2) − (2px line ÷ 2) = 21px → centers line on circle */
+    margin-top: 23px;
     transition: background 0.3s;
 }
 
-/* Line turns green once the preceding step is completed */
 .step.completed + .step-line {
-    background: #198754;
+    background: #29ABE2;
 }
 
 /* ── Booking panels ──────────────────────────────────────────────────── */
@@ -260,9 +259,9 @@
     align-items: center;
     gap: 0.75rem;
     padding: 1rem 1.25rem;
-    background: #F8F8F8;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f4fb 100%);
     color: #1A1A1A;
-    border-bottom: 1px solid #E0E0E0;
+    border-bottom: 1px solid #c5e8f5;
 }
 
 .booking-panel-header .btn-outline-secondary {
@@ -304,7 +303,7 @@
 .service-card {
     position: relative;
     border: 2px solid var(--border-color);
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     padding: 1.25rem 1rem 1rem;
     cursor: pointer;
     text-align: center;
@@ -312,6 +311,7 @@
     background: #fff;
     width: 100%;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 /* Background-image variant */
@@ -319,13 +319,14 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    min-height: 180px;
+    min-height: 200px;
     border-color: transparent;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
     padding-bottom: 1.1rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
 }
 
 /* Dark overlay so text stays readable */
@@ -362,8 +363,8 @@
 
 .service-card:hover {
     border-color: var(--primary-color);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(41,171,226,0.18);
 }
 .service-card.has-bg-image:hover {
     border-color: transparent;
@@ -533,12 +534,12 @@
 }
 
 .booking-summary-header {
-    background: #F8F8F8;
-    color: #1A1A1A;
+    background: linear-gradient(135deg, #29ABE2 0%, #1C9DD6 100%);
+    color: #fff;
     padding: 0.9rem 1.1rem;
     font-weight: 700;
     font-size: 0.9rem;
-    border-bottom: 1px solid #E0E0E0;
+    border-bottom: none;
 }
 
 .booking-summary-body {
@@ -626,14 +627,14 @@
 @media (max-width: 991.98px) {
     .booking-steps { gap: 0; }
     .step-label { font-size: 0.68rem; }
-    .step-circle { width: 36px; height: 36px; font-size: 0.9rem; }
-    .step-line { margin-top: 17px; } /* (36px circle ÷ 2) − 1px */
+    .step-circle { width: 38px; height: 38px; font-size: 0.9rem; }
+    .step-line { margin-top: 18px; }
     .booking-summary { margin-top: 1rem; }
 }
 
 @media (max-width: 575.98px) {
     .step-circle { width: 32px; height: 32px; font-size: 0.8rem; }
-    .step-line { margin-top: 15px; } /* (32px circle ÷ 2) − 1px */
+    .step-line { margin-top: 15px; }
     .step-label { font-size: 0.62rem; }
     .booking-panel-header { padding: 0.75rem 1rem; flex-wrap: wrap; }
     .booking-panel-body { padding: 1rem 0.75rem; }

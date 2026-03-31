@@ -191,8 +191,8 @@ SessionManager::requireAdmin();
         let currentData = null;
 
         const statusColors = {
-            pending: '#ffc107', approved: '#0dcaf0',
-            completed: '#198754', cancelled: '#dc3545', declined: '#6c757d'
+            pending: '#ffc107', approved: '#29ABE2',
+            completed: '#29ABE2', cancelled: '#dc3545', declined: '#6c757d'
         };
 
         function getDateRange() {
@@ -266,8 +266,8 @@ SessionManager::requireAdmin();
             const tCanvas = document.getElementById('trendsChart');
             const tCtx = tCanvas.getContext('2d');
             const tGrad = tCtx.createLinearGradient(0, 0, 0, 220);
-            tGrad.addColorStop(0, 'rgba(0,174,239,0.25)');
-            tGrad.addColorStop(1, 'rgba(0,174,239,0.0)');
+            tGrad.addColorStop(0, 'rgba(41,171,226,0.25)');
+            tGrad.addColorStop(1, 'rgba(41,171,226,0.0)');
             trendsChart = new Chart(tCanvas, {
                 type: 'line',
                 data: {
@@ -275,15 +275,18 @@ SessionManager::requireAdmin();
                     datasets: [{
                         label: 'Appointments',
                         data: data.trends.map(t => t.count),
-                        borderColor: '#0ea5e9',
+                        borderColor: '#29ABE2',
                         backgroundColor: tGrad,
                         fill: true,
                         tension: 0.42,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#0ea5e9',
-                        pointBorderWidth: 2,
-                        pointHoverRadius: 6
+                        borderWidth: 3,
+                        pointRadius: 7,
+                        pointBackgroundColor: '#29ABE2',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2.5,
+                        pointHoverRadius: 9,
+                        pointHoverBackgroundColor: '#1C9DD6',
+                        pointHoverBorderColor: '#fff'
                     }]
                 },
                 options: {
@@ -292,7 +295,7 @@ SessionManager::requireAdmin();
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1A1A1A',
+                            backgroundColor: '#29ABE2',
                             titleColor: '#E0E0E0',
                             bodyColor: '#fff',
                             bodyFont: { weight: 'bold', size: 13 },
@@ -343,7 +346,7 @@ SessionManager::requireAdmin();
                             }
                         },
                         tooltip: {
-                            backgroundColor: '#1A1A1A',
+                            backgroundColor: '#29ABE2',
                             titleColor: '#E0E0E0',
                             bodyColor: '#fff',
                             padding: 10,
@@ -360,7 +363,7 @@ SessionManager::requireAdmin();
                         const { ctx, chartArea: { top, bottom, left, right } } = chart;
                         const cx = (left + right) / 2, cy = (top + bottom) / 2;
                         ctx.save();
-                        ctx.font = 'bold 24px sans-serif'; ctx.fillStyle = '#1A1A1A';
+                        ctx.font = 'bold 24px sans-serif'; ctx.fillStyle = '#29ABE2';
                         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                         ctx.fillText(sTotal, cx, cy - 8);
                         ctx.font = '11px sans-serif'; ctx.fillStyle = '#4D4D4D';
@@ -373,8 +376,8 @@ SessionManager::requireAdmin();
             // ── Services Bar ──────────────────────────────────────────────────
             if (servicesChart) servicesChart.destroy();
             const barColors = data.services.map((_, i) => {
-                const grays = ['#1A1A1A','#333333','#4D4D4D','#808080','#B0B0B0'];
-                return grays[i % grays.length];
+                const blues = ['#29ABE2','#1C9DD6','#4DBDE8','#7DCFEE','#A8E0F5'];
+                return blues[i % blues.length];
             });
             servicesChart = new Chart(document.getElementById('servicesChart'), {
                 type: 'bar',
@@ -395,7 +398,7 @@ SessionManager::requireAdmin();
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1A1A1A',
+                            backgroundColor: '#29ABE2',
                             titleColor: '#E0E0E0',
                             bodyColor: '#fff',
                             padding: 10,

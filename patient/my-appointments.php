@@ -86,7 +86,7 @@ $appointments = $stmt->get_result();
         <div class="main-content">
             <?php include '../includes/patient-topbar.php'; ?>
             <div class="container-fluid my-4">
-            <div style="max-width:960px;">
+            <div style="max-width:1100px;width:100%;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h2 class="fw-bold mb-0" style="font-size:1.6rem;">My Appointments</h2>

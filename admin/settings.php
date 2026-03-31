@@ -48,8 +48,8 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
         /* ── Settings page tab overrides ── */
         #settingsTabs.nav-tabs { border-bottom: 1px solid #E0E0E0; }
         #settingsTabs .nav-link { color: #4D4D4D; border: none; border-bottom: 2px solid transparent; background: transparent; padding: 0.6rem 1.1rem; }
-        #settingsTabs .nav-link:hover { color: #1A1A1A; border-bottom-color: #E0E0E0; background: transparent; }
-        #settingsTabs .nav-link.active { color: #1A1A1A !important; font-weight: 600; border-bottom: 2px solid #1A1A1A !important; background: transparent !important; border-top: none !important; border-left: none !important; border-right: none !important; }
+        #settingsTabs .nav-link:hover { color: #29ABE2; border-bottom-color: #A8E0F5; background: transparent; }
+        #settingsTabs .nav-link.active { color: #29ABE2 !important; font-weight: 600; border-bottom: 2px solid #29ABE2 !important; background: transparent !important; border-top: none !important; border-left: none !important; border-right: none !important; }
 
         /* ── Info card ── */
         .card.info-card { border: 1px solid #E0E0E0; border-radius: 10px; }
@@ -313,7 +313,7 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                                         <img id="avatarPreviewImg" src="../<?= htmlspecialchars($pic) ?>?v=<?= time() ?>"
                                                              alt="Profile" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #E0E0E0;">
                                                     <?php else: ?>
-                                                        <div id="avatarPreviewImg" style="width:90px;height:90px;border-radius:50%;background:#1A1A1A;color:#fff;font-size:2rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:3px solid #E0E0E0;">
+                                                        <div id="avatarPreviewImg" style="width:90px;height:90px;border-radius:50%;background:#29ABE2;color:#fff;font-size:2rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:3px solid #E0E0E0;">
                                                             <?= $initials ?>
                                                         </div>
                                                     <?php endif; ?>
@@ -327,7 +327,7 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                                     <?= htmlspecialchars(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['last_name'] ?? '')) ?>
                                                 </div>
                                                 <div class="mb-2">
-                                                    <span style="display:inline-flex;align-items:center;gap:0.35rem;background:#1A1A1A;color:#fff;font-size:0.75rem;font-weight:600;padding:0.2rem 0.65rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">
+                                                    <span style="display:inline-flex;align-items:center;gap:0.35rem;background:#29ABE2;color:#fff;font-size:0.75rem;font-weight:600;padding:0.2rem 0.65rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">
                                                         <i class="bi bi-shield-fill-check"></i>
                                                         <?= htmlspecialchars(ucfirst($currentUser['role'] ?? 'Admin')) ?>
                                                     </span>

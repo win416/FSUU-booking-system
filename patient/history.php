@@ -93,7 +93,7 @@ $medical = $stmt->get_result()->fetch_assoc();
                                     <input type="text" name="emergency_contact_number" class="form-control" value="<?php echo htmlspecialchars($medical['emergency_contact_number'] ?? ''); ?>" required>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-dark">Update Medical Info</button>
+                            <button type="submit" class="btn" style="background:#29ABE2;color:#fff;border-color:#1C9DD6;">Update Medical Info</button>
                         </form>
                     </div>
                 </div>

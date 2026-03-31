@@ -109,7 +109,7 @@ function getDateGroup(string $dateStr): string {
     <div class="main-content">
         <?php include '../includes/patient-topbar.php'; ?>
         <div class="container-fluid my-4">
-            <div style="max-width:860px; margin:0 auto;">
+            <div style="max-width:1100px;">
 
             <!-- Page Header -->
             <div class="notif-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">

@@ -96,7 +96,7 @@ if ($picStmt) {
                                 <h5 class="mb-0"><?php echo htmlspecialchars(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')); ?></h5>
                                 <small class="text-muted"><?php echo htmlspecialchars($user['email'] ?? ''); ?></small>
                                 <div class="my-2">
-                                    <span style="display:inline-flex;align-items:center;gap:0.35rem;background:#1A1A1A;color:#fff;font-size:0.75rem;font-weight:600;padding:0.2rem 0.65rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">
+                                    <span style="display:inline-flex;align-items:center;gap:0.35rem;background:#29ABE2;color:#fff;font-size:0.75rem;font-weight:600;padding:0.2rem 0.65rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">
                                         <i class="bi bi-person-fill"></i>
                                         <?php echo htmlspecialchars(ucfirst($user['role'] ?? 'Student')); ?>
                                     </span>
@@ -142,7 +142,7 @@ if ($picStmt) {
                                         <input type="email" class="form-control" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" readonly disabled>
                                         <small class="text-muted">Email cannot be changed.</small>
                                     </div>
-                                    <button type="submit" class="btn btn-dark">Save Changes</button>
+                                    <button type="submit" class="btn" style="background:#29ABE2;color:#fff;border-color:#1C9DD6;">Save Changes</button>
                                 </form>
                             </div>
                         </div>
@@ -178,7 +178,7 @@ if ($picStmt) {
                                         <label class="form-label">Confirm <?php echo $hasPassword ? 'New ' : ''; ?>Password</label>
                                         <input type="password" name="confirm_password" class="form-control" minlength="8" required>
                                     </div>
-                                    <button type="submit" class="btn btn-warning"><?php echo $hasPassword ? 'Update Password' : 'Set Password'; ?></button>
+                                    <button type="submit" class="btn" style="background:#29ABE2;color:#fff;border-color:#1C9DD6;"><?php echo $hasPassword ? 'Update Password' : 'Set Password'; ?></button>
                                 </form>
                             </div>
                         </div>
