@@ -64,9 +64,6 @@ if ($picStmt) {
                 <li class="nav-item"><a class="nav-link" href="history.php"><i class="bi bi-clock-history"></i> History</a></li>
             </ul>
             </div>
-            <div class="logout-nav-item">
-                <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
-            </div>
         </nav>
 
         <div class="main-content">
@@ -98,8 +95,14 @@ if ($picStmt) {
                             <div>
                                 <h5 class="mb-0"><?php echo htmlspecialchars(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')); ?></h5>
                                 <small class="text-muted"><?php echo htmlspecialchars($user['email'] ?? ''); ?></small>
-                                <div class="mt-2">
-                                    <label for="picUploadInput" class="btn btn-sm btn-outline-primary">
+                                <div class="my-2">
+                                    <span style="display:inline-flex;align-items:center;gap:0.35rem;background:#1A1A1A;color:#fff;font-size:0.75rem;font-weight:600;padding:0.2rem 0.65rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">
+                                        <i class="bi bi-person-fill"></i>
+                                        <?php echo htmlspecialchars(ucfirst($user['role'] ?? 'Student')); ?>
+                                    </span>
+                                </div>
+                                <div class="mt-1">
+                                    <label for="picUploadInput" class="btn btn-sm btn-outline-dark">
                                         <i class="bi bi-upload"></i> Upload Photo
                                     </label>
                                     <small class="text-muted ms-2">JPG, PNG, GIF or WEBP · Max 2 MB</small>
@@ -115,7 +118,7 @@ if ($picStmt) {
                     <div class="col-md-6 mb-4">
                         <div class="card h-100">
                             <div class="card-header bg-white">
-                                <h5 class="mb-0 text-primary">Personal Information</h5>
+                                <h5 class="mb-0 fw-bold">Personal Information</h5>
                             </div>
                             <div class="card-body">
                                 <form id="personalInfoForm">
@@ -139,7 +142,7 @@ if ($picStmt) {
                                         <input type="email" class="form-control" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" readonly disabled>
                                         <small class="text-muted">Email cannot be changed.</small>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    <button type="submit" class="btn btn-dark">Save Changes</button>
                                 </form>
                             </div>
                         </div>
@@ -149,7 +152,7 @@ if ($picStmt) {
                     <div class="col-md-6 mb-4">
                         <div class="card h-100">
                             <div class="card-header bg-white">
-                                <h5 class="mb-0 text-primary">Security</h5>
+                                <h5 class="mb-0 fw-bold">Security</h5>
                             </div>
                             <div class="card-body">
                                 <?php if (!$hasPassword): ?>

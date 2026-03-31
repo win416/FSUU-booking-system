@@ -63,7 +63,7 @@ function serviceBgImage(string $name): string {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/patient-dashboard.css">
-    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=2">
+    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=3">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -94,9 +94,6 @@ function serviceBgImage(string $name): string {
             <li class="nav-item"><a class="nav-link" href="history.php"><i class="bi bi-clock-history"></i> History</a></li>
         </ul>
         </div>
-        <div class="logout-nav-item">
-            <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
-        </div>
     </nav>
 
     <!-- Main Content -->
@@ -106,12 +103,12 @@ function serviceBgImage(string $name): string {
 
             <!-- Page Header -->
             <div class="mb-4">
-                <h4 class="fw-bold mb-1"><i class="bi bi-calendar-plus me-2 text-primary"></i>Book an Appointment</h4>
+                <h4 class="fw-bold mb-1">Book an Appointment</h4>
                 <p class="text-muted mb-0">Follow the steps below to schedule your dental visit.</p>
             </div>
 
             <!-- Toast Alert -->
-            <div id="bookingToast" class="alert d-none mb-3" role="alert"></div>
+            <div id="bookingToast" class="alert d-none mb-3" role="alert" style="display:none!important"></div>
 
             <!-- Step Progress Bar -->
             <div class="booking-steps mb-4">
@@ -347,6 +344,9 @@ function serviceBgImage(string $name): string {
 </div><!-- /dashboard-wrapper -->
 
 <!-- Sunday Closed Modal -->
+<!-- Floating toast notification -->
+<div id="floatToastWrap" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;pointer-events:none;"></div>
+
 <div class="modal fade" id="sundayModal" tabindex="-1" aria-labelledby="sundayModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
@@ -379,13 +379,37 @@ let calendar         = null;
 
 // ── Toast helper ─────────────────────────────────────────────────────
 function showToast(type, msg) {
-    const el = $('#bookingToast');
-    el.removeClass('d-none alert-success alert-danger alert-warning alert-info')
-      .addClass('alert-' + type)
-      .html('<i class="bi bi-' + (type==='success'?'check-circle':'exclamation-triangle') + '-fill me-2"></i>' + msg);
-    el[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    clearTimeout(el.data('t'));
-    if (type === 'success') el.data('t', setTimeout(() => el.addClass('d-none'), 6000));
+    // Legacy inline alert — keep hidden
+    $('#bookingToast').addClass('d-none');
+
+    const icons = { success: 'check-circle-fill', danger: 'x-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+    const colors = { success: '#16a34a', danger: '#dc2626', warning: '#d97706', info: '#0ea5e9' };
+    const bgColors = { success: '#f0fdf4', danger: '#fff5f5', warning: '#fffbeb', info: '#eff6ff' };
+    const borderColors = { success: '#bbf7d0', danger: '#fecaca', warning: '#fde68a', info: '#bfdbfe' };
+
+    const icon  = icons[type]  || icons.info;
+    const color = colors[type] || colors.info;
+    const bg    = bgColors[type] || bgColors.info;
+    const border= borderColors[type] || borderColors.info;
+
+    const toast = $(`<div style="
+        display:flex;align-items:flex-start;gap:0.65rem;
+        background:${bg};border:1px solid ${border};border-left:4px solid ${color};
+        border-radius:10px;padding:0.75rem 1rem;
+        box-shadow:0 4px 20px rgba(0,0,0,0.12);
+        min-width:260px;max-width:340px;
+        pointer-events:all;
+        animation:toastIn 0.25s ease both;
+        font-size:0.875rem;color:#1A1A1A;
+    ">
+        <i class="bi bi-${icon}" style="color:${color};font-size:1rem;flex-shrink:0;margin-top:1px;"></i>
+        <span style="flex:1;line-height:1.45;">${msg}</span>
+        <button onclick="this.closest('div').remove()" style="background:none;border:none;color:#9ca3af;font-size:1rem;padding:0;cursor:pointer;flex-shrink:0;line-height:1;">&times;</button>
+    </div>`);
+
+    $('#floatToastWrap').append(toast);
+    const ms = type === 'success' ? 5000 : 4000;
+    setTimeout(() => toast.fadeOut(300, () => toast.remove()), ms);
 }
 
 // ── Step indicator ────────────────────────────────────────────────────
@@ -465,7 +489,11 @@ function initCalendar() {
         initialView: 'dayGridMonth',
         headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
         selectable: true,
-        validRange: { start: new Date().toISOString().split('T')[0] },
+        dayCellClassNames: function (arg) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const cell  = new Date(arg.date); cell.setHours(0,0,0,0);
+            return cell < today ? ['cal-past-day'] : [];
+        },
         events: {
             url: '../api/get-blocked-dates.php',
             failure: () => showToast('warning', 'Could not load blocked dates.')
@@ -496,8 +524,16 @@ function initCalendar() {
             });
         },
         dateClick: function (info) {
+            // Reject past dates
+            const clicked = new Date(info.dateStr + 'T00:00:00');
+            const today   = new Date(); today.setHours(0,0,0,0);
+            if (clicked < today) {
+                showToast('warning', 'This date has already passed. Please select a future date.');
+                return;
+            }
+
             // Reject Sundays
-            const dow = new Date(info.dateStr + 'T00:00:00').getDay();
+            const dow = clicked.getDay();
             if (dow === 0) { new bootstrap.Modal(document.getElementById('sundayModal')).show(); return; }
 
             // Check blocked — silently ignore, tooltip already shown on hover

@@ -10,14 +10,15 @@ class SessionManager {
     }
     
     public static function setUser($userData) {
-        $_SESSION['user_id'] = $userData['user_id'];
-        $_SESSION['fsuu_id'] = $userData['fsuu_id'];
-        $_SESSION['email'] = $userData['email'];
-        $_SESSION['first_name'] = $userData['first_name'];
-        $_SESSION['last_name'] = $userData['last_name'];
-        $_SESSION['contact_number'] = $userData['contact_number'] ?? '';
-        $_SESSION['role'] = $userData['role'];
-        $_SESSION['last_activity'] = time();
+        $_SESSION['user_id']         = $userData['user_id'];
+        $_SESSION['fsuu_id']         = $userData['fsuu_id'];
+        $_SESSION['email']           = $userData['email'];
+        $_SESSION['first_name']      = $userData['first_name'];
+        $_SESSION['last_name']       = $userData['last_name'];
+        $_SESSION['contact_number']  = $userData['contact_number'] ?? '';
+        $_SESSION['role']            = $userData['role'];
+        $_SESSION['profile_picture'] = $userData['profile_picture'] ?? null;
+        $_SESSION['last_activity']   = time();
     }
     
     public static function isLoggedIn() {
@@ -42,13 +43,14 @@ class SessionManager {
     public static function getUser() {
         self::startSession();
         return [
-            'user_id' => $_SESSION['user_id'] ?? null,
-            'fsuu_id' => $_SESSION['fsuu_id'] ?? null,
-            'email' => $_SESSION['email'] ?? null,
-            'first_name' => $_SESSION['first_name'] ?? null,
-            'last_name' => $_SESSION['last_name'] ?? null,
-            'contact_number' => $_SESSION['contact_number'] ?? null,
-            'role' => $_SESSION['role'] ?? null
+            'user_id'         => $_SESSION['user_id'] ?? null,
+            'fsuu_id'         => $_SESSION['fsuu_id'] ?? null,
+            'email'           => $_SESSION['email'] ?? null,
+            'first_name'      => $_SESSION['first_name'] ?? null,
+            'last_name'       => $_SESSION['last_name'] ?? null,
+            'contact_number'  => $_SESSION['contact_number'] ?? null,
+            'role'            => $_SESSION['role'] ?? null,
+            'profile_picture' => $_SESSION['profile_picture'] ?? null,
         ];
     }
     

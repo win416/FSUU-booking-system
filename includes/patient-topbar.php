@@ -40,7 +40,14 @@
 })();
 </script>
 <?php /* Patient Top Bar — include inside .main-content, before container */ ?>
+<!-- Sidebar overlay backdrop (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <div class="patient-topbar">
+    <!-- Hamburger toggle (mobile only) -->
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle navigation">
+        <i class="bi bi-list"></i>
+    </button>
     <div class="patient-topbar-inner">
         <!-- Message Icon -->
         <div class="pt-notif-wrapper" id="ptMsgWrapper">
@@ -85,6 +92,37 @@
                 </div>
             </div>
         </div>
+
+        <!-- User Profile -->
+        <?php
+            $ptUser     = SessionManager::getUser();
+            $ptFullName = htmlspecialchars(($ptUser['first_name'] ?? '') . ' ' . ($ptUser['last_name'] ?? ''));
+            $ptAvatar   = !empty($ptUser['profile_picture'])
+                ? '../' . htmlspecialchars($ptUser['profile_picture'])
+                : null;
+        ?>
+        <div class="topbar-user-wrapper" id="ptTopbarUserWrapper">
+            <button class="topbar-user-btn" id="ptTopbarUserBtn" aria-label="User menu">
+                <?php if ($ptAvatar): ?>
+                    <img src="<?= $ptAvatar ?>?v=<?= time() ?>" alt="Avatar" class="topbar-user-avatar">
+                <?php else: ?>
+                    <span class="topbar-user-initials">
+                        <?= strtoupper(substr($ptUser['first_name'] ?? 'P', 0, 1)) ?>
+                    </span>
+                <?php endif; ?>
+                <span class="topbar-user-name"><?= $ptFullName ?></span>
+                <i class="bi bi-chevron-down topbar-user-chevron"></i>
+            </button>
+            <div class="topbar-user-dropdown" id="ptTopbarUserDropdown">
+                <a href="profile.php" class="topbar-user-item">
+                    <i class="bi bi-person-circle"></i> My Profile
+                </a>
+                <div class="topbar-user-divider"></div>
+                <a href="../auth/logout.php" class="topbar-user-item topbar-user-logout">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -111,7 +149,7 @@
             return { icon: 'bi-x-circle-fill', color: '#dc3545' };
         if (s.includes('reminder'))
             return { icon: 'bi-alarm-fill', color: '#ffc107' };
-        return { icon: 'bi-calendar-plus-fill', color: '#00aeef' };
+                        return { icon: 'bi-calendar-plus-fill', color: '#1A1A1A' };
     }
 
     function fetchNotifications() {
@@ -225,7 +263,7 @@
                 list.innerHTML = res.previews.map(p => `
                     <li class="pt-notif-item">
                         <a href="messages.php" class="pt-notif-link">
-                            <div class="pt-notif-icon" style="color:#00aeef">
+                            <div class="pt-notif-icon" style="color:#1A1A1A">
                                 <i class="bi bi-person-circle"></i>
                             </div>
                             <div class="pt-notif-body">
@@ -255,5 +293,63 @@
 
     fetchMessages();
     setInterval(fetchMessages, 30000);
+})();
+</script>
+
+<script>
+(function () {
+    var toggleBtn = document.getElementById('sidebarToggleBtn');
+    var overlay   = document.getElementById('sidebarOverlay');
+
+    function openSidebar()  { document.body.classList.add('sidebar-open'); }
+    function closeSidebar() { document.body.classList.remove('sidebar-open'); }
+
+    // Inject X close button into sidebar brand
+    var brand = document.querySelector('.sidebar .brand');
+    if (brand && !document.getElementById('sidebarCloseBtn')) {
+        var closeBtn = document.createElement('button');
+        closeBtn.id = 'sidebarCloseBtn';
+        closeBtn.className = 'sidebar-close-btn';
+        closeBtn.setAttribute('aria-label', 'Close navigation');
+        closeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+        closeBtn.addEventListener('click', closeSidebar);
+        brand.appendChild(closeBtn);
+    }
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function () {
+            document.body.classList.contains('sidebar-open') ? closeSidebar() : openSidebar();
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    // Close sidebar when a nav link is clicked
+    document.querySelectorAll('.sidebar .nav-link').forEach(function (link) {
+        link.addEventListener('click', closeSidebar);
+    });
+})();
+</script>
+
+<script>
+(function () {
+    var userBtn      = document.getElementById('ptTopbarUserBtn');
+    var userDropdown = document.getElementById('ptTopbarUserDropdown');
+
+    if (!userBtn) return;
+
+    userBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        document.getElementById('ptNotifDropdown').classList.remove('open');
+        document.getElementById('ptMsgDropdown').classList.remove('open');
+        userDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!document.getElementById('ptTopbarUserWrapper').contains(e.target)) {
+            userDropdown.classList.remove('open');
+        }
+    });
 })();
 </script>

@@ -41,7 +41,7 @@ function getNotifStyle(array $notif): array {
     }
     if (strpos($subject, 'submit') !== false || strpos($subject, 'book') !== false ||
         strpos($subject, 'request') !== false || strpos($subject, 'new') !== false) {
-        return ['icon' => 'bi-calendar-plus-fill', 'color' => 'primary', 'bg' => 'bg-primary'];
+        return ['icon' => 'bi-calendar-plus-fill', 'color' => 'dark', 'bg' => 'bg-dark'];
     }
     return ['icon' => 'bi-bell-fill', 'color' => 'secondary', 'bg' => 'bg-secondary'];
 }
@@ -103,20 +103,18 @@ function getDateGroup(string $dateStr): string {
             <li class="nav-item"><a class="nav-link" href="history.php"><i class="bi bi-clock-history"></i> History</a></li>
         </ul>
         </div>
-        <div class="logout-nav-item">
-            <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
-        </div>
     </nav>
 
     <!-- Main Content -->
     <div class="main-content">
         <?php include '../includes/patient-topbar.php'; ?>
         <div class="container-fluid my-4">
+            <div style="max-width:860px; margin:0 auto;">
 
             <!-- Page Header -->
             <div class="notif-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
-                    <h4 class="fw-bold mb-1"><i class="bi bi-bell me-2 text-primary"></i>Notifications</h4>
+                    <h4 class="fw-bold mb-1"><i class="bi bi-bell me-2"></i>Notifications</h4>
                 </div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <!-- Search -->
@@ -124,7 +122,7 @@ function getDateGroup(string $dateStr): string {
                         <i class="bi bi-search"></i>
                         <input type="text" id="notifSearch" placeholder="Search notifications…" autocomplete="off">
                     </div>
-                    <button id="markAllRead" class="btn btn-sm btn-outline-primary <?php echo $unread_count > 0 ? '' : 'd-none'; ?>">
+                    <button id="markAllRead" class="btn btn-sm btn-outline-dark <?php echo $unread_count > 0 ? '' : 'd-none'; ?>">
                         <i class="bi bi-check2-all me-1"></i>Mark All Read
                     </button>
                     <button id="clearAll" class="btn btn-sm btn-outline-danger <?php echo $total_count > 0 ? '' : 'd-none'; ?>">
@@ -142,7 +140,7 @@ function getDateGroup(string $dateStr): string {
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" data-filter="unread">
-                        Unread <span class="badge bg-primary ms-1" id="tab-count-unread"><?php echo $unread_count; ?></span>
+                        Unread <span class="badge bg-dark ms-1" id="tab-count-unread"><?php echo $unread_count; ?></span>
                     </button>
                 </li>
                 <li class="nav-item">
@@ -183,8 +181,17 @@ function getDateGroup(string $dateStr): string {
                                 <div style="width:8px;min-width:8px;"></div>
                                 <?php endif; ?>
 
+                                <?php
+                                    $iconClass = match($style['color']) {
+                                        'success'   => 'notif-icon-success',
+                                        'danger'    => 'notif-icon-danger',
+                                        'warning'   => 'notif-icon-warning',
+                                        'dark'      => 'notif-icon-dark',
+                                        default     => 'notif-icon-secondary',
+                                    };
+                                ?>
                                 <!-- Icon -->
-                                <div class="notif-icon <?php echo $style['bg']; ?> bg-opacity-15 text-<?php echo $style['color']; ?>">
+                                <div class="notif-icon <?= $iconClass ?>">
                                     <i class="bi <?php echo $style['icon']; ?>"></i>
                                 </div>
 
@@ -196,7 +203,7 @@ function getDateGroup(string $dateStr): string {
                                         </h6>
                                         <div class="d-flex align-items-center gap-1 flex-shrink-0">
                                             <?php if ($isUnread): ?>
-                                                <span class="badge-new badge bg-primary">New</span>
+                                                <span class="badge-new badge bg-dark">New</span>
                                             <?php endif; ?>
                                             <!-- Actions (visible on hover) -->
                                             <div class="notif-actions">
@@ -238,6 +245,7 @@ function getDateGroup(string $dateStr): string {
             </div>
 
         </div>
+        </div><!-- end max-width wrapper -->
     </div>
 </div>
 

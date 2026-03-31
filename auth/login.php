@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $db = getDB();
         
-        $stmt = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role FROM users WHERE email = ?");
+        $stmt = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role, contact_number, profile_picture FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();

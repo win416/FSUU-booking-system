@@ -145,11 +145,6 @@ foreach ($weekly_data as $date => $count) {
                 </li>
             </ul>
             </div>
-            <div class="logout-nav-item">
-                <a class="nav-link text-danger" href="../auth/logout.php">
-                    <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                </a>
-            </div>
         </nav>
 
         <!-- Main Content -->
@@ -285,14 +280,14 @@ foreach ($weekly_data as $date => $count) {
             <!-- Weekly Chart -->
             <div class="col-md-8">
                 <div class="card" style="border-radius:14px; border:none; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
-                    <div class="card-header d-flex align-items-center justify-content-between" style="background:#fff; border-bottom:1px solid #f1f5f9; border-radius:14px 14px 0 0; padding:1rem 1.5rem;">
+                    <div class="card-header d-flex align-items-center justify-content-between" style="background:#fff; border-bottom:1px solid #E0E0E0; border-radius:14px 14px 0 0; padding:1rem 1.5rem;">
                         <div>
-                            <h5 class="mb-0" style="font-weight:700; color:#1e293b; font-size:1rem;">
-                                <i class="bi bi-bar-chart-line me-2" style="color:#00aeef;"></i>Weekly Appointments
+                            <h5 class="mb-0" style="font-weight:700; color:#1A1A1A; font-size:1rem;">
+                                <i class="bi bi-bar-chart-line me-2" style="color:#1A1A1A;"></i>Weekly Appointments
                             </h5>
                             <small class="text-muted" style="font-size:0.75rem;">Last 7 days overview</small>
                         </div>
-                        <span class="badge" style="background:#e0f5fd; color:#00aeef; font-size:0.75rem; font-weight:600; border-radius:20px; padding:0.35rem 0.85rem;">
+                        <span class="badge" style="background:#F8F8F8; color:#1A1A1A; font-size:0.75rem; font-weight:600; border-radius:20px; padding:0.35rem 0.85rem; border:1px solid #E0E0E0;">
                             This Week
                         </span>
                     </div>
@@ -339,8 +334,8 @@ foreach ($weekly_data as $date => $count) {
     const weeklyData = <?php echo json_encode(['dates' => $chart_labels, 'counts' => $chart_values]); ?>;
 
     const gradient = ctx.createLinearGradient(0, 0, 0, 280);
-    gradient.addColorStop(0, 'rgba(0, 174, 239, 0.25)');
-    gradient.addColorStop(1, 'rgba(0, 174, 239, 0.0)');
+    gradient.addColorStop(0, 'rgba(26, 26, 26, 0.15)');
+    gradient.addColorStop(1, 'rgba(26, 26, 26, 0.0)');
 
     new Chart(ctx, {
         type: 'line',
@@ -349,16 +344,16 @@ foreach ($weekly_data as $date => $count) {
             datasets: [{
                 label: 'Appointments',
                 data: weeklyData.counts,
-                borderColor: '#00aeef',
+                borderColor: '#1A1A1A',
                 backgroundColor: gradient,
                 fill: true,
                 tension: 0.42,
                 pointBackgroundColor: '#fff',
-                pointBorderColor: '#00aeef',
+                pointBorderColor: '#1A1A1A',
                 pointBorderWidth: 2.5,
                 pointRadius: 5,
                 pointHoverRadius: 7,
-                pointHoverBackgroundColor: '#00aeef',
+                pointHoverBackgroundColor: '#1A1A1A',
                 pointHoverBorderColor: '#fff',
                 borderWidth: 2.5
             }]
@@ -369,8 +364,8 @@ foreach ($weekly_data as $date => $count) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleColor: '#94a3b8',
+                    backgroundColor: '#1A1A1A',
+                    titleColor: '#E0E0E0',
                     bodyColor: '#fff',
                     padding: 12,
                     cornerRadius: 10,
@@ -385,17 +380,17 @@ foreach ($weekly_data as $date => $count) {
                 x: {
                     grid: { display: false },
                     border: { display: false },
-                    ticks: { color: '#94a3b8', font: { size: 12 } }
+                    ticks: { color: '#4D4D4D', font: { size: 12 } }
                 },
                 y: {
                     beginAtZero: true,
                     ticks: {
                         stepSize: 1,
-                        color: '#94a3b8',
+                        color: '#4D4D4D',
                         font: { size: 12 },
                         padding: 8
                     },
-                    grid: { color: '#f1f5f9', drawBorder: false },
+                    grid: { color: '#F8F8F8', drawBorder: false },
                     border: { display: false, dash: [4, 4] }
                 }
             }

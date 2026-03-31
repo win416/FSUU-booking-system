@@ -60,7 +60,7 @@ while ($row = $appt_query->fetch_assoc()) {
     $startDT = $row['appointment_date'] . 'T' . $row['appointment_time'];
     $endDT   = $row['appointment_date'] . 'T' . date('H:i:s', strtotime($row['appointment_time']) + ((int)$row['duration_minutes'] * 60));
     $colors  = ['approved' => '#198754', 'pending' => '#fd7e14', 'completed' => '#6c757d'];
-    $color   = $colors[$row['status']] ?? '#0d6efd';
+    $color   = $colors[$row['status']] ?? '#1A1A1A';
     $appt_events[] = [
         'id'              => 'appt_' . $row['appointment_id'],
         'title'           => $row['first_name'] . ' ' . $row['last_name'],
@@ -123,11 +123,6 @@ $all_events = array_merge($block_events, $appt_events);
                 <li class="nav-item"><a class="nav-link" href="users.php"><i class="bi bi-person-badge"></i> Users</a></li>
                 <li class="nav-item"><a class="nav-link" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
             </ul>
-            </div>
-            <div class="logout-nav-item">
-                <a class="nav-link text-danger" href="../auth/logout.php">
-                    <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                </a>
             </div>
         </nav>
 
@@ -338,20 +333,22 @@ $all_events = array_merge($block_events, $appt_events);
 
     <!-- Day Detail Modal -->
     <div class="modal fade" id="dayModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="dayModalTitle">Schedule for <span id="dayModalDate"></span></h5>
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius:16px; border:none; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+                <div class="modal-header" style="border-bottom:1px solid #E0E0E0; padding:1.25rem 1.5rem;">
+                    <h5 class="modal-title fw-bold" id="dayModalTitle">
+                        <i class="bi bi-calendar3 me-2 text-muted"></i>Schedule for <span id="dayModalDate"></span>
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="dayModalBody">
-                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm"></div> Loading...</div>
+                <div class="modal-body p-0" id="dayModalBody">
+                    <div class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary"></div> <span class="text-muted ms-2">Loading...</span></div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="border-top:1px solid #E0E0E0; padding:1rem 1.5rem;">
                     <button type="button" class="btn btn-danger btn-sm" id="dayModalBlockBtn">
                         <i class="bi bi-calendar-x me-1"></i>Block This Date
                     </button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -428,23 +425,44 @@ $all_events = array_merge($block_events, $appt_events);
             const appts = res.appointments || [];
             let html = '';
             if (appts.length === 0) {
-                html = '<p class="text-muted text-center py-3">No appointments on this date.</p>';
+                html = '<div class="text-center py-5"><i class="bi bi-calendar-x" style="font-size:2.5rem;color:#E0E0E0;"></i><p class="text-muted mt-3 mb-0">No appointments on this date.</p></div>';
             } else {
-                html = '<div class="table-responsive"><table class="table table-sm table-hover mb-0"><thead class="table-light"><tr><th>Time</th><th>Patient</th><th>Service</th><th>Status</th></tr></thead><tbody>';
+                const badgeStyle = {
+                    pending:   'background:#fff8e1;color:#b45309;border:1px solid #fde68a;',
+                    approved:  'background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;',
+                    completed: 'background:#F8F8F8;color:#4D4D4D;border:1px solid #E0E0E0;',
+                    cancelled: 'background:#fef2f2;color:#991b1b;border:1px solid #fecaca;',
+                    declined:  'background:#fef2f2;color:#991b1b;border:1px solid #fecaca;',
+                };
+                html = `<div class="table-responsive">
+                    <table class="table mb-0" style="font-size:0.875rem;">
+                        <thead>
+                            <tr style="background:#F8F8F8;border-bottom:1px solid #E0E0E0;">
+                                <th style="padding:0.75rem 1.25rem;font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#4D4D4D;">Time</th>
+                                <th style="padding:0.75rem 1.25rem;font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#4D4D4D;">Patient</th>
+                                <th style="padding:0.75rem 1.25rem;font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#4D4D4D;">Service</th>
+                                <th style="padding:0.75rem 1.25rem;font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#4D4D4D;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
                 appts.forEach(a => {
-                    const badge = { pending:'warning', approved:'info', completed:'success', cancelled:'danger', declined:'secondary' };
-                    html += `<tr>
-                        <td>${a.appointment_time || ''}</td>
-                        <td>${a.first_name || ''} ${a.last_name || ''}</td>
-                        <td>${a.service_name || ''}</td>
-                        <td><span class="badge bg-${badge[a.status]||'secondary'}">${a.status}</span></td>
+                    const bStyle = badgeStyle[a.status] || badgeStyle.completed;
+                    html += `<tr style="border-bottom:1px solid #F8F8F8;">
+                        <td style="padding:0.85rem 1.25rem;font-weight:600;">${a.appointment_time || ''}</td>
+                        <td style="padding:0.85rem 1.25rem;">${(a.first_name||'')+' '+(a.last_name||'')}</td>
+                        <td style="padding:0.85rem 1.25rem;color:#4D4D4D;">${a.service_name || ''}</td>
+                        <td style="padding:0.85rem 1.25rem;">
+                            <span style="display:inline-block;padding:0.25em 0.75em;border-radius:9999px;font-size:0.75rem;font-weight:600;${bStyle}">
+                                ${a.status.charAt(0).toUpperCase()+a.status.slice(1)}
+                            </span>
+                        </td>
                     </tr>`;
                 });
                 html += '</tbody></table></div>';
             }
             $('#dayModalBody').html(html);
         }).fail(function() {
-            $('#dayModalBody').html('<p class="text-danger text-center py-3">Could not load appointments.</p>');
+            $('#dayModalBody').html('<div class="text-center py-4"><p class="text-danger mb-0"><i class="bi bi-exclamation-circle me-1"></i>Could not load appointments.</p></div>');
         });
     }
 

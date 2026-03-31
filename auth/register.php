@@ -2,6 +2,10 @@
 require_once '../includes/session.php';
 require_once '../includes/db_connection.php';
 
+// Ensure program column exists
+$db = getDB();
+$db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS program VARCHAR(20) DEFAULT NULL AFTER contact_number");
+
 $error = '';
 $success = '';
 
@@ -13,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $first_name = trim($_POST['first_name']);
     $last_name = trim($_POST['last_name']);
     $contact = trim($_POST['contact_number']);
+    $program = trim($_POST['program'] ?? '');
     
     // Validation
     if ($password !== $confirm_password) {
@@ -21,9 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = 'Password must be at least 8 characters';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Invalid email format';
+    } elseif (empty($program)) {
+        $error = 'Please select your program';
     } else {
-        $db = getDB();
-        
         // Check if FSUU ID or email already exists
         $check = $db->prepare("SELECT user_id FROM users WHERE fsuu_id = ? OR email = ?");
         $check->bind_param("ss", $fsuu_id, $email);
@@ -36,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Hash password and insert user
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             
-            $insert = $db->prepare("INSERT INTO users (fsuu_id, email, password, first_name, last_name, contact_number, role) VALUES (?, ?, ?, ?, ?, ?, 'student')");
-            $insert->bind_param("ssssss", $fsuu_id, $email, $hashed_password, $first_name, $last_name, $contact);
+            $insert = $db->prepare("INSERT INTO users (fsuu_id, email, password, first_name, last_name, contact_number, program, role) VALUES (?, ?, ?, ?, ?, ?, ?, 'student')");
+            $insert->bind_param("sssssss", $fsuu_id, $email, $hashed_password, $first_name, $last_name, $contact, $program);
             
             if ($insert->execute()) {
                 $user_id = $db->insert_id;
@@ -109,6 +114,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="mb-3">
                             <label>Contact Number</label>
                             <input type="text" name="contact_number" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Program</label>
+                            <select name="program" class="form-control" required>
+                                <option value="" disabled selected>— Select Program —</option>
+                                <option value="AP">AP</option>
+                                <option value="ASP">ASP</option>
+                                <option value="BAP">BAP</option>
+                                <option value="CJEP">CJEP</option>
+                                <option value="CSP">CSP</option>
+                                <option value="ETP">ETP</option>
+                                <option value="GSR">GSR</option>
+                                <option value="LAW">LAW</option>
+                                <option value="TEP">TEP</option>
+                                <option value="THMP">THMP</option>
+                            </select>
                         </div>
                         
                         <div class="mb-3">

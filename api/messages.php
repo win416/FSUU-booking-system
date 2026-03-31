@@ -220,18 +220,18 @@ if ($action === 'send') {
 <!DOCTYPE html>
 <html>
 <head><meta charset='UTF-8'></head>
-<body style='font-family:Arial,sans-serif;color:#1e293b;'>
-  <div style='max-width:600px;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;'>
-    <div style='background:#00aeef;padding:1.25rem 1.5rem;'>
+<body style='font-family:Arial,sans-serif;color:#1A1A1A;'>
+  <div style='max-width:600px;margin:0 auto;border:1px solid #E0E0E0;border-radius:8px;overflow:hidden;'>
+    <div style='background:#1A1A1A;padding:1.25rem 1.5rem;'>
       <h2 style='color:#fff;margin:0;font-size:1.1rem;'>New Patient Message</h2>
     </div>
     <div style='padding:1.5rem;'>
       <table style='width:100%;border-collapse:collapse;margin-bottom:1rem;font-size:0.9rem;'>
-        <tr><td style='width:80px;font-weight:700;color:#64748b;padding:4px 0;'>From:</td>
+        <tr><td style='width:80px;font-weight:700;color:#4D4D4D;padding:4px 0;'>From:</td>
             <td>{$senderName} &lt;{$senderEmail}&gt;</td></tr>
-        <tr><td style='font-weight:700;color:#64748b;padding:4px 0;'>Subject:</td>
+        <tr><td style='font-weight:700;color:#4D4D4D;padding:4px 0;'>Subject:</td>
             <td>" . htmlspecialchars($subject) . "</td></tr>
-        <tr><td style='font-weight:700;color:#64748b;padding:4px 0;'>Sent:</td>
+        <tr><td style='font-weight:700;color:#4D4D4D;padding:4px 0;'>Sent:</td>
             <td>" . date('F j, Y g:i A') . "</td></tr>
       </table>
       <hr style='border:none;border-top:1px solid #e2e8f0;margin:1rem 0;'>

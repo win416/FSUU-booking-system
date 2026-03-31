@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` VARCHAR(191) NOT NULL,
   `password` VARCHAR(255) DEFAULT NULL,
   `contact_number` VARCHAR(20) DEFAULT NULL,
+  `program` VARCHAR(20) DEFAULT NULL,
   `role` ENUM('student','staff','dentist','admin') NOT NULL DEFAULT 'student',
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   `profile_picture` VARCHAR(255) DEFAULT NULL,

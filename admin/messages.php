@@ -37,9 +37,6 @@ $user = SessionManager::getUser();
             <li class="nav-item"><a class="nav-link" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
         </ul>
         </div>
-        <div class="logout-nav-item">
-            <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
-        </div>
     </nav>
 
     <div class="main-content" style="padding: 56px 0 0 0 !important;">
@@ -82,6 +79,7 @@ $user = SessionManager::getUser();
                 <!-- Thread view -->
                 <div id="threadView" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
                     <div class="thread-header">
+                        <button class="mobile-back-btn" id="mobileBackBtn" title="Back to inbox"><i class="bi bi-arrow-left"></i></button>
                         <div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">?</div>
                         <div>
                             <div class="thread-header-name" id="threadName">—</div>
@@ -180,6 +178,7 @@ function showEmpty() {
     RECIPIENT_ID    = null;
     CURRENT_SUBJECT = '';
     document.querySelectorAll('.thread-item').forEach(el => el.classList.remove('active'));
+    document.querySelector('.msg-layout').classList.remove('chat-active');
 }
 function showCompose() {
     document.getElementById('emptyState').style.display  = 'none';
@@ -190,6 +189,7 @@ function showCompose() {
     RECIPIENT_ID = null;
     resetComposeForm();
     document.getElementById('msgTo').focus();
+    document.querySelector('.msg-layout').classList.add('chat-active');
 }
 function showThread(userId, name, avatarHtml, subject) {
     document.getElementById('emptyState').style.display  = 'none';
@@ -203,6 +203,7 @@ function showThread(userId, name, avatarHtml, subject) {
     clearInterval(_threadTimer);
     loadThread(false);
     _threadTimer = setInterval(() => loadThread(true), 5000);
+    document.querySelector('.msg-layout').classList.add('chat-active');
 }
 
 // ── Inbox ────────────────────────────────────────────────────────────────────
@@ -546,6 +547,11 @@ if (openWith) {
             }
         });
 }
+
+// Mobile back button
+document.getElementById('mobileBackBtn').addEventListener('click', function() {
+    showEmpty();
+});
 </script>
 </body>
 </html>

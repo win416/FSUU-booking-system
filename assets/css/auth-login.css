@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 body { 
-    background: #f1f5f9; 
+    background: #F8F8F8; 
     min-height: 100vh; 
     font-family: 'Inter', sans-serif;
     display: flex;
@@ -14,21 +14,21 @@ body {
     padding: 20px;
 }
 .card { 
-    border: 1px solid #e2e8f0; 
+    border: 1px solid #E0E0E0; 
     border-radius: 12px; 
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); 
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07); 
     overflow: hidden;
 }
 .card-header { 
     background: #ffffff; 
-    color: #1e293b; 
-    border-bottom: 1px solid #e2e8f0;
+    color: #1A1A1A; 
+    border-bottom: 1px solid #E0E0E0;
     padding: 40px 20px 20px !important; 
     text-align: center;
 }
 .card-header h4 {
     font-weight: 700;
-    color: #00aeef;
+    color: #1A1A1A;
 }
 .card-body {
     padding: 30px !important;
@@ -37,15 +37,15 @@ body {
 .form-control {
     border-radius: 8px;
     padding: 10px 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #E0E0E0;
     background-color: #ffffff;
 }
 .form-control:focus {
-    border-color: #00aeef;
-    box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.1);
+    border-color: #29ABE2;
+    box-shadow: 0 0 0 3px rgba(41, 171, 226, 0.15);
 }
 .btn-login { 
-    background: linear-gradient(135deg, #00aeef 0%, #0096ce 100%); 
+    background: #29ABE2; 
     color: #ffffff; 
     font-weight: 600;
     border: none; 
@@ -56,15 +56,23 @@ body {
     margin-top: 10px;
 }
 .btn-login:hover { 
+    background: #1C9DD6;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 174, 239, 0.3);
+    box-shadow: 0 4px 12px rgba(41, 171, 226, 0.3);
 }
 .text-center a {
-    color: #00aeef;
+    color: #29ABE2;
     font-weight: 600;
     text-decoration: none;
 }
 .text-center a:hover {
     text-decoration: underline;
-    color: #008ecc;
+    color: #1C9DD6;
+}
+
+@media (max-width: 575.98px) {
+    body { align-items: flex-start; padding-top: 1rem; }
+    .login-container { padding: 12px; }
+    .card-body { padding: 20px !important; }
+    .card-header { padding: 24px 16px 16px !important; }
 }

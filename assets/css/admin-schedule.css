@@ -7,10 +7,42 @@
 .fc .fc-toolbar-title {
     font-size: 1.1rem;
     font-weight: 700;
+    color: #1A1A1A;
 }
 
-.fc .fc-daygrid-day.fc-day-today {
-    background: rgba(13, 110, 253, 0.06);
+/* Today highlight — teal tint */
+.fc .fc-daygrid-day.fc-day-today,
+.fc .fc-timegrid-col.fc-day-today {
+    background: rgba(41, 171, 226, 0.06) !important;
+}
+
+/* Toolbar buttons */
+.fc .fc-button-primary {
+    background-color: #29ABE2 !important;
+    border-color: #29ABE2 !important;
+    color: #fff !important;
+}
+.fc .fc-button-primary:hover {
+    background-color: #1C9DD6 !important;
+    border-color: #1C9DD6 !important;
+}
+.fc .fc-button-primary:disabled {
+    background-color: #80dae3 !important;
+    border-color: #80dae3 !important;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    background-color: #1C9DD6 !important;
+    border-color: #1C9DD6 !important;
+}
+
+/* Now indicator line */
+.fc .fc-timegrid-now-indicator-line {
+    border-color: #29ABE2 !important;
+}
+.fc .fc-timegrid-now-indicator-arrow {
+    border-top-color: #29ABE2 !important;
+    border-bottom-color: #29ABE2 !important;
 }
 
 /* ── Calendar legend dot ──────────────────────────────────────────── */
@@ -23,7 +55,7 @@
 }
 
 .legend-dot--appt {
-    background: #0d6efd;
+    background: #29ABE2;
 }
 
 .legend-dot--blocked {
@@ -33,4 +65,42 @@
 /* ── Block time fields (hidden by default, toggled by JS) ─────────── */
 #timeFields {
     display: none;
+}
+
+/* Day/date header links and all FC anchor links */
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number,
+.fc .fc-list-day-cushion,
+.fc a {
+    color: #1A1A1A !important;
+    text-decoration: none !important;
+}
+.fc a:hover {
+    color: #333333 !important;
+}
+
+/* ── Block schedule nav tabs ─────────────────────────────────────── */
+.nav-tabs .nav-link {
+    color: #4D4D4D;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    padding: 0.5rem 1rem;
+}
+.nav-tabs .nav-link:hover {
+    color: #29ABE2;
+    border-bottom-color: #E0E0E0;
+    background: transparent;
+}
+.nav-tabs .nav-link.active {
+    color: #29ABE2 !important;
+    font-weight: 600;
+    border-bottom: 2px solid #29ABE2 !important;
+    background: transparent !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+}
+.nav-tabs {
+    border-bottom: 1px solid #E0E0E0;
 }

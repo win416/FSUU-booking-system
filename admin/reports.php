@@ -46,11 +46,6 @@ SessionManager::requireAdmin();
                 <li class="nav-item"><a class="nav-link" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
             </ul>
             </div>
-            <div class="logout-nav-item">
-                <a class="nav-link text-danger" href="../auth/logout.php">
-                    <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                </a>
-            </div>
         </nav>
 
 
@@ -103,77 +98,6 @@ SessionManager::requireAdmin();
                     </div>
                 </div>
 
-                <!-- Summary Cards -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3">
-                        <div class="card card-stats stat-blue h-100">
-                            <div class="card-body">
-                                <div class="stat-top">
-                                    <div>
-                                        <h6>Total Appointments</h6>
-                                        <h2 id="stat-total">—</h2>
-                                    </div>
-                                    <div class="stat-icon"><i class="bi bi-calendar2-check"></i></div>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar" id="progress-total"></div>
-                                </div>
-                                <small id="stat-monthly-diff"></small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card card-stats stat-green h-100">
-                            <div class="card-body">
-                                <div class="stat-top">
-                                    <div>
-                                        <h6>Completed</h6>
-                                        <h2 id="stat-completed">—</h2>
-                                    </div>
-                                    <div class="stat-icon"><i class="bi bi-patch-check"></i></div>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar" id="progress-completed"></div>
-                                </div>
-                                <small>Successfully completed visits</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card card-stats stat-amber h-100">
-                            <div class="card-body">
-                                <div class="stat-top">
-                                    <div>
-                                        <h6>Pending Approval</h6>
-                                        <h2 id="stat-pending">—</h2>
-                                    </div>
-                                    <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar" id="progress-pending"></div>
-                                </div>
-                                <small>Awaiting confirmation</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card card-stats stat-violet h-100">
-                            <div class="card-body">
-                                <div class="stat-top">
-                                    <div>
-                                        <h6>New Patients</h6>
-                                        <h2 id="stat-new-patients">—</h2>
-                                    </div>
-                                    <div class="stat-icon"><i class="bi bi-person-plus"></i></div>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar" id="progress-new-patients"></div>
-                                </div>
-                                <small>First-time bookings</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Charts Row 1 -->
                 <div class="row g-4">
@@ -229,7 +153,7 @@ SessionManager::requireAdmin();
                 <!-- Detailed Appointments Table -->
                 <div class="card detail-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5><i class="bi bi-table me-2" style="color:#00aeef;"></i>Appointment Details</h5>
+                        <h5><i class="bi bi-table me-2" style="color:#1A1A1A;"></i>Appointment Details</h5>
                         <span id="detail-count">0 records</span>
                     </div>
                     <div class="card-body p-0">
@@ -324,7 +248,7 @@ SessionManager::requireAdmin();
                     <td>${r.appointment_date}</td>
                     <td>${r.appointment_time}</td>
                     <td>${escHtml(r.patient_name)}</td>
-                    <td><code>${escHtml(r.fsuu_id)}</code></td>
+                    <td class="fsuu-id-cell" title="${escHtml(r.fsuu_id)}">${escHtml(r.fsuu_id)}</td>
                     <td>${escHtml(r.service_name)}</td>
                     <td><span class="badge bg-${badge[r.status] || 'secondary'}">${r.status}</span></td>
                     <td class="text-muted"><small>${escHtml(r.notes || '—')}</small></td>
@@ -337,29 +261,6 @@ SessionManager::requireAdmin();
 
         // ── Render Charts & Summary Cards ────────────────────────────────────
         function renderReports(data) {
-            const total      = data.total_appointments || 0;
-            const completed  = data.status_breakdown.completed || 0;
-            const pending    = data.status_breakdown.pending || 0;
-            const newPts     = data.new_patients || 0;
-            const maxStat    = Math.max(total, completed, pending, newPts, 1);
-            const pctOf = v  => Math.round((v / maxStat) * 100);
-
-            document.getElementById('stat-total').textContent        = total;
-            document.getElementById('stat-completed').textContent    = completed;
-            document.getElementById('stat-pending').textContent      = pending;
-            document.getElementById('stat-new-patients').textContent = newPts;
-
-            document.getElementById('progress-total').style.width        = pctOf(total)     + '%';
-            document.getElementById('progress-completed').style.width    = pctOf(completed) + '%';
-            document.getElementById('progress-pending').style.width      = pctOf(pending)   + '%';
-            document.getElementById('progress-new-patients').style.width = pctOf(newPts)    + '%';
-
-            const diff = data.current_month_count - data.last_month_count;
-            const pct = data.last_month_count > 0 ? (diff / data.last_month_count * 100).toFixed(1) : (diff > 0 ? 100 : 0);
-            const diffEl = document.getElementById('stat-monthly-diff');
-            diffEl.textContent = `${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff)} vs last month (${Math.abs(pct)}%)`;
-            diffEl.style.color = diff >= 0 ? '#16a34a' : '#dc3545';
-
             // ── Trends Chart ──────────────────────────────────────────────────
             if (trendsChart) trendsChart.destroy();
             const tCanvas = document.getElementById('trendsChart');
@@ -374,13 +275,13 @@ SessionManager::requireAdmin();
                     datasets: [{
                         label: 'Appointments',
                         data: data.trends.map(t => t.count),
-                        borderColor: '#00aeef',
+                        borderColor: '#0ea5e9',
                         backgroundColor: tGrad,
                         fill: true,
                         tension: 0.42,
                         pointRadius: 4,
                         pointBackgroundColor: '#fff',
-                        pointBorderColor: '#00aeef',
+                        pointBorderColor: '#0ea5e9',
                         pointBorderWidth: 2,
                         pointHoverRadius: 6
                     }]
@@ -391,8 +292,8 @@ SessionManager::requireAdmin();
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#94a3b8',
+                            backgroundColor: '#1A1A1A',
+                            titleColor: '#E0E0E0',
                             bodyColor: '#fff',
                             bodyFont: { weight: 'bold', size: 13 },
                             padding: 10,
@@ -403,8 +304,8 @@ SessionManager::requireAdmin();
                         }
                     },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } }, border: { display: false } },
-                        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8', font: { size: 11 } }, grid: { color: '#f1f5f9' }, border: { display: false } }
+                        x: { grid: { display: false }, ticks: { color: '#4D4D4D', font: { size: 11 } }, border: { display: false } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#4D4D4D', font: { size: 11 } }, grid: { color: '#F8F8F8' }, border: { display: false } }
                     }
                 }
             });
@@ -438,12 +339,12 @@ SessionManager::requireAdmin();
                                 borderRadius: 3,
                                 padding: 12,
                                 font: { size: 11 },
-                                color: '#475569'
+                                color: '#4D4D4D'
                             }
                         },
                         tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#94a3b8',
+                            backgroundColor: '#1A1A1A',
+                            titleColor: '#E0E0E0',
                             bodyColor: '#fff',
                             padding: 10,
                             cornerRadius: 8,
@@ -459,10 +360,10 @@ SessionManager::requireAdmin();
                         const { ctx, chartArea: { top, bottom, left, right } } = chart;
                         const cx = (left + right) / 2, cy = (top + bottom) / 2;
                         ctx.save();
-                        ctx.font = 'bold 24px sans-serif'; ctx.fillStyle = '#1e293b';
+                        ctx.font = 'bold 24px sans-serif'; ctx.fillStyle = '#1A1A1A';
                         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                         ctx.fillText(sTotal, cx, cy - 8);
-                        ctx.font = '11px sans-serif'; ctx.fillStyle = '#94a3b8';
+                        ctx.font = '11px sans-serif'; ctx.fillStyle = '#4D4D4D';
                         ctx.fillText('total', cx, cy + 14);
                         ctx.restore();
                     }
@@ -472,8 +373,8 @@ SessionManager::requireAdmin();
             // ── Services Bar ──────────────────────────────────────────────────
             if (servicesChart) servicesChart.destroy();
             const barColors = data.services.map((_, i) => {
-                const blues = ['#00aeef','#0095cc','#007aaa','#005f87','#004a6a'];
-                return blues[i % blues.length];
+                const grays = ['#1A1A1A','#333333','#4D4D4D','#808080','#B0B0B0'];
+                return grays[i % grays.length];
             });
             servicesChart = new Chart(document.getElementById('servicesChart'), {
                 type: 'bar',
@@ -494,8 +395,8 @@ SessionManager::requireAdmin();
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#94a3b8',
+                            backgroundColor: '#1A1A1A',
+                            titleColor: '#E0E0E0',
                             bodyColor: '#fff',
                             padding: 10,
                             cornerRadius: 8,
@@ -505,8 +406,8 @@ SessionManager::requireAdmin();
                         }
                     },
                     scales: {
-                        x: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8', font: { size: 11 } }, grid: { color: '#f1f5f9' }, border: { display: false } },
-                        y: { grid: { display: false }, ticks: { color: '#475569', font: { size: 11 } }, border: { display: false } }
+                        x: { beginAtZero: true, ticks: { stepSize: 1, color: '#4D4D4D', font: { size: 11 } }, grid: { color: '#F8F8F8' }, border: { display: false } },
+                        y: { grid: { display: false }, ticks: { color: '#4D4D4D', font: { size: 11 } }, border: { display: false } }
                     }
                 }
             });

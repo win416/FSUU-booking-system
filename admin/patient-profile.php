@@ -96,9 +96,6 @@ $appointments = $appts->get_result();
             <li class="nav-item"><a class="nav-link" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
         </ul>
         </div>
-        <div class="logout-nav-item">
-            <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
-        </div>
     </nav>
 
     <!-- Main Content -->

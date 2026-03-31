@@ -40,7 +40,14 @@
 })();
 </script>
 
+<!-- Sidebar overlay backdrop (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <div class="admin-topbar no-print">
+    <!-- Hamburger toggle (mobile only) -->
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle navigation">
+        <i class="bi bi-list"></i>
+    </button>
     <div class="admin-topbar-inner">
         <!-- Message Icon -->
         <div class="notif-wrapper" id="msgWrapper">
@@ -83,6 +90,37 @@
                         <i class="bi bi-calendar-check me-1"></i>Manage Pending Appointments
                     </a>
                 </div>
+            </div>
+        </div>
+
+        <!-- User Profile -->
+        <?php
+            $adminUser     = SessionManager::getUser();
+            $adminFullName = htmlspecialchars(($adminUser['first_name'] ?? '') . ' ' . ($adminUser['last_name'] ?? ''));
+            $adminAvatar   = !empty($adminUser['profile_picture'])
+                ? '../' . htmlspecialchars($adminUser['profile_picture'])
+                : null;
+        ?>
+        <div class="topbar-user-wrapper" id="topbarUserWrapper">
+            <button class="topbar-user-btn" id="topbarUserBtn" aria-label="User menu">
+                <?php if ($adminAvatar): ?>
+                    <img src="<?= $adminAvatar ?>?v=<?= time() ?>" alt="Avatar" class="topbar-user-avatar">
+                <?php else: ?>
+                    <span class="topbar-user-initials">
+                        <?= strtoupper(substr($adminUser['first_name'] ?? 'A', 0, 1)) ?>
+                    </span>
+                <?php endif; ?>
+                <span class="topbar-user-name"><?= $adminFullName ?></span>
+                <i class="bi bi-chevron-down topbar-user-chevron"></i>
+            </button>
+            <div class="topbar-user-dropdown" id="topbarUserDropdown">
+                <a href="settings.php" class="topbar-user-item">
+                    <i class="bi bi-person-circle"></i> My Profile
+                </a>
+                <div class="topbar-user-divider"></div>
+                <a href="../auth/logout.php" class="topbar-user-item topbar-user-logout">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
             </div>
         </div>
     </div>
@@ -228,5 +266,64 @@
 
     fetchMessages();
     setInterval(fetchMessages, 30000);
+})();
+</script>
+
+<script>
+(function () {
+    var toggleBtn = document.getElementById('sidebarToggleBtn');
+    var overlay   = document.getElementById('sidebarOverlay');
+
+    function openSidebar()  { document.body.classList.add('sidebar-open'); }
+    function closeSidebar() { document.body.classList.remove('sidebar-open'); }
+
+    // Inject X close button into sidebar brand area
+    var brand = document.querySelector('.sidebar .brand');
+    if (brand && !document.getElementById('sidebarCloseBtn')) {
+        var closeBtn = document.createElement('button');
+        closeBtn.id = 'sidebarCloseBtn';
+        closeBtn.className = 'sidebar-close-btn';
+        closeBtn.setAttribute('aria-label', 'Close navigation');
+        closeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+        closeBtn.addEventListener('click', closeSidebar);
+        brand.appendChild(closeBtn);
+    }
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function () {
+            document.body.classList.contains('sidebar-open') ? closeSidebar() : openSidebar();
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    // Close sidebar when a nav link is clicked
+    document.querySelectorAll('.sidebar .nav-link').forEach(function (link) {
+        link.addEventListener('click', closeSidebar);
+    });
+})();
+</script>
+
+<script>
+(function () {
+    var userBtn      = document.getElementById('topbarUserBtn');
+    var userDropdown = document.getElementById('topbarUserDropdown');
+
+    if (!userBtn) return;
+
+    userBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        // Close other dropdowns
+        document.getElementById('notifDropdown').classList.remove('open');
+        document.getElementById('msgDropdown').classList.remove('open');
+        userDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!document.getElementById('topbarUserWrapper').contains(e.target)) {
+            userDropdown.classList.remove('open');
+        }
+    });
 })();
 </script>

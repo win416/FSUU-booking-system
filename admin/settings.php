@@ -44,6 +44,17 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
     <style>
         #servicesTableBody td:last-child { white-space: nowrap; }
         #servicesTableBody td:last-child .btn { margin: 0 1px; }
+
+        /* ── Settings page tab overrides ── */
+        #settingsTabs.nav-tabs { border-bottom: 1px solid #E0E0E0; }
+        #settingsTabs .nav-link { color: #4D4D4D; border: none; border-bottom: 2px solid transparent; background: transparent; padding: 0.6rem 1.1rem; }
+        #settingsTabs .nav-link:hover { color: #1A1A1A; border-bottom-color: #E0E0E0; background: transparent; }
+        #settingsTabs .nav-link.active { color: #1A1A1A !important; font-weight: 600; border-bottom: 2px solid #1A1A1A !important; background: transparent !important; border-top: none !important; border-left: none !important; border-right: none !important; }
+
+        /* ── Info card ── */
+        .card.info-card { border: 1px solid #E0E0E0; border-radius: 10px; }
+        .card.info-card .card-header { background: #F8F8F8; color: #1A1A1A; border-bottom: 1px solid #E0E0E0; border-radius: 10px 10px 0 0; }
+        .card.info-card a { color: #1A1A1A; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -66,11 +77,6 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                 <li class="nav-item"><a class="nav-link" href="users.php"><i class="bi bi-person-badge"></i> Users</a></li>
                 <li class="nav-item"><a class="nav-link active" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
             </ul>
-            </div>
-            <div class="logout-nav-item">
-                <a class="nav-link text-danger" href="../auth/logout.php">
-                    <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                </a>
             </div>
         </nav>
 
@@ -167,8 +173,8 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                 </div>
                             </div>
                             <div class="col-md-5">
-                                <div class="card border-info">
-                                    <div class="card-header bg-info text-white"><h6 class="mb-0"><i class="bi bi-info-circle me-1"></i>Info</h6></div>
+                                <div class="card info-card">
+                                    <div class="card-header"><h6 class="mb-0"><i class="bi bi-info-circle me-1"></i>Info</h6></div>
                                     <div class="card-body small text-muted">
                                         <ul class="mb-0 ps-3">
                                             <li>Time slots are generated every <strong>30 minutes</strong> within the operating hours.</li>
@@ -289,6 +295,53 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                     <!-- ===== TAB 4: MY ACCOUNT ===== -->
                     <div class="tab-pane fade" id="tab-account">
                         <div class="row g-4">
+                            <!-- Profile Picture -->
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-image me-2"></i>Profile Picture</h5></div>
+                                    <div class="card-body">
+                                        <div id="avatarUploadAlert"></div>
+                                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                                            <?php
+                                                $pic = $currentUser['profile_picture'] ?? null;
+                                                $initials = strtoupper(substr($currentUser['first_name'] ?? 'A', 0, 1));
+                                            ?>
+                                            <!-- Clickable avatar -->
+                                            <div id="avatarPreviewWrap" style="position:relative;width:90px;height:90px;flex-shrink:0;cursor:pointer;" title="Click to change photo">
+                                                <label for="avatarFileInput" style="display:block;width:90px;height:90px;border-radius:50%;overflow:hidden;cursor:pointer;margin:0;">
+                                                    <?php if ($pic): ?>
+                                                        <img id="avatarPreviewImg" src="../<?= htmlspecialchars($pic) ?>?v=<?= time() ?>"
+                                                             alt="Profile" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #E0E0E0;">
+                                                    <?php else: ?>
+                                                        <div id="avatarPreviewImg" style="width:90px;height:90px;border-radius:50%;background:#1A1A1A;color:#fff;font-size:2rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:3px solid #E0E0E0;">
+                                                            <?= $initials ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <div class="avatar-cam-overlay"><i class="bi bi-camera-fill"></i></div>
+                                                </label>
+                                                <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+                                            </div>
+                                            <!-- Name / role / hint -->
+                                            <div>
+                                                <div class="mb-1" style="font-size:1.1rem;font-weight:700;color:#1A1A1A;">
+                                                    <?= htmlspecialchars(($currentUser['first_name'] ?? '') . ' ' . ($currentUser['last_name'] ?? '')) ?>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <span style="display:inline-flex;align-items:center;gap:0.35rem;background:#1A1A1A;color:#fff;font-size:0.75rem;font-weight:600;padding:0.2rem 0.65rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;">
+                                                        <i class="bi bi-shield-fill-check"></i>
+                                                        <?= htmlspecialchars(ucfirst($currentUser['role'] ?? 'Admin')) ?>
+                                                    </span>
+                                                </div>
+                                                <p class="text-muted mb-2" style="font-size:0.8rem;">Click photo to change · JPG, PNG, WEBP or GIF · Max 2 MB</p>
+                                                <button type="button" class="btn btn-primary btn-sm d-none" id="avatarUploadBtn">
+                                                    <i class="bi bi-save me-1"></i> Upload
+                                                </button>
+                                                <span id="avatarFileName" class="text-muted ms-1" style="font-size:0.85rem;"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- Personal Info -->
                             <div class="col-md-6">
                                 <div class="card">
@@ -495,6 +548,71 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
             showAlert('#alertContainer', res.success ? 'success' : 'danger', res.message);
             if (res.success) $('#service-row-' + id).fadeOut(400, function() { $(this).remove(); });
         }, 'json').fail(() => showAlert('#alertContainer', 'danger', 'Request failed.'));
+    });
+
+    // ---- My Account: Profile Picture Upload ----
+    document.getElementById('avatarFileInput').addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        document.getElementById('avatarFileName').textContent = file.name;
+        document.getElementById('avatarUploadBtn').classList.remove('d-none');
+        // Preview
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const wrap = document.getElementById('avatarPreviewWrap');
+            let img = document.getElementById('avatarPreviewImg');
+            if (img.tagName === 'DIV') {
+                // Replace initials div with img
+                const newImg = document.createElement('img');
+                newImg.id = 'avatarPreviewImg';
+                newImg.alt = 'Preview';
+                newImg.style.cssText = 'width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #E0E0E0;';
+                wrap.replaceChild(newImg, img);
+                img = newImg;
+            }
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById('avatarUploadBtn').addEventListener('click', function () {
+        const file = document.getElementById('avatarFileInput').files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('profile_picture', file);
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Uploading…';
+        fetch('../api/upload-profile-picture.php', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(res => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save me-1"></i> Upload';
+                if (res.success) {
+                    showAlert('#avatarUploadAlert', 'success', 'Profile picture updated successfully!');
+                    // Update topbar avatar immediately
+                    const topbarAvatar = document.querySelector('.topbar-user-avatar');
+                    const topbarInitials = document.querySelector('.topbar-user-initials');
+                    if (topbarAvatar) {
+                        topbarAvatar.src = '../' + res.path;
+                    } else if (topbarInitials) {
+                        const newImg = document.createElement('img');
+                        newImg.className = 'topbar-user-avatar';
+                        newImg.alt = 'Avatar';
+                        newImg.src = '../' + res.path;
+                        topbarInitials.replaceWith(newImg);
+                    }
+                    document.getElementById('avatarUploadBtn').classList.add('d-none');
+                    document.getElementById('avatarFileName').textContent = '';
+                } else {
+                    showAlert('#avatarUploadAlert', 'danger', res.message || 'Upload failed.');
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save me-1"></i> Upload';
+                showAlert('#avatarUploadAlert', 'danger', 'Request failed.');
+            });
     });
 
     // ---- My Account: Personal Info ----

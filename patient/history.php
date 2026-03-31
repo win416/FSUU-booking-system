@@ -54,9 +54,6 @@ $medical = $stmt->get_result()->fetch_assoc();
                 <li class="nav-item"><a class="nav-link active" href="history.php"><i class="bi bi-clock-history"></i> History</a></li>
             </ul>
             </div>
-            <div class="logout-nav-item">
-                <a class="nav-link text-danger" href="../auth/logout.php"><i class="bi bi-box-arrow-right text-danger"></i> Logout</a>
-            </div>
         </nav>
         <div class="main-content">
             <?php include '../includes/patient-topbar.php'; ?>
@@ -66,7 +63,7 @@ $medical = $stmt->get_result()->fetch_assoc();
                 <!-- Medical Information Card -->
                 <div class="card mb-4">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0 text-primary">My Medical Records</h5>
+                        <h5 class="mb-0 fw-bold">My Medical Records</h5>
                     </div>
                     <div class="card-body">
                         <form id="medicalInfoForm">
@@ -96,7 +93,7 @@ $medical = $stmt->get_result()->fetch_assoc();
                                     <input type="text" name="emergency_contact_number" class="form-control" value="<?php echo htmlspecialchars($medical['emergency_contact_number'] ?? ''); ?>" required>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Update Medical Info</button>
+                            <button type="submit" class="btn btn-dark">Update Medical Info</button>
                         </form>
                     </div>
                 </div>
@@ -104,7 +101,7 @@ $medical = $stmt->get_result()->fetch_assoc();
                 <!-- Appointment History Section -->
                 <div class="card">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0 text-primary">Past Appointments</h5>
+                        <h5 class="mb-0 fw-bold">Past Appointments</h5>
                     </div>
                     <div class="card-body">
                         <div class="alert alert-info mb-0">

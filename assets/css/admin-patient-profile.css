@@ -102,3 +102,9 @@
     font-size: .85rem;
     padding: .4em .8em;
 }
+
+@media (max-width: 767.98px) {
+    .profile-avatar-wrap { margin-bottom: 1rem; }
+    .stat-pills { flex-wrap: wrap; gap: 0.5rem; }
+    .info-row { flex-direction: column; gap: 0.25rem; }
+}

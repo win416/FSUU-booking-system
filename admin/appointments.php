@@ -35,7 +35,9 @@ $result = $db->query($query);
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
-</head>
+    <style>
+    .btn-outline-dark.active { background: #1A1A1A; color: #fff; }
+    </style>
 <body>
     <div class="dashboard-wrapper">
         <!-- Sidebar Navigation -->
@@ -89,11 +91,6 @@ $result = $db->query($query);
                 </li>
             </ul>
             </div>
-            <div class="logout-nav-item">
-                <a class="nav-link text-danger" href="../auth/logout.php">
-                    <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                </a>
-            </div>
         </nav>
 
         <!-- Main Content -->
@@ -103,11 +100,11 @@ $result = $db->query($query);
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Manage Appointments</h2>
                     <div class="btn-group">
-                        <a href="?status=all" class="btn btn-outline-primary <?php echo $status_filter == 'all' ? 'active' : ''; ?>">All</a>
-                        <a href="?status=pending" class="btn btn-outline-primary <?php echo $status_filter == 'pending' ? 'active' : ''; ?>">Pending</a>
-                        <a href="?status=approved" class="btn btn-outline-primary <?php echo $status_filter == 'approved' ? 'active' : ''; ?>">Approved</a>
-                        <a href="?status=completed" class="btn btn-outline-primary <?php echo $status_filter == 'completed' ? 'active' : ''; ?>">Completed</a>
-                        <a href="?status=cancelled" class="btn btn-outline-primary <?php echo $status_filter == 'cancelled' ? 'active' : ''; ?>">Cancelled</a>
+                        <a href="?status=all" class="btn btn-outline-dark <?php echo $status_filter == 'all' ? 'active' : ''; ?>">All</a>
+                        <a href="?status=pending" class="btn btn-outline-dark <?php echo $status_filter == 'pending' ? 'active' : ''; ?>">Pending</a>
+                        <a href="?status=approved" class="btn btn-outline-dark <?php echo $status_filter == 'approved' ? 'active' : ''; ?>">Approved</a>
+                        <a href="?status=completed" class="btn btn-outline-dark <?php echo $status_filter == 'completed' ? 'active' : ''; ?>">Completed</a>
+                        <a href="?status=cancelled" class="btn btn-outline-dark <?php echo $status_filter == 'cancelled' ? 'active' : ''; ?>">Cancelled</a>
                     </div>
                 </div>
 
@@ -134,7 +131,7 @@ $result = $db->query($query);
                                                 <small class="text-muted"><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></small>
                                             </td>
                                             <td><?php echo htmlspecialchars($appt['first_name'] . ' ' . $appt['last_name']); ?></td>
-                                            <td><code><?php echo htmlspecialchars($appt['fsuu_id']); ?></code></td>
+                                            <td><span class="text-muted" style="font-size:0.82rem;"><?php echo htmlspecialchars($appt['fsuu_id']); ?></span></td>
                                             <td><?php echo htmlspecialchars($appt['service_name']); ?></td>
                                             <td>
                                                 <?php
@@ -159,7 +156,7 @@ $result = $db->query($query);
                                                         <i class="bi bi-x-lg"></i>
                                                     </button>
                                                 <?php elseif($appt['status'] == 'approved'): ?>
-                                                    <button class="btn btn-sm btn-info complete-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Mark as Completed">
+                                                    <button class="btn btn-sm btn-dark complete-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Mark as Completed">
                                                         <i class="bi bi-check-all"></i> Complete
                                                     </button>
                                                 <?php endif; ?>

@@ -89,7 +89,7 @@ $lastName  = $profile['family_name'] ?? '';
 $db = getDB();
 
 // Check if user already exists by email
-$stmt = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role FROM users WHERE email = ?");
+$stmt = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role, contact_number, profile_picture FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -117,7 +117,7 @@ if ($result->num_rows === 1) {
     $medical->execute();
 
     // Fetch the new user and set session
-    $stmt2 = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role FROM users WHERE user_id = ?");
+    $stmt2 = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role, contact_number, profile_picture FROM users WHERE user_id = ?");
     $stmt2->bind_param("i", $newUserId);
     $stmt2->execute();
     $user = $stmt2->get_result()->fetch_assoc();
