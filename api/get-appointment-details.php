@@ -24,6 +24,7 @@ if (!empty($date)) {
         JOIN users u ON a.user_id = u.user_id
         JOIN services s ON a.service_id = s.service_id
         WHERE a.appointment_date = ?
+          AND a.status NOT IN ('declined', 'cancelled')
         ORDER BY a.appointment_time ASC
     ");
     $stmt->bind_param("s", $date);

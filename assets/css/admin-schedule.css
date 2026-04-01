@@ -4,6 +4,24 @@
     font-size: 0.78rem;
 }
 
+/* Fixed row height in month view — prevents expansion */
+.fc .fc-daygrid-day-frame {
+    min-height: 90px !important;
+    max-height: 90px !important;
+    overflow: hidden;
+}
+
+/* "+X more" link style */
+.fc .fc-daygrid-more-link {
+    color: #29ABE2;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+.fc .fc-daygrid-more-link:hover {
+    color: #1C9DD6;
+    text-decoration: underline;
+}
+
 .fc .fc-toolbar-title {
     font-size: 1.1rem;
     font-weight: 700;
@@ -79,7 +97,114 @@
     color: #333333 !important;
 }
 
-/* ── Block schedule nav tabs ─────────────────────────────────────── */
+/* ── Time slot picker ─────────────────────────────────────────────── */
+#blockModal .modal-body { overflow: visible; }
+#blockModal .modal-content { overflow: visible; }
+
+.time-slot-picker {
+    position: relative;
+}
+.time-slot-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 12px;
+    background: #fff;
+    border: 1.5px solid #ced4da;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #555;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    text-align: left;
+}
+.time-slot-display i.bi-clock-fill { color: #29ABE2; }
+.time-slot-display:hover,
+.time-slot-display.selected { border-color: #29ABE2; box-shadow: 0 0 0 3px rgba(41,171,226,0.12); }
+.time-slot-display.selected { color: #1A1A1A; font-weight: 600; }
+.time-slot-display .bi-chevron-down { margin-left: auto; font-size: 0.75rem; color: #aaa; }
+
+.time-slot-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1.5px solid #E0E0E0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 9999;
+    padding: 6px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.2s ease, opacity 0.15s ease;
+    pointer-events: none;
+}
+.time-slot-dropdown.open {
+    max-height: 260px;
+    opacity: 1;
+    pointer-events: auto;
+    overflow-y: auto;
+}
+.time-slot-btn {
+    padding: 8px 6px;
+    background: #f8f9fa;
+    border: 1.5px solid transparent;
+    border-radius: 7px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.time-slot-btn:hover { background: #e8f7fd; border-color: #29ABE2; color: #29ABE2; }
+.time-slot-btn.active { background: #29ABE2; border-color: #29ABE2; color: #fff; font-weight: 600; }
+
+
+.time-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1.5px solid #ced4da;
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.time-input-wrap:focus-within {
+    border-color: #29ABE2;
+    box-shadow: 0 0 0 3px rgba(41,171,226,0.12);
+}
+.time-input-icon {
+    color: #29ABE2;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.time-input-field {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+}
+.time-input-field::-webkit-calendar-picker-indicator {
+    opacity: 1;
+    cursor: pointer;
+    filter: invert(50%) sepia(100%) saturate(400%) hue-rotate(170deg);
+}
+
+
 .nav-tabs .nav-link {
     color: #4D4D4D;
     border: none;

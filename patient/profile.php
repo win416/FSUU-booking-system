@@ -8,16 +8,22 @@ $db = getDB();
 // Ensure profile_picture column exists (safe on MySQL 8+ and MariaDB 10.3+)
 $db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(255) DEFAULT NULL");
 
-// Fetch fresh profile_picture and password status from DB
+// Always fetch fresh user data from DB (not stale session)
 $profilePic = null;
 $hasPassword = false;
-$picStmt = $db->prepare("SELECT profile_picture, password FROM users WHERE user_id = ?");
-if ($picStmt) {
-    $picStmt->bind_param("i", $user['user_id']);
-    $picStmt->execute();
-    $picRow = $picStmt->get_result()->fetch_assoc();
-    $profilePic  = $picRow['profile_picture'] ?? null;
-    $hasPassword = !empty($picRow['password']);
+$freshStmt = $db->prepare("SELECT first_name, last_name, contact_number, email, role, profile_picture, password FROM users WHERE user_id = ?");
+if ($freshStmt) {
+    $freshStmt->bind_param("i", $user['user_id']);
+    $freshStmt->execute();
+    $freshRow = $freshStmt->get_result()->fetch_assoc();
+    // Merge fresh DB data into $user so the form fields always reflect DB truth
+    $user['first_name']      = $freshRow['first_name']      ?? $user['first_name'];
+    $user['last_name']       = $freshRow['last_name']       ?? $user['last_name'];
+    $user['contact_number']  = $freshRow['contact_number']  ?? $user['contact_number'];
+    $user['email']           = $freshRow['email']           ?? $user['email'];
+    $user['role']            = $freshRow['role']            ?? $user['role'];
+    $profilePic  = $freshRow['profile_picture'] ?? null;
+    $hasPassword = !empty($freshRow['password']);
 }
 ?>
 <!DOCTYPE html>

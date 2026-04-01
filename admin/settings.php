@@ -6,6 +6,20 @@ SessionManager::requireAdmin();
 $db = getDB();
 $currentUser = SessionManager::getUser();
 
+// Always fetch fresh user data from DB
+$freshStmt = $db->prepare("SELECT first_name, last_name, contact_number, email FROM users WHERE user_id = ?");
+if ($freshStmt) {
+    $freshStmt->bind_param("i", $currentUser['user_id']);
+    $freshStmt->execute();
+    $freshRow = $freshStmt->get_result()->fetch_assoc();
+    if ($freshRow) {
+        $currentUser['first_name']     = $freshRow['first_name'];
+        $currentUser['last_name']      = $freshRow['last_name'];
+        $currentUser['contact_number'] = $freshRow['contact_number'];
+        $currentUser['email']          = $freshRow['email'];
+    }
+}
+
 // Load system settings
 $sys_settings = [];
 $res = $db->query("SELECT setting_key, setting_value FROM system_settings");

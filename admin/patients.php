@@ -98,15 +98,14 @@ $result = $db->query($query);
             <div class="container-fluid my-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Manage Patients</h2>
-                    <form class="d-flex patient-search-form" action="" method="GET">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Search by name or ID..." value="<?php echo htmlspecialchars($search); ?>">
-                            <button class="btn btn-primary" type="submit">
-                                <i class="bi bi-search"></i>
-                            </button>
+                    <form class="patient-search-form" action="" method="GET">
+                        <div class="search-bar-wrap">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" name="search" class="search-input" placeholder="Search by name or ID..." value="<?php echo htmlspecialchars($search); ?>">
                             <?php if(!empty($search)): ?>
-                                <a href="patients.php" class="btn btn-outline-secondary">Clear</a>
+                                <a href="patients.php" class="search-clear" title="Clear search"><i class="bi bi-x-lg"></i></a>
                             <?php endif; ?>
+                            <button type="submit" class="search-btn">Search</button>
                         </div>
                     </form>
                 </div>
@@ -117,22 +116,21 @@ $result = $db->query($query);
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>FSUU ID</th>
+                                         <th>FSUU ID</th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Contact</th>
                                         <th>Type</th>
                                         <th>Appointments</th>
                                         <th>Status</th>
-                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if($result->num_rows > 0): ?>
                                         <?php while($patient = $result->fetch_assoc()): ?>
-                                        <tr>
+                                        <tr class="clickable-row" style="cursor:pointer;" onclick="window.location='patient-profile.php?id=<?php echo $patient['user_id']; ?>'">
                                             <td><code><?php echo htmlspecialchars($patient['fsuu_id']); ?></code></td>
-                                            <td><a href="patient-profile.php?id=<?php echo $patient['user_id']; ?>" class="patient-name-link"><?php echo htmlspecialchars($patient['last_name'] . ', ' . $patient['first_name']); ?></a></td>
+                                            <td><?php echo htmlspecialchars($patient['last_name'] . ', ' . $patient['first_name']); ?></td>
                                             <td><small><?php echo htmlspecialchars($patient['email']); ?></small></td>
                                             <td><?php echo htmlspecialchars($patient['contact_number'] ?: 'N/A'); ?></td>
                                             <td>
@@ -148,16 +146,11 @@ $result = $db->query($query);
                                                     <span class="badge bg-danger">Inactive</span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td>
-                                                <a href="patient-profile.php?id=<?php echo $patient['user_id']; ?>" class="btn btn-sm btn-outline-primary" title="View Profile">
-                                                    <i class="bi bi-person-lines-fill"></i>
-                                                </a>
-                                            </td>
                                         </tr>
                                         <?php endwhile; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="8" class="text-center py-5 text-muted">No patients found.</td>
+                                            <td colspan="7" class="text-center py-5 text-muted">No patients found.</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>

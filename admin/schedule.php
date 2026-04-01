@@ -160,125 +160,6 @@ $all_events = array_merge($block_events, $appt_events);
                     </div>
                 </div>
 
-                <!-- Blocks Table Tabs -->
-                <div class="card">
-                    <div class="card-header">
-                        <ul class="nav nav-tabs card-header-tabs" id="blocksTabs">
-                            <li class="nav-item">
-                                <a class="nav-link active" data-bs-toggle="tab" href="#tab-upcoming">
-                                    Upcoming Blocks
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-bs-toggle="tab" href="#tab-past">
-                                    Past Blocks <small class="text-muted">(last 30)</small>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="tab-content">
-
-                            <!-- Upcoming Blocks -->
-                            <div class="tab-pane fade show active" id="tab-upcoming">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Day</th>
-                                                <th>Time</th>
-                                                <th>Reason</th>
-                                                <th>Blocked By</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php if ($upcoming->num_rows > 0): ?>
-                                                <?php while ($row = $upcoming->fetch_assoc()): ?>
-                                                <tr id="block-row-<?php echo $row['block_id']; ?>">
-                                                    <td><strong><?php echo date('M d, Y', strtotime($row['block_date'])); ?></strong></td>
-                                                    <td><span class="text-muted"><?php echo date('l', strtotime($row['block_date'])); ?></span></td>
-                                                    <td>
-                                                        <?php if ($row['is_full_day']): ?>
-                                                            <span class="badge bg-danger">Full Day</span>
-                                                        <?php else: ?>
-                                                            <span class="badge bg-warning text-dark">
-                                                                <?php echo date('h:i A', strtotime($row['start_time'])) . ' – ' . date('h:i A', strtotime($row['end_time'])); ?>
-                                                            </span>
-                                                        <?php endif; ?>
-                                                    </td>
-                                                    <td><?php echo htmlspecialchars($row['reason'] ?: '—'); ?></td>
-                                                    <td>
-                                                        <small class="text-muted">
-                                                            <?php echo $row['first_name'] ? htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) : 'System'; ?>
-                                                        </small>
-                                                    </td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-outline-danger delete-block-btn"
-                                                            data-id="<?php echo $row['block_id']; ?>"
-                                                            data-date="<?php echo date('M d, Y', strtotime($row['block_date'])); ?>">
-                                                            <i class="bi bi-trash-fill me-1"></i>Remove
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <?php endwhile; ?>
-                                            <?php else: ?>
-                                                <tr>
-                                                    <td colspan="6" class="text-center py-5 text-muted">
-                                                        <i class="bi bi-calendar-check fs-3 d-block mb-2"></i>
-                                                        No upcoming blocked schedules.
-                                                    </td>
-                                                </tr>
-                                            <?php endif; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Past Blocks -->
-                            <div class="tab-pane fade" id="tab-past">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Day</th>
-                                                <th>Time</th>
-                                                <th>Reason</th>
-                                                <th>Blocked By</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php if ($past->num_rows > 0): ?>
-                                                <?php while ($row = $past->fetch_assoc()): ?>
-                                                <tr class="text-muted">
-                                                    <td><?php echo date('M d, Y', strtotime($row['block_date'])); ?></td>
-                                                    <td><?php echo date('l', strtotime($row['block_date'])); ?></td>
-                                                    <td>
-                                                        <?php if ($row['is_full_day']): ?>
-                                                            <span class="badge bg-secondary">Full Day</span>
-                                                        <?php else: ?>
-                                                            <small><?php echo date('h:i A', strtotime($row['start_time'])) . ' – ' . date('h:i A', strtotime($row['end_time'])); ?></small>
-                                                        <?php endif; ?>
-                                                    </td>
-                                                    <td><?php echo htmlspecialchars($row['reason'] ?: '—'); ?></td>
-                                                    <td><small><?php echo $row['first_name'] ? htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) : 'System'; ?></small></td>
-                                                </tr>
-                                                <?php endwhile; ?>
-                                            <?php else: ?>
-                                                <tr>
-                                                    <td colspan="5" class="text-center py-4 text-muted">No past blocks found.</td>
-                                                </tr>
-                                            <?php endif; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
 
             </div>
         </div>
@@ -286,7 +167,7 @@ $all_events = array_merge($block_events, $appt_events);
 
     <!-- Block Schedule Modal -->
     <div class="modal fade" id="blockModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title"><i class="bi bi-calendar-x-fill me-2"></i>Block Schedule</h5>
@@ -306,12 +187,47 @@ $all_events = array_merge($block_events, $appt_events);
                         <div id="timeFields" style="display:none;">
                             <div class="row g-3 mb-3">
                                 <div class="col-6">
-                                    <label class="form-label">Start Time <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" name="start_time">
+                                    <label class="form-label fw-semibold">Start Time <span class="text-danger">*</span></label>
+                                    <div class="time-slot-picker" id="startTimePicker">
+                                        <button type="button" class="time-slot-display" id="startTimeDisplay" onclick="toggleTimePicker('start')">
+                                            <i class="bi bi-clock-fill"></i> <span id="startTimeLabel">Select time</span>
+                                            <i class="bi bi-chevron-down ms-auto"></i>
+                                        </button>
+                                        <div class="time-slot-dropdown" id="startTimeDropdown">
+                                            <?php
+                                            $times = [];
+                                            for ($h = 8; $h <= 17; $h++) {
+                                                foreach ([0, 30] as $m) {
+                                                    $val = sprintf('%02d:%02d', $h, $m);
+                                                    $label = date('h:i A', strtotime($val));
+                                                    $times[] = ['val' => $val, 'label' => $label];
+                                                }
+                                            }
+                                            foreach ($times as $t): ?>
+                                            <button type="button" class="time-slot-btn" data-val="<?php echo $t['val']; ?>" data-target="start">
+                                                <?php echo $t['label']; ?>
+                                            </button>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="start_time" id="start_time_hidden">
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label">End Time <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" name="end_time">
+                                    <label class="form-label fw-semibold">End Time <span class="text-danger">*</span></label>
+                                    <div class="time-slot-picker" id="endTimePicker">
+                                        <button type="button" class="time-slot-display" id="endTimeDisplay" onclick="toggleTimePicker('end')">
+                                            <i class="bi bi-clock-fill"></i> <span id="endTimeLabel">Select time</span>
+                                            <i class="bi bi-chevron-down ms-auto"></i>
+                                        </button>
+                                        <div class="time-slot-dropdown" id="endTimeDropdown">
+                                            <?php foreach ($times as $t): ?>
+                                            <button type="button" class="time-slot-btn" data-val="<?php echo $t['val']; ?>" data-target="end">
+                                                <?php echo $t['label']; ?>
+                                            </button>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="end_time" id="end_time_hidden">
                                 </div>
                             </div>
                         </div>
@@ -366,11 +282,14 @@ $all_events = array_merge($block_events, $appt_events);
 
     // ── Full Calendar ────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function () {
+
         const calEl = document.getElementById('clinicCalendar');
         const calendar = new FullCalendar.Calendar(calEl, {
             initialView: 'timeGridWeek',
             headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' },
             height: 'auto',
+            dayMaxEvents: 2,
+            dayMaxEventRows: 3,
             slotMinTime: '08:00:00',
             slotMaxTime: '18:00:00',
             allDaySlot: true,
@@ -422,7 +341,7 @@ $all_events = array_merge($block_events, $appt_events);
         new bootstrap.Modal(document.getElementById('dayModal')).show();
 
         $.get('../api/get-appointment-details.php', { date: dateStr }, function (res) {
-            const appts = res.appointments || [];
+            const appts = (res.appointments || []).filter(a => a.status !== 'declined' && a.status !== 'cancelled');
             let html = '';
             if (appts.length === 0) {
                 html = '<div class="text-center py-5"><i class="bi bi-calendar-x" style="font-size:2.5rem;color:#E0E0E0;"></i><p class="text-muted mt-3 mb-0">No appointments on this date.</p></div>';
@@ -474,19 +393,52 @@ $all_events = array_merge($block_events, $appt_events);
         setTimeout(() => new bootstrap.Modal(document.getElementById('blockModal')).show(), 300);
     });
 
+    // ── Time slot picker ─────────────────────────────────────────────────────
+    function toggleTimePicker(target) {
+        const dd = document.getElementById(target + 'TimeDropdown');
+        const other = target === 'start' ? 'endTimeDropdown' : 'startTimeDropdown';
+        document.getElementById(other).classList.remove('open');
+        dd.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.time-slot-picker')) {
+            document.querySelectorAll('.time-slot-dropdown').forEach(d => d.classList.remove('open'));
+        }
+    });
+    document.querySelectorAll('.time-slot-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = this.dataset.target;
+            const val = this.dataset.val;
+            const label = this.textContent.trim();
+            document.getElementById(target + '_time_hidden').value = val + ':00';
+            document.getElementById(target + 'TimeLabel').textContent = label;
+            document.getElementById(target + 'TimeDropdown').classList.remove('open');
+            document.getElementById(target + 'TimeDisplay').classList.add('selected');
+            document.querySelectorAll(`[data-target="${target}"]`).forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
     // ── Toggle time fields ───────────────────────────────────────────────────
     $('#is_full_day').change(function () {
         if ($(this).is(':checked')) {
             $('#timeFields').hide();
-            $('input[name="start_time"], input[name="end_time"]').removeAttr('required');
         } else {
             $('#timeFields').show();
-            $('input[name="start_time"], input[name="end_time"]').attr('required', 'required');
         }
     });
 
     // ── Save Block ───────────────────────────────────────────────────────────
     $('#saveBlock').click(function () {
+        const fullDay = $('#is_full_day').is(':checked');
+        if (!fullDay) {
+            const st = $('#start_time_hidden').val();
+            const et = $('#end_time_hidden').val();
+            if (!st || !et) {
+                showAlert('#blockModalAlert', 'danger', 'Please select both Start Time and End Time.');
+                return;
+            }
+        }
         const formData = $('#blockForm').serialize();
         $.post('../api/block-schedule.php', formData, function (res) {
             if (res.success) {

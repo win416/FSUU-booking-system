@@ -36,11 +36,27 @@ $result = $db->query($query);
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
     <style>
-    .btn-outline-dark { color: #29ABE2; border-color: #29ABE2; }
-    .btn-outline-dark:hover { background: #29ABE2; color: #fff; border-color: #29ABE2; }
-    .btn-outline-dark.active { background: #29ABE2; color: #fff; border-color: #29ABE2; }
+    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-tab {
+        display: inline-block;
+        padding: 6px 20px;
+        border-radius: 50px;
+        border: 1.5px solid #29ABE2;
+        color: #29ABE2;
+        background: #fff;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background 0.15s, color 0.15s;
+        white-space: nowrap;
+    }
+    .filter-tab:hover { background: #e8f7fd; color: #1C9DD6; border-color: #1C9DD6; }
+    .filter-tab.active { background: #29ABE2; color: #fff; border-color: #29ABE2; }
+    .filter-tab.active:hover { background: #1C9DD6; border-color: #1C9DD6; color: #fff; }
     .btn-dark.complete-btn { background: #29ABE2; border-color: #1C9DD6; }
     .btn-dark.complete-btn:hover { background: #1C9DD6; border-color: #1C9DD6; }
+    tbody tr.clickable-row { cursor: pointer; }
+    tbody tr.clickable-row:hover { background-color: #f0f8ff; }
     </style>
 <body>
     <div class="dashboard-wrapper">
@@ -103,12 +119,12 @@ $result = $db->query($query);
             <div class="container-fluid my-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                     <h2>Manage Appointments</h2>
-                    <div class="btn-group flex-wrap">
-                        <a href="?status=all" class="btn btn-outline-dark <?php echo $status_filter == 'all' ? 'active' : ''; ?>">All</a>
-                        <a href="?status=pending" class="btn btn-outline-dark <?php echo $status_filter == 'pending' ? 'active' : ''; ?>">Pending</a>
-                        <a href="?status=approved" class="btn btn-outline-dark <?php echo $status_filter == 'approved' ? 'active' : ''; ?>">Approved</a>
-                        <a href="?status=completed" class="btn btn-outline-dark <?php echo $status_filter == 'completed' ? 'active' : ''; ?>">Completed</a>
-                        <a href="?status=cancelled" class="btn btn-outline-dark <?php echo $status_filter == 'cancelled' ? 'active' : ''; ?>">Cancelled</a>
+                    <div class="filter-tabs">
+                        <a href="?status=all" class="filter-tab <?php echo $status_filter == 'all' ? 'active' : ''; ?>">All</a>
+                        <a href="?status=pending" class="filter-tab <?php echo $status_filter == 'pending' ? 'active' : ''; ?>">Pending</a>
+                        <a href="?status=approved" class="filter-tab <?php echo $status_filter == 'approved' ? 'active' : ''; ?>">Approved</a>
+                        <a href="?status=completed" class="filter-tab <?php echo $status_filter == 'completed' ? 'active' : ''; ?>">Completed</a>
+                        <a href="?status=cancelled" class="filter-tab <?php echo $status_filter == 'cancelled' ? 'active' : ''; ?>">Cancelled</a>
                     </div>
                 </div>
 
@@ -118,7 +134,7 @@ $result = $db->query($query);
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Date & Time</th>
+                                         <th>Date & Time</th>
                                         <th>Patient</th>
                                         <th>FSUU ID</th>
                                         <th>Service</th>
@@ -129,7 +145,7 @@ $result = $db->query($query);
                                 <tbody>
                                     <?php if($result->num_rows > 0): ?>
                                         <?php while($appt = $result->fetch_assoc()): ?>
-                                        <tr>
+                                        <tr class="clickable-row" data-id="<?php echo $appt['appointment_id']; ?>">
                                             <td>
                                                 <strong><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></strong><br>
                                                 <small class="text-muted"><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></small>
@@ -164,9 +180,6 @@ $result = $db->query($query);
                                                         <i class="bi bi-check-all"></i> Complete
                                                     </button>
                                                 <?php endif; ?>
-                                                <button class="btn btn-sm btn-outline-secondary view-details" data-id="<?php echo $appt['appointment_id']; ?>" title="View Details">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
                                             </td>
                                         </tr>
                                         <?php endwhile; ?>
@@ -186,7 +199,7 @@ $result = $db->query($query);
 
     <!-- Details Modal -->
     <div class="modal fade" id="detailsModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Appointment Details</h5>
@@ -253,8 +266,13 @@ $result = $db->query($query);
             });
         }
 
-        // View Details
-        $('.view-details').click(function() {
+        // Stop action buttons from triggering row click
+        $('.approve-btn, .decline-btn, .complete-btn').click(function(e) {
+            e.stopPropagation();
+        });
+
+        // Row click → View Details
+        $('.clickable-row').click(function() {
             const id = $(this).data('id');
             const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
             const content = $('#detailsContent');
@@ -268,35 +286,41 @@ $result = $db->query($query);
                     const data = response.data;
                     const html = `
                         <div class="appointment-details">
-                            <div class="section mb-4">
-                                <h6 class="text-primary border-bottom pb-2 mb-3">Patient Information</h6>
-                                <div class="row">
-                                    <div class="col-6 mb-2"><strong>Name:</strong><br>${data.first_name} ${data.last_name}</div>
-                                    <div class="col-6 mb-2"><strong>FSUU ID:</strong><br>${data.fsuu_id}</div>
-                                    <div class="col-6 mb-2"><strong>Email:</strong><br>${data.email}</div>
-                                    <div class="col-6 mb-2"><strong>Contact:</strong><br>${data.contact_number}</div>
+                            <div class="row g-3">
+                                <!-- Left column: Patient + Appointment -->
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded" style="background:#f8f9fa;">
+                                        <h6 class="text-primary border-bottom pb-2 mb-3" style="font-size:0.8rem;letter-spacing:.05em;">PATIENT INFORMATION</h6>
+                                        <div class="row g-2">
+                                            <div class="col-6"><small class="text-muted d-block">Name</small><strong>${data.first_name} ${data.last_name}</strong></div>
+                                            <div class="col-6"><small class="text-muted d-block">FSUU ID</small><span style="font-size:0.82rem;">${data.fsuu_id}</span></div>
+                                            <div class="col-12"><small class="text-muted d-block">Email</small><span style="font-size:0.85rem;">${data.email}</span></div>
+                                            <div class="col-12"><small class="text-muted d-block">Contact</small><span style="font-size:0.85rem;">${data.contact_number || '<em class="text-muted">N/A</em>'}</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 rounded mt-3" style="background:#f8f9fa;">
+                                        <h6 class="text-primary border-bottom pb-2 mb-3" style="font-size:0.8rem;letter-spacing:.05em;">APPOINTMENT INFORMATION</h6>
+                                        <div class="row g-2">
+                                            <div class="col-6"><small class="text-muted d-block">Service</small><strong>${data.service_name}</strong></div>
+                                            <div class="col-6"><small class="text-muted d-block">Date</small>${new Date(data.appointment_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                                            <div class="col-6"><small class="text-muted d-block">Time</small>${data.appointment_time}</div>
+                                            <div class="col-6"><small class="text-muted d-block">Status</small><span class="badge ${getStatusBadge(data.status)}">${data.status.toUpperCase()}</span></div>
+                                            ${data.cancellation_reason ? `<div class="col-12"><small class="text-muted d-block">Cancellation Reason</small>${data.cancellation_reason}</div>` : ''}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="section mb-4">
-                                <h6 class="text-primary border-bottom pb-2 mb-3">Appointment Information</h6>
-                                <div class="row">
-                                    <div class="col-6 mb-2"><strong>Service:</strong><br>${data.service_name}</div>
-                                    <div class="col-6 mb-2"><strong>Date:</strong><br>${new Date(data.appointment_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
-                                    <div class="col-6 mb-2"><strong>Time:</strong><br>${data.appointment_time}</div>
-                                    <div class="col-6 mb-2"><strong>Status:</strong><br><span class="badge ${getStatusBadge(data.status)}">${data.status.toUpperCase()}</span></div>
-                                    ${data.cancellation_reason ? `<div class="col-12 mb-2"><strong>Cancellation Reason:</strong><br>${data.cancellation_reason}</div>` : ''}
-                                </div>
-                            </div>
-
-                            <div class="section">
-                                <h6 class="text-primary border-bottom pb-2 mb-3">Medical Information</h6>
-                                <div class="row">
-                                    <div class="col-12 mb-2"><strong>Allergies:</strong><br>${data.allergies || '<span class="text-muted">None</span>'}</div>
-                                    <div class="col-12 mb-2"><strong>Conditions:</strong><br>${data.medical_conditions || '<span class="text-muted">None</span>'}</div>
-                                    <div class="col-12 mb-2"><strong>Medications:</strong><br>${data.medications || '<span class="text-muted">None</span>'}</div>
-                                    <div class="col-6 mb-2"><strong>Emergency Contact:</strong><br>${data.emergency_contact_name || '<span class="text-muted">N/A</span>'}</div>
-                                    <div class="col-6 mb-2"><strong>Emergency Number:</strong><br>${data.emergency_contact_number || '<span class="text-muted">N/A</span>'}</div>
+                                <!-- Right column: Medical -->
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded h-100" style="background:#f8f9fa;">
+                                        <h6 class="text-primary border-bottom pb-2 mb-3" style="font-size:0.8rem;letter-spacing:.05em;">MEDICAL INFORMATION</h6>
+                                        <div class="row g-2">
+                                            <div class="col-12"><small class="text-muted d-block">Allergies</small>${data.allergies || '<span class="text-muted">None</span>'}</div>
+                                            <div class="col-12"><small class="text-muted d-block">Conditions</small>${data.medical_conditions || '<span class="text-muted">None</span>'}</div>
+                                            <div class="col-12"><small class="text-muted d-block">Medications</small>${data.medications || '<span class="text-muted">None</span>'}</div>
+                                            <div class="col-6"><small class="text-muted d-block">Emergency Contact</small>${data.emergency_contact_name || '<span class="text-muted">N/A</span>'}</div>
+                                            <div class="col-6"><small class="text-muted d-block">Emergency Number</small>${data.emergency_contact_number || '<span class="text-muted">N/A</span>'}</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

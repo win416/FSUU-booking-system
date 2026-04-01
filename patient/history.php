@@ -10,6 +10,19 @@ $stmt = $db->prepare("SELECT * FROM medical_info WHERE user_id = ?");
 $stmt->bind_param("i", $user['user_id']);
 $stmt->execute();
 $medical = $stmt->get_result()->fetch_assoc();
+
+// Fetch past completed appointments
+$histStmt = $db->prepare("
+    SELECT a.appointment_id, a.appointment_date, a.appointment_time, a.status, a.notes,
+           s.service_name, s.duration_minutes
+    FROM appointments a
+    JOIN services s ON a.service_id = s.service_id
+    WHERE a.user_id = ? AND a.status = 'completed'
+    ORDER BY a.appointment_date DESC, a.appointment_time DESC
+");
+$histStmt->bind_param("i", $user['user_id']);
+$histStmt->execute();
+$history = $histStmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -100,13 +113,108 @@ $medical = $stmt->get_result()->fetch_assoc();
 
                 <!-- Appointment History Section -->
                 <div class="card">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0 fw-bold">Past Appointments</h5>
+                    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-muted"></i>Past Appointments</h5>
+                        <span class="badge" style="background:#e8f7fd;color:#29ABE2;font-size:0.8rem;padding:0.4rem 0.75rem;border-radius:20px;">
+                            <?php echo $history->num_rows; ?> record<?php echo $history->num_rows !== 1 ? 's' : ''; ?>
+                        </span>
                     </div>
-                    <div class="card-body">
-                        <div class="alert alert-info mb-0">
-                            <i class="bi bi-info-circle-fill me-2"></i>
-                            Your past completed appointments and treatment history will be displayed here.
+                    <div class="card-body p-0">
+                        <?php if ($history->num_rows > 0): ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="padding:0.85rem 1.25rem;">Date</th>
+                                        <th style="padding:0.85rem 1.25rem;">Time</th>
+                                        <th style="padding:0.85rem 1.25rem;">Service</th>
+                                        <th style="padding:0.85rem 1.25rem;">Duration</th>
+                                        <th style="padding:0.85rem 1.25rem;">Status</th>
+                                        <th style="padding:0.85rem 1.25rem;">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php while ($row = $history->fetch_assoc()): ?>
+                                    <tr class="history-row" style="cursor:pointer;"
+                                        data-date="<?php echo date('F d, Y', strtotime($row['appointment_date'])); ?>"
+                                        data-day="<?php echo date('l', strtotime($row['appointment_date'])); ?>"
+                                        data-time="<?php echo date('h:i A', strtotime($row['appointment_time'])); ?>"
+                                        data-service="<?php echo htmlspecialchars($row['service_name']); ?>"
+                                        data-duration="<?php echo $row['duration_minutes']; ?>"
+                                        data-notes="<?php echo htmlspecialchars($row['notes'] ?? ''); ?>">
+                                        <td style="padding:0.85rem 1.25rem;">
+                                            <strong><?php echo date('M d, Y', strtotime($row['appointment_date'])); ?></strong><br>
+                                            <small class="text-muted"><?php echo date('l', strtotime($row['appointment_date'])); ?></small>
+                                        </td>
+                                        <td style="padding:0.85rem 1.25rem;">
+                                            <?php echo date('h:i A', strtotime($row['appointment_time'])); ?>
+                                        </td>
+                                        <td style="padding:0.85rem 1.25rem;">
+                                            <strong><?php echo htmlspecialchars($row['service_name']); ?></strong>
+                                        </td>
+                                        <td style="padding:0.85rem 1.25rem;">
+                                            <span style="background:rgba(41,171,226,0.1);color:#29ABE2;border:1px solid rgba(41,171,226,0.25);border-radius:20px;padding:2px 10px;font-size:0.78rem;font-weight:600;">
+                                                <i class="bi bi-clock me-1"></i><?php echo $row['duration_minutes']; ?> mins
+                                            </span>
+                                        </td>
+                                        <td style="padding:0.85rem 1.25rem;">
+                                            <span class="badge bg-info">Completed</span>
+                                        </td>
+                                        <td style="padding:0.85rem 1.25rem;">
+                                            <small class="text-muted"><?php echo $row['notes'] ? htmlspecialchars($row['notes']) : '—'; ?></small>
+                                        </td>
+                                    </tr>
+                                    <?php endwhile; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php else: ?>
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x" style="font-size:2.5rem;color:#E0E0E0;"></i>
+                            <p class="text-muted mt-3 mb-0">No completed appointments yet.</p>
+                            <a href="book-appointment.php" class="btn btn-sm mt-3" style="background:#29ABE2;color:#fff;">Book your first appointment</a>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment Detail Modal -->
+    <div class="modal fade" id="appointmentDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:12px;border:none;box-shadow:0 10px 40px rgba(0,0,0,0.15);">
+                <div class="modal-header" style="background:#f0f8ff;border-bottom:1px solid #e0e0e0;border-radius:12px 12px 0 0;padding:1rem 1.5rem;">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-calendar-check me-2" style="color:#29ABE2;"></i>Appointment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding:1.5rem;">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Date</small>
+                            <strong id="modal-date"></strong><br>
+                            <small class="text-muted" id="modal-day"></small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Time</small>
+                            <strong id="modal-time"></strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Service</small>
+                            <strong id="modal-service"></strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Duration</small>
+                            <span id="modal-duration" style="background:rgba(41,171,226,0.1);color:#29ABE2;border:1px solid rgba(41,171,226,0.25);border-radius:20px;padding:2px 10px;font-size:0.8rem;font-weight:600;display:inline-block;"></span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Status</small>
+                            <span class="badge bg-info">Completed</span>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted d-block">Notes</small>
+                            <span id="modal-notes" class="text-muted"></span>
                         </div>
                     </div>
                 </div>
@@ -118,6 +226,24 @@ $medical = $stmt->get_result()->fetch_assoc();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
     $(document).ready(function() {
+        // Clickable history rows
+        $(document).on('click', '.history-row', function() {
+            $('#modal-date').text($(this).data('date'));
+            $('#modal-day').text($(this).data('day'));
+            $('#modal-time').text($(this).data('time'));
+            $('#modal-service').text($(this).data('service'));
+            $('#modal-duration').html('<i class="bi bi-clock me-1"></i>' + $(this).data('duration') + ' mins');
+            var notes = $(this).data('notes');
+            $('#modal-notes').text(notes ? notes : '—');
+            new bootstrap.Modal(document.getElementById('appointmentDetailModal')).show();
+        });
+        // Hover effect
+        $(document).on('mouseenter', '.history-row', function() {
+            $(this).css('background','#f0f9ff');
+        }).on('mouseleave', '.history-row', function() {
+            $(this).css('background','');
+        });
+
         $('#medicalInfoForm').on('submit', function(e) {
             e.preventDefault();
             const form = $(this);

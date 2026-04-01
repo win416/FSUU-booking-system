@@ -182,10 +182,10 @@ foreach ($weekly_data as $date => $count) {
 
 
 
-        <div class="row">
+        <div class="row align-items-stretch">
             <!-- Today's Schedule -->
-            <div class="col-md-6">
-                <div class="card mb-4">
+            <div class="col-md-6 d-flex">
+                <div class="card mb-4 w-100">
                     <div class="card-header">
                         <h5>Today's Schedule (<?php echo date('F d, Y'); ?>)</h5>
                     </div>
@@ -236,8 +236,8 @@ foreach ($weekly_data as $date => $count) {
             </div>
 
             <!-- Pending Approvals -->
-            <div class="col-md-6">
-                <div class="card mb-4">
+            <div class="col-md-6 d-flex">
+                <div class="card mb-4 w-100">
                     <div class="card-header">
                         <h5>Pending Approvals</h5>
                     </div>
@@ -253,21 +253,27 @@ foreach ($weekly_data as $date => $count) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php while($appt = $pending->fetch_assoc()): ?>
-                                    <tr>
-                                        <td><?php echo date('M d, h:i A', strtotime($appt['appointment_date'] . ' ' . $appt['appointment_time'])); ?></td>
-                                        <td><?php echo $appt['first_name'] . ' ' . $appt['last_name']; ?></td>
-                                        <td><?php echo $appt['service_name']; ?></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-success approve-btn" data-id="<?php echo $appt['appointment_id']; ?>">
-                                                <i class="bi bi-check-lg"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-danger decline-btn" data-id="<?php echo $appt['appointment_id']; ?>">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <?php endwhile; ?>
+                                    <?php if($pending->num_rows > 0): ?>
+                                        <?php while($appt = $pending->fetch_assoc()): ?>
+                                        <tr>
+                                            <td><?php echo date('M d, h:i A', strtotime($appt['appointment_date'] . ' ' . $appt['appointment_time'])); ?></td>
+                                            <td><?php echo $appt['first_name'] . ' ' . $appt['last_name']; ?></td>
+                                            <td><?php echo $appt['service_name']; ?></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-success approve-btn" data-id="<?php echo $appt['appointment_id']; ?>">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger decline-btn" data-id="<?php echo $appt['appointment_id']; ?>">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <?php endwhile; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" class="text-center">No pending approvals</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -276,10 +282,10 @@ foreach ($weekly_data as $date => $count) {
             </div>
         </div>
 
-        <div class="row">
+        <div class="row align-items-stretch">
             <!-- Weekly Chart -->
-            <div class="col-md-8">
-                <div class="card" style="border-radius:14px; border:none; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+            <div class="col-md-8 d-flex">
+                <div class="card w-100" style="border-radius:14px; border:none; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
                     <div class="card-header d-flex align-items-center justify-content-between" style="background:#fff; border-bottom:1px solid #E0E0E0; border-radius:14px 14px 0 0; padding:1rem 1.5rem;">
                         <div>
                             <h5 class="mb-0" style="font-weight:700; color:#1A1A1A; font-size:1rem;">
@@ -298,12 +304,14 @@ foreach ($weekly_data as $date => $count) {
             </div>
 
             <!-- Quick Actions -->
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Quick Actions</h5>
+            <div class="col-md-4 d-flex">
+                <div class="card w-100" style="border-radius:14px; border:none; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
+                    <div class="card-header d-flex align-items-center" style="background:#fff; border-bottom:1px solid #E0E0E0; border-radius:14px 14px 0 0; padding:1rem 1.5rem;">
+                        <h5 class="mb-0" style="font-weight:700; color:#1A1A1A; font-size:1rem;">
+                            <i class="bi bi-lightning me-2" style="color:#1A1A1A;"></i>Quick Actions
+                        </h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="padding:1.25rem 1.5rem;">
                         <div class="d-grid gap-2">
                             <a href="schedule.php?block=1" class="btn btn-outline-primary">
                                 <i class="bi bi-calendar-x"></i> Block Schedule
@@ -318,9 +326,9 @@ foreach ($weekly_data as $date => $count) {
                                 <i class="bi bi-person-plus"></i> Add User
                             </a>
                         </div>
-        </div> <!-- closing Quick Actions card-body -->
-            </div> <!-- closing Quick Actions card -->
-            </div> <!-- closing Quick Actions col -->
+                    </div>
+                </div>
+            </div>
         </div> <!-- closing row -->
 
     </div> <!-- closing main-content -->
