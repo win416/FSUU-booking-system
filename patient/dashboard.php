@@ -53,6 +53,10 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
         color: #fff !important;
         text-shadow: 0 2px 10px rgba(0,0,0,0.6) !important;
     }
+    /* Mobile only: anchor text to bottom-left */
+    @media (max-width: 767px) {
+        .fac-hero-text { bottom: 14px !important; left: 14px !important; }
+    }
     </style>
 </head>
 <body>
@@ -61,7 +65,7 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
         <nav class="sidebar">
             <div class="brand">
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
-                FSUU Dental
+                FSUU Dental Clinic
             </div>
             <div class="sidebar-nav-wrap">
             <div class="sidebar-section-label">Menu</div>
@@ -138,8 +142,7 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                         <p>Welcome back, <strong><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></strong>!</p>
                     </div>
                     <!-- Arrows -->
-                    <button class="fac-arrow fac-prev" onclick="facSlide(-1)"><i class="bi bi-chevron-left"></i></button>
-                    <button class="fac-arrow fac-next" onclick="facSlide(1)"><i class="bi bi-chevron-right"></i></button>
+
                     <!-- Dots -->
                     <div class="fac-dots">
                         <span class="fac-dot active" onclick="facGoTo(0)"></span>

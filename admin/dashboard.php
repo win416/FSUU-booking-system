@@ -91,6 +91,12 @@ foreach ($weekly_data as $date => $count) {
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+    /* Mobile only: anchor hero text to bottom-left */
+    @media (max-width: 767px) {
+        .fac-hero-text { bottom: 14px !important; left: 14px !important; }
+    }
+    </style>
 </head>
 <body>
     <div class="dashboard-wrapper">
@@ -98,7 +104,7 @@ foreach ($weekly_data as $date => $count) {
         <nav class="sidebar">
             <div class="brand">
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
-                FSUU Admin
+                FSUU Dental Clinic
             </div>
             <div class="sidebar-nav-wrap">
             <div class="sidebar-section-label">Menu</div>
@@ -169,8 +175,7 @@ foreach ($weekly_data as $date => $count) {
                         <h2>Admin Dashboard</h2>
                         <p>Welcome back, <strong><?php echo htmlspecialchars(SessionManager::getUser()['first_name']); ?></strong>!</p>
                     </div>
-                    <button class="fac-arrow fac-prev" onclick="facSlide(-1)"><i class="bi bi-chevron-left"></i></button>
-                    <button class="fac-arrow fac-next" onclick="facSlide(1)"><i class="bi bi-chevron-right"></i></button>
+
                     <div class="fac-dots">
                         <span class="fac-dot active" onclick="facGoTo(0)"></span>
                         <span class="fac-dot" onclick="facGoTo(1)"></span>

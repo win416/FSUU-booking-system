@@ -107,7 +107,7 @@
 .service-progress { height: 7px; border-radius: 10px; background: #F8F8F8; }
 .service-progress .progress-bar {
     border-radius: 10px;
-    background: #1A1A1A !important;
+    background: #29ABE2 !important;
     transition: width 0.6s ease;
 }
 

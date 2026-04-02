@@ -370,17 +370,27 @@ $('#notifSearch').on('input', function () {
     applyFilter();
 });
 
-// ── Click to expand + auto-mark read ────────────────────────────────
+// ── Click to navigate + auto-mark read ──────────────────────────────
 $(document).on('click', '.notif-card', function (e) {
     if ($(e.target).closest('.notif-actions').length) return; // ignore action btns
     const card = $(this);
-    card.toggleClass('expanded');
+
     // Auto-mark as read on click if unread
     if (card.hasClass('unread')) {
         const id = card.data('id');
         $.post('../api/mark-notifications-read.php', { notification_id: id }, function (res) {
             if (res.success) markCardAsRead(card);
         }, 'json');
+    }
+
+    // Navigate based on subject
+    const subject = (card.data('subject') || '').toLowerCase();
+    if (subject.includes('appointment') || subject.includes('booking')) {
+        window.location.href = 'my-appointments.php';
+    } else if (subject.includes('message')) {
+        window.location.href = 'messages.php';
+    } else if (subject.includes('profile')) {
+        window.location.href = 'profile.php';
     }
 });
 

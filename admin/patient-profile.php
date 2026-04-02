@@ -165,33 +165,6 @@ $appointments = $appts->get_result();
                 </div>
             </div>
 
-            <!-- Stats Row -->
-            <div class="row g-3 mb-4">
-                <?php
-                $statItems = [
-                    ['label' => 'Total',     'value' => $stats['total']     ?? 0, 'color' => 'primary'],
-                    ['label' => 'Pending',   'value' => $stats['pending']   ?? 0, 'color' => 'warning'],
-                    ['label' => 'Approved',  'value' => $stats['approved']  ?? 0, 'color' => 'info'],
-                    ['label' => 'Completed', 'value' => $stats['completed'] ?? 0, 'color' => 'success'],
-                    ['label' => 'Cancelled', 'value' => $stats['cancelled'] ?? 0, 'color' => 'danger'],
-                ];
-                $maxStat = max(array_column($statItems, 'value') ?: [1]);
-                $maxStat = $maxStat > 0 ? $maxStat : 1;
-                foreach ($statItems as $s):
-                    $barWidth = round(($s['value'] / $maxStat) * 100);
-                ?>
-                <div class="col-6 col-md">
-                    <div class="card stat-pill border-<?php echo $s['color']; ?> text-<?php echo $s['color']; ?>">
-                        <div class="fw-bold fs-4"><?php echo $s['value']; ?></div>
-                        <div class="small mb-2"><?php echo $s['label']; ?></div>
-                        <div class="progress" style="height:5px; background:#f1f5f9;">
-                            <div class="progress-bar bg-<?php echo $s['color']; ?>" style="width:<?php echo $barWidth; ?>%"></div>
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-
             <div class="row g-4">
                 <!-- Medical Information -->
                 <div class="col-md-5">

@@ -44,14 +44,15 @@ try {
         $conditions = trim($_POST['medical_conditions']);
         $medications = trim($_POST['medications']);
         $emergency_name = trim($_POST['emergency_contact_name']);
+        $emergency_relationship = trim($_POST['emergency_contact_relationship'] ?? '');
         $emergency_number = trim($_POST['emergency_contact_number']);
 
         if (!$emergency_name || !$emergency_number) {
             throw new Exception('Emergency contact details are required');
         }
 
-        $stmt = $db->prepare("UPDATE medical_info SET allergies = ?, medical_conditions = ?, medications = ?, emergency_contact_name = ?, emergency_contact_number = ? WHERE user_id = ?");
-        $stmt->bind_param("sssssi", $allergies, $conditions, $medications, $emergency_name, $emergency_number, $user_id);
+        $stmt = $db->prepare("UPDATE medical_info SET allergies = ?, medical_conditions = ?, medications = ?, emergency_contact_name = ?, emergency_contact_relationship = ?, emergency_contact_number = ? WHERE user_id = ?");
+        $stmt->bind_param("ssssssi", $allergies, $conditions, $medications, $emergency_name, $emergency_relationship, $emergency_number, $user_id);
 
         if ($stmt->execute()) {
             echo json_encode(['success' => true, 'message' => 'Medical record updated successfully']);

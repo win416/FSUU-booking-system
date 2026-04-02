@@ -97,11 +97,24 @@ $history = $histStmt->get_result();
                             </div>
                             <hr>
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label class="form-label">Emergency Contact Name</label>
                                     <input type="text" name="emergency_contact_name" class="form-control" value="<?php echo htmlspecialchars($medical['emergency_contact_name'] ?? ''); ?>" required>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Relationship to Patient</label>
+                                    <select name="emergency_contact_relationship" class="form-select" required>
+                                        <option value="">-- Select Relationship --</option>
+                                        <?php
+                                        $relationships = ['Father', 'Mother', 'Sibling', 'Spouse', 'Child', 'Grandparent', 'Aunt/Uncle', 'Cousin', 'Guardian', 'Friend', 'Other'];
+                                        $selected = $medical['emergency_contact_relationship'] ?? '';
+                                        foreach ($relationships as $rel):
+                                        ?>
+                                        <option value="<?php echo $rel; ?>" <?php echo $selected === $rel ? 'selected' : ''; ?>><?php echo $rel; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
                                     <label class="form-label">Emergency Contact Number</label>
                                     <input type="text" name="emergency_contact_number" class="form-control" value="<?php echo htmlspecialchars($medical['emergency_contact_number'] ?? ''); ?>" required>
                                 </div>

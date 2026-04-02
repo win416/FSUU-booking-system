@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS `medical_info` (
   `medical_conditions` TEXT DEFAULT NULL,
   `medications` TEXT DEFAULT NULL,
   `emergency_contact_name` VARCHAR(150) DEFAULT NULL,
+  `emergency_contact_relationship` VARCHAR(50) DEFAULT NULL,
   `emergency_contact_number` VARCHAR(20) DEFAULT NULL,
   `last_update` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),

@@ -28,6 +28,7 @@ $appointments = $stmt->get_result();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
+    <link href="../assets/css/patient-my-appointments.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -86,18 +87,24 @@ $appointments = $stmt->get_result();
         <div class="main-content">
             <?php include '../includes/patient-topbar.php'; ?>
             <div class="container-fluid my-4">
-            <div style="max-width:1100px;width:100%;">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-                    <div>
-                        <h2 class="fw-bold mb-0" style="font-size:1.6rem;">My Appointments</h2>
-                        <p class="text-muted mb-0" style="font-size:0.875rem;">View and manage your dental appointments</p>
+            <div style="max-width:1100px;width:100%;margin:0 auto;">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h2 class="fw-bold mb-0" style="font-size:1.6rem;">My Appointments</h2>
+                            <p class="text-muted mb-0" style="font-size:0.875rem;">View and manage your dental appointments</p>
+                        </div>
+                        <a href="book-appointment.php" class="btn rounded-pill fw-semibold flex-shrink-0 d-none d-sm-inline-flex align-items-center gap-1" style="background:#29ABE2;color:#fff;border:none;white-space:nowrap;padding:8px 20px;">
+                            <i class="bi bi-plus-lg"></i> Book New Appointment
+                        </a>
                     </div>
-                    <a href="book-appointment.php" class="btn rounded-pill px-4 fw-semibold" style="background:#29ABE2;color:#fff;border:none;">
+                    <!-- Mobile: full-width button below title -->
+                    <a href="book-appointment.php" class="btn rounded-pill fw-semibold w-100 mt-3 d-sm-none" style="background:#29ABE2;color:#fff;border:none;">
                         <i class="bi bi-plus-lg me-1"></i> Book New Appointment
                     </a>
                 </div>
 
-                <div class="card border-0 shadow-sm" style="border-radius:12px;overflow:hidden;">
+                <div class="card border-0 shadow-sm appt-table-wrap" style="border-radius:12px;overflow:hidden;">
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table mb-0" style="font-size:0.9rem;">
@@ -151,6 +158,48 @@ $appointments = $stmt->get_result();
                             </table>
                         </div>
                     </div>
+                </div>
+
+                <!-- Mobile Card Layout -->
+                <div class="appt-card-mobile">
+                    <?php
+                    // Reset result pointer for mobile cards
+                    $appointments->data_seek(0);
+                    if ($appointments->num_rows > 0):
+                        while ($appt = $appointments->fetch_assoc()):
+                            $badgeStyle = match($appt['status']) {
+                                'pending'   => 'background:#fef3c7;color:#92400e;',
+                                'approved'  => 'background:#dcfce7;color:#166534;',
+                                'completed' => 'background:#dbeafe;color:#1e40af;',
+                                'cancelled' => 'background:#fee2e2;color:#991b1b;',
+                                'declined'  => 'background:#fee2e2;color:#991b1b;',
+                                default     => 'background:#f3f4f6;color:#374151;'
+                            };
+                    ?>
+                    <div class="appt-item">
+                        <div class="appt-item-top">
+                            <div class="appt-service"><?php echo htmlspecialchars($appt['service_name']); ?></div>
+                            <span style="<?php echo $badgeStyle; ?> font-size:0.72rem;font-weight:600;padding:0.2em 0.65em;border-radius:999px;white-space:nowrap;">
+                                <?php echo ucfirst($appt['status']); ?>
+                            </span>
+                        </div>
+                        <div class="appt-meta">
+                            <span><i class="bi bi-calendar3"></i><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></span>
+                            <span><i class="bi bi-clock"></i><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></span>
+                        </div>
+                        <?php if ($appt['status'] === 'pending'): ?>
+                        <div class="appt-footer">
+                            <span class="text-muted" style="font-size:0.75rem;">Awaiting confirmation</span>
+                            <button class="btn btn-sm btn-outline-danger rounded-pill cancel-appt" data-id="<?php echo $appt['appointment_id']; ?>" style="font-size:0.78rem;padding:3px 14px;">Cancel</button>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php endwhile; else: ?>
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-calendar-x d-block mb-2" style="font-size:2rem;opacity:0.3;"></i>
+                        No appointments found.
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
             </div>

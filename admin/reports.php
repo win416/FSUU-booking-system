@@ -16,13 +16,41 @@ SessionManager::requireAdmin();
     <link href="../assets/css/admin-reports.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
     <style>
+        /* Remove browser's default print date/title header and URL footer */
+        @page { size: A4 landscape; margin: 0; }
         @media print {
-            .sidebar, .no-print { display: none !important; }
-            .main-content { margin-left: 0 !important; }
+            * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+            html, body { overflow: hidden !important; zoom: 0.72; padding: 8mm !important; }
+            ::-webkit-scrollbar { display: none !important; }
+            .sidebar, .no-print, .topbar { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0.5rem !important; }
+            .dashboard-wrapper { display: flex !important; }
             .print-header { display: block !important; }
-            .card { break-inside: avoid; }
+            .card {
+                break-inside: avoid;
+                box-shadow: none !important;
+                border: 1px solid #dee2e6 !important;
+            }
+            /* Force ALL rows to flex so columns sit side by side regardless of breakpoint */
+            .row { display: flex !important; flex-wrap: nowrap !important; gap: 8px !important; }
+            /* Row 1: Trends (col-lg-8) 65% + Status (col-lg-4) 33% */
+            .col-lg-8 { flex: 0 0 65% !important; max-width: 65% !important; padding: 0 !important; }
+            .col-lg-4 { flex: 0 0 33% !important; max-width: 33% !important; padding: 0 !important; }
+            /* Row 2: Most Popular + Service Breakdown 50/50 */
+            .col-md-6 { flex: 0 0 49% !important; max-width: 49% !important; padding: 0 !important; }
+            /* Detail table full width */
+            .col-12 { flex: 0 0 100% !important; max-width: 100% !important; padding: 0 !important; }
+            .chart-container { height: 180px !important; }
+            .chart-container-sm { height: 160px !important; }
+            /* Status distribution donut needs extra height for legend */
+            #statusChart { height: 220px !important; }
+            #statusChart ~ * { display: block !important; }
+            .card:has(#statusChart) .chart-container { height: 220px !important; overflow: visible !important; }
+            .service-progress .progress-bar { background: #29ABE2 !important; }
+            .print-footer { display: block !important; }
         }
         .print-header { display: none; }
+        .print-footer { display: none; }
         .export-badge { font-size: 0.7rem; vertical-align: middle; }
     </style>
 </head>
@@ -54,10 +82,27 @@ SessionManager::requireAdmin();
             <div class="container-fluid my-4">
 
                 <!-- Print Header (only visible when printing) -->
-                <div class="print-header mb-3">
-                    <h3>FSUU Dental Clinic — Appointments Report</h3>
-                    <p id="print-range-label" class="text-muted mb-0"></p>
-                    <hr>
+                <div class="print-header mb-4">
+                    <table style="width:100%;margin-bottom:0;">
+                        <tr>
+                            <td style="vertical-align:middle;width:50%;">
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <img src="../img/fsuu%20dental.jpg" alt="FSUU Logo" style="height:52px;border-radius:6px;flex-shrink:0;">
+                                    <div>
+                                        <div style="font-size:1.1rem;font-weight:700;color:#1A1A1A;line-height:1.3;letter-spacing:0.01em;">FSUU Dental Clinic</div>
+                                        <div style="font-size:0.75rem;color:#6b7280;line-height:1.4;">Father Saturnino Urios University</div>
+                                        <div style="font-size:0.72rem;color:#9ca3af;line-height:1.4;">Butuan City, Agusan del Norte</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align:right;vertical-align:middle;width:50%;">
+                                <div style="font-size:1.15rem;font-weight:800;color:#29ABE2;letter-spacing:0.06em;text-transform:uppercase;">Appointments Report</div>
+                                <div id="print-range-label" style="font-size:0.78rem;color:#4b5563;margin-top:3px;font-weight:500;"></div>
+                                <div style="font-size:0.7rem;color:#9ca3af;margin-top:2px;">Generated: <span id="print-generated-date"></span></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="height:3px;background:linear-gradient(90deg,#29ABE2,#1A85B8);border-radius:2px;margin-top:10px;margin-bottom:14px;"></div>
                 </div>
 
                 <!-- Top Bar -->
@@ -75,11 +120,11 @@ SessionManager::requireAdmin();
                             <span class="text-muted" style="font-size:0.8rem;">—</span>
                             <input type="date" id="end_date" class="report-date-input border-0 p-0" value="<?php echo date('Y-m-d'); ?>">
                         </div>
-                        <button id="update-reports" class="btn btn-primary btn-sm px-3" style="border-radius:8px;">
+                        <button id="update-reports" class="btn btn-primary btn-sm px-3" style="border-radius:8px;height:36px;">
                             <i class="bi bi-funnel-fill me-1"></i>Filter
                         </button>
                         <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-success dropdown-toggle px-3" data-bs-toggle="dropdown" style="border-radius:8px;">
+                            <button class="btn btn-sm btn-outline-success dropdown-toggle px-3" data-bs-toggle="dropdown" style="border-radius:8px;height:36px;">
                                 <i class="bi bi-download me-1"></i>Export
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:12px;">
@@ -90,7 +135,7 @@ SessionManager::requireAdmin();
                                 </li>
                                 <li>
                                     <a class="dropdown-item rounded-2" href="#" id="export-pdf">
-                                        <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export as PDF / Print
+                                        <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export as PDF
                                     </a>
                                 </li>
                             </ul>
@@ -180,6 +225,13 @@ SessionManager::requireAdmin();
                 </div>
 
             </div><!-- /container -->
+
+                <!-- Print Footer -->
+                <div class="print-footer" style="margin-top:24px;border-top:1px solid #dee2e6;padding-top:10px;display:flex;justify-content:space-between;font-size:0.7rem;color:#9ca3af;">
+                    <span>FSUU Dental Clinic — Confidential</span>
+                    <span>This report is system-generated and does not require a signature.</span>
+                </div>
+
         </div><!-- /main-content -->
     </div><!-- /dashboard-wrapper -->
 
@@ -206,6 +258,9 @@ SessionManager::requireAdmin();
         function fetchData() {
             const { start, end } = getDateRange();
             document.getElementById('print-range-label').textContent = `Period: ${start} to ${end}`;
+            const now = new Date();
+            const genEl = document.getElementById('print-generated-date');
+            if (genEl) genEl.textContent = now.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
 
             fetch(`../api/admin-reports.php?start_date=${start}&end_date=${end}`)
                 .then(r => r.json())
@@ -445,6 +500,51 @@ SessionManager::requireAdmin();
             e.preventDefault();
             window.print();
         });
+
+        // ── Before/After print: resize charts so axes/labels render fully ───────
+        function setChartPrintMode(printing) {
+            const tickColor = '#000000';
+            const gridColor = '#cccccc';
+
+            [trendsChart, servicesChart].forEach(chart => {
+                if (!chart) return;
+                Object.values(chart.options.scales).forEach(scale => {
+                    scale.ticks.color   = printing ? tickColor : '#4D4D4D';
+                    scale.ticks.display = true;
+                    scale.display       = true;
+                    if (scale.grid) scale.grid.color = printing ? gridColor : '#F8F8F8';
+                    // Give extra padding so x-axis labels aren't clipped
+                    if (printing) {
+                        scale.ticks.maxRotation = 45;
+                        scale.ticks.font = { size: 8 };
+                    } else {
+                        scale.ticks.maxRotation = 0;
+                        scale.ticks.font = { size: 11 };
+                    }
+                });
+                chart.options.animation = false;
+                chart.resize();
+                chart.update();
+            });
+            if (statusChart) {
+                statusChart.options.plugins.legend.display = true;
+                statusChart.options.plugins.legend.labels.color = printing ? tickColor : '#4D4D4D';
+                if (printing) {
+                    statusChart.options.plugins.legend.position = 'right';
+                    statusChart.options.plugins.legend.labels.font = { size: 9 };
+                    statusChart.options.plugins.legend.labels.padding = 6;
+                } else {
+                    statusChart.options.plugins.legend.position = 'bottom';
+                    statusChart.options.plugins.legend.labels.font = { size: 11 };
+                    statusChart.options.plugins.legend.labels.padding = 12;
+                }
+                statusChart.options.animation = false;
+                statusChart.resize();
+                statusChart.update();
+            }
+        }
+        window.addEventListener('beforeprint', () => setChartPrintMode(true));
+        window.addEventListener('afterprint',  () => setChartPrintMode(false));
 
         // ── Filter Button ────────────────────────────────────────────────────
         document.getElementById('update-reports').addEventListener('click', fetchData);

@@ -60,28 +60,8 @@
     opacity: 0.95;
     text-shadow: 0 1px 6px rgba(0,0,0,0.5);
 }
-.fac-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 12;
-    background: rgba(255,255,255,0.25);
-    border: none;
-    color: #fff;
-    font-size: 1.4rem;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-    transition: background 0.2s;
-}
-.fac-arrow:hover { background: rgba(255,255,255,0.45); }
-.fac-prev { left: 14px; }
-.fac-next { right: 14px; }
+.fac-arrow, .fac-prev, .fac-next { display: none !important; }
+
 .fac-dots {
     position: absolute;
     bottom: 14px;
@@ -749,10 +729,21 @@ body {
     .fac-slideshow { height: 180px !important; }
     .fac-slide { height: 180px !important; }
     .fac-slide img { height: 180px !important; }
+    .fac-hero-text { bottom: 14px !important; left: 14px !important; }
 
     .pt-notif-dropdown {
         width: calc(100vw - 16px);
         right: 0;
         left: auto;
+    }
+
+    /* Fix dropdowns overflowing off-screen on mobile */
+    #ptMsgDropdown,
+    #ptNotifDropdown {
+        position: fixed !important;
+        top: 56px !important;
+        left: 8px !important;
+        right: 8px !important;
+        width: calc(100vw - 16px) !important;
     }
 }

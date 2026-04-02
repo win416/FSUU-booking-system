@@ -43,6 +43,19 @@
 <!-- Sidebar overlay backdrop (mobile) -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+<style>
+@media (max-width: 767px) {
+    #msgDropdown,
+    #notifDropdown {
+        position: fixed !important;
+        top: 56px !important;
+        left: 8px !important;
+        right: 8px !important;
+        width: calc(100vw - 16px) !important;
+    }
+}
+</style>
+
 <div class="admin-topbar no-print">
     <!-- Hamburger toggle (mobile only) -->
     <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle navigation">
@@ -279,15 +292,6 @@
 
     // Inject X close button into sidebar brand area
     var brand = document.querySelector('.sidebar .brand');
-    if (brand && !document.getElementById('sidebarCloseBtn')) {
-        var closeBtn = document.createElement('button');
-        closeBtn.id = 'sidebarCloseBtn';
-        closeBtn.className = 'sidebar-close-btn';
-        closeBtn.setAttribute('aria-label', 'Close navigation');
-        closeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
-        closeBtn.addEventListener('click', closeSidebar);
-        brand.appendChild(closeBtn);
-    }
 
     if (toggleBtn) {
         toggleBtn.addEventListener('click', function () {

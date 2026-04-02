@@ -41,10 +41,10 @@ if (!in_array($mimeType, $allowed)) {
     exit();
 }
 
-// Build upload path
+// Build upload path — include timestamp in filename to bust browser cache
 $ext       = pathinfo($file['name'], PATHINFO_EXTENSION);
 $uploadDir = __DIR__ . '/../img/uploads/profiles/';
-$filename  = 'user_' . $target_user_id . '.' . strtolower($ext);
+$filename  = 'user_' . $target_user_id . '_' . time() . '.' . strtolower($ext);
 $uploadPath = $uploadDir . $filename;
 
 // Create directory if it doesn't exist
@@ -74,11 +74,15 @@ if ($stmt->execute()) {
     // Update session for own upload
     if ($target_user_id === $uploader['user_id']) {
         $_SESSION['profile_picture'] = $relativePath;
+        // Also update the user array in session so topbar reflects the new picture immediately
+        if (isset($_SESSION['user'])) {
+            $_SESSION['user']['profile_picture'] = $relativePath;
+        }
     }
     echo json_encode([
         'success' => true,
         'message' => 'Profile picture updated.',
-        'path'    => $relativePath . '?v=' . time()
+        'path'    => $relativePath
     ]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to update database.']);

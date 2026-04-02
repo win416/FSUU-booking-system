@@ -646,6 +646,9 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
         e.preventDefault();
         $.post('../api/update-profile.php', $(this).serialize() + '&action=update_personal', function(res) {
             showAlert('#personalInfoAlert', res.success ? 'success' : 'danger', res.message);
+            if (res.success) {
+                setTimeout(() => location.reload(), 800);
+            }
         }, 'json').fail(() => showAlert('#personalInfoAlert', 'danger', 'Request failed.'));
     });
 

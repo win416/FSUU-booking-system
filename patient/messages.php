@@ -22,8 +22,39 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
-    <link href="../assets/css/patient-messages.css?v=3" rel="stylesheet">
+    <link href="../assets/css/patient-messages.css?v=10" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
+    <style>
+    /* Consistent blue/white bubble colors */
+    .msg-row.mine .msg-bubble { background: #29ABE2 !important; color: #fff !important; }
+    .msg-row.theirs .msg-bubble { background: #fff !important; color: #1A1A1A !important; }
+    .reply-bar textarea:focus { border-color: #29ABE2 !important; }
+    .reply-send-btn { background: #29ABE2 !important; }
+    .reply-send-btn:hover { background: #1C9DD6 !important; }
+    @media (max-width: 575px) {
+        /* Remove main-content padding so messages fills full height */
+        .main-content { padding: 0 !important; padding-top: 56px !important; }
+        /* Compose button */
+        .compose-btn { padding: 0.25rem 0.5rem !important; font-size: 0.72rem !important; line-height: 1 !important; height: 28px !important; }
+        /* Full-screen inbox, hide right panel by default */
+        .msg-layout { flex-direction: column !important; height: calc(100vh - 56px) !important; overflow: hidden !important; }
+        .inbox-panel { width: 100% !important; max-height: none !important; flex: 1 !important; border-right: none !important; border-bottom: none !important; }
+        .right-panel { display: none !important; flex: 1 !important; height: 100% !important; }
+        /* When chat is active: show right panel, hide inbox */
+        .msg-layout.chat-active .inbox-panel { display: none !important; }
+        .msg-layout.chat-active .right-panel { display: flex !important; flex-direction: column !important; overflow: hidden !important; height: 100% !important; }
+        .msg-layout.chat-active { height: calc(100vh - 56px) !important; overflow: hidden !important; }
+        /* Reply bar always visible at bottom */
+        .msg-layout.chat-active .chat-messages { flex: 1 !important; overflow-y: auto !important; min-height: 0 !important; }
+        .msg-layout.chat-active .reply-bar { flex-shrink: 0 !important; position: relative !important; bottom: auto !important; }
+        /* thread-mode: show threadView only; compose-mode: show composeView only */
+        #threadView { height: 100% !important; overflow: hidden !important; }
+        .msg-layout.thread-mode #threadView { display: flex !important; flex-direction: column !important; }
+        .msg-layout.compose-mode #composeView { display: flex !important; flex-direction: column !important; }
+        /* Never show compose on mobile (not supported) - hide by default */
+        #composeView { display: none !important; }
+    }
+    </style>
 </head>
 <body>
 <div class="dashboard-wrapper">
@@ -196,7 +227,7 @@ function showEmpty() {
     RECIPIENT_ID    = null;
     CURRENT_SUBJECT = '';
     document.querySelectorAll('.thread-item').forEach(el => el.classList.remove('active'));
-    document.querySelector('.msg-layout').classList.remove('chat-active');
+    document.querySelector('.msg-layout').classList.remove('chat-active', 'thread-mode', 'compose-mode');
 }
 function showCompose() {
     document.getElementById('emptyState').style.display  = 'none';
@@ -207,7 +238,9 @@ function showCompose() {
     RECIPIENT_ID = null;
     resetComposeForm();
     document.getElementById('msgTo').focus();
-    document.querySelector('.msg-layout').classList.add('chat-active');
+    const layout = document.querySelector('.msg-layout');
+    layout.classList.add('chat-active', 'compose-mode');
+    layout.classList.remove('thread-mode');
 }
 function showThread(userId, name, avatarHtml, subject) {
     document.getElementById('emptyState').style.display  = 'none';
@@ -221,7 +254,9 @@ function showThread(userId, name, avatarHtml, subject) {
     clearInterval(_threadTimer);
     loadThread(false);
     _threadTimer = setInterval(() => loadThread(true), 5000);
-    document.querySelector('.msg-layout').classList.add('chat-active');
+    const layout = document.querySelector('.msg-layout');
+    layout.classList.add('chat-active', 'thread-mode');
+    layout.classList.remove('compose-mode');
 }
 
 // ── Inbox ────────────────────────────────────────────────────────────────────

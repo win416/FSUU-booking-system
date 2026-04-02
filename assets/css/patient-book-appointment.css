@@ -22,6 +22,23 @@
     box-sizing: border-box;
 }
 
+/* Make the row stretch both columns to equal height */
+.row.g-4:has(#summaryCol:not([style*="none"])) {
+    align-items: stretch;
+}
+#panelCol, #summaryCol {
+    display: flex;
+    flex-direction: column;
+}
+#summaryCol .booking-summary {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+#summaryCol .booking-summary .booking-summary-body {
+    flex: 1;
+}
+
 /*
  * When the booking summary sidebar is hidden (no service selected yet),
  * expand the left step-panels column to fill the full row width.
