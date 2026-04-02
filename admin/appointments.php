@@ -64,7 +64,7 @@ $result = $db->query($query);
         <nav class="sidebar">
             <div class="brand">
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
-                FSUU Admin
+                FSUU Dental Clinic
             </div>
             <div class="sidebar-nav-wrap">
             <div class="sidebar-section-label">Menu</div>

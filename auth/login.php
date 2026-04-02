@@ -3,6 +3,7 @@ require_once '../includes/session.php';
 require_once '../includes/db_connection.php';
 
 $error = '';
+$unverified_email = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
@@ -13,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $db = getDB();
         
-        $stmt = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role, contact_number, profile_picture FROM users WHERE email = ?");
+        $stmt = $db->prepare("SELECT user_id, fsuu_id, email, password, first_name, last_name, role, contact_number, profile_picture, is_verified FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -24,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Account was created via Google (no password set)
             if (empty($user['password'])) {
                 $error = 'This account uses Google Sign-in. <a href="google_auth.php?action=redirect">Sign in with Google</a>, then set a password in your Profile to enable manual login.';
+            } elseif (!$user['is_verified']) {
+                $unverified_email = $email;
             } elseif (password_verify($password, $user['password'])) {
                 SessionManager::setUser($user);
                 
@@ -65,6 +68,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="card-body p-4">
                     <?php if($error): ?>
                         <div class="alert alert-danger"><?php echo $error; ?></div>
+                    <?php endif; ?>
+
+                    <?php if($unverified_email): ?>
+                        <div class="alert d-flex align-items-start gap-3 mb-3" style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:14px 16px;">
+                            <span style="font-size:1.5rem;line-height:1;">⚠️</span>
+                            <div>
+                                <div style="font-weight:600;color:#7b5800;margin-bottom:2px;">Email Not Verified</div>
+                                <div style="font-size:0.875rem;color:#5d4037;">
+                                    Please verify your email address before logging in.
+                                </div>
+                                <a href="verify.php?email=<?php echo urlencode($unverified_email); ?>"
+                                   class="btn btn-sm mt-2"
+                                   style="background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:5px 16px;font-weight:500;font-size:0.82rem;">
+                                    ✉️ Verify My Email
+                                </a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (isset($_GET['verified'])): ?>
+                        <div class="alert alert-success">✅ Email verified! You can now log in.</div>
                     <?php endif; ?>
                     
                     <form method="POST" action="">

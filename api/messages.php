@@ -1,6 +1,11 @@
 <?php
 require_once '../includes/session.php';
 require_once '../includes/db_connection.php';
+require_once '../includes/config.php';
+require_once '../vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 header('Content-Type: application/json');
 
@@ -206,52 +211,114 @@ if ($action === 'send') {
     if ($stmt->execute()) {
         $emailSent = false;
 
-        // Send email when patient provides a subject (email compose form used)
-        if (!$isAdmin && $subject !== '') {
-            $senderEmail = $user['email'];
-            $senderName  = $user['first_name'] . ' ' . $user['last_name'];
-            $clinicEmail = defined('CLINIC_EMAIL') ? CLINIC_EMAIL : SMTP_USER;
-            $clinicName  = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'FSUU Dental Clinic';
+        // Fetch recipient info for email notification
+        $rInfo = $db->prepare("SELECT first_name, last_name, email FROM users WHERE user_id = ?");
+        $rInfo->bind_param("i", $receiverId);
+        $rInfo->execute();
+        $recipient = $rInfo->get_result()->fetch_assoc();
 
-            $emailSubject = $subject;
-            $emailBody    = nl2br(htmlspecialchars($message));
+        if ($recipient && filter_var($recipient['email'], FILTER_VALIDATE_EMAIL)) {
+            $senderName    = $user['first_name'] . ' ' . $user['last_name'];
+            $recipientName = $recipient['first_name'] . ' ' . $recipient['last_name'];
+            $loginUrl      = SITE_URL . '/auth/login.php';
+            $sentAt        = date('F j, Y g:i A');
+            $msgPreview    = nl2br(htmlspecialchars($message));
+            $subjectLine   = $subject ?: 'New Message from FSUU Dental Clinic';
 
-            $emailHtml = "
+            $htmlBody = "
 <!DOCTYPE html>
 <html>
-<head><meta charset='UTF-8'></head>
-<body style='font-family:Arial,sans-serif;color:#1A1A1A;'>
-  <div style='max-width:600px;margin:0 auto;border:1px solid #E0E0E0;border-radius:8px;overflow:hidden;'>
-    <div style='background:#1A1A1A;padding:1.25rem 1.5rem;'>
-      <h2 style='color:#fff;margin:0;font-size:1.1rem;'>New Patient Message</h2>
-    </div>
-    <div style='padding:1.5rem;'>
-      <table style='width:100%;border-collapse:collapse;margin-bottom:1rem;font-size:0.9rem;'>
-        <tr><td style='width:80px;font-weight:700;color:#4D4D4D;padding:4px 0;'>From:</td>
-            <td>{$senderName} &lt;{$senderEmail}&gt;</td></tr>
-        <tr><td style='font-weight:700;color:#4D4D4D;padding:4px 0;'>Subject:</td>
-            <td>" . htmlspecialchars($subject) . "</td></tr>
-        <tr><td style='font-weight:700;color:#4D4D4D;padding:4px 0;'>Sent:</td>
-            <td>" . date('F j, Y g:i A') . "</td></tr>
+<head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'></head>
+<body style='margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif;'>
+  <table width='100%' cellpadding='0' cellspacing='0' style='background:#f4f6f9;padding:32px 0;'>
+    <tr><td align='center'>
+      <table width='600' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);max-width:600px;width:100%;'>
+
+        <!-- Header -->
+        <tr>
+          <td style='background:#1A1A1A;padding:24px 32px;'>
+            <table width='100%'><tr>
+              <td>
+                <div style='color:#29ABE2;font-size:1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;'>FSUU Dental Clinic</div>
+                <div style='color:#ffffff;font-size:1.25rem;font-weight:700;margin-top:4px;'>You have a new message</div>
+              </td>
+              <td align='right'>
+                <span style='background:#29ABE2;color:#fff;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;'>In-App Message</span>
+              </td>
+            </tr></table>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style='padding:28px 32px;'>
+            <p style='margin:0 0 16px;font-size:0.95rem;color:#374151;'>
+              Hello, <strong>{$recipientName}</strong>!<br>
+              <strong>{$senderName}</strong> sent you a message" . ($subject ? " about <em>" . htmlspecialchars($subject) . "</em>" : "") . ":
+            </p>
+
+            <!-- Message bubble -->
+            <div style='background:#f0f9ff;border-left:4px solid #29ABE2;border-radius:6px;padding:16px 20px;margin:0 0 24px;font-size:0.95rem;line-height:1.7;color:#1e293b;'>
+              {$msgPreview}
+            </div>
+
+            <table width='100%' style='font-size:0.83rem;color:#64748b;margin-bottom:24px;'>
+              <tr>
+                <td style='padding:4px 0;'><strong style='color:#374151;'>From:</strong> {$senderName}</td>
+              </tr>
+              " . ($subject ? "<tr><td style='padding:4px 0;'><strong style='color:#374151;'>Subject:</strong> " . htmlspecialchars($subject) . "</td></tr>" : "") . "
+              <tr>
+                <td style='padding:4px 0;'><strong style='color:#374151;'>Sent:</strong> {$sentAt}</td>
+              </tr>
+            </table>
+
+            <!-- CTA button -->
+            <table width='100%'><tr><td align='center'>
+              <a href='{$loginUrl}'
+                 style='display:inline-block;background:#29ABE2;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:0.95rem;letter-spacing:0.3px;'>
+                 View Message &rarr;
+              </a>
+            </td></tr></table>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style='background:#f8fafc;padding:16px 32px;border-top:1px solid #e2e8f0;font-size:0.78rem;color:#94a3b8;text-align:center;'>
+            This is an automated notification from FSUU Dental Clinic.<br>
+            Please do not reply to this email — log in to respond.
+          </td>
+        </tr>
+
       </table>
-      <hr style='border:none;border-top:1px solid #e2e8f0;margin:1rem 0;'>
-      <div style='font-size:0.95rem;line-height:1.7;'>{$emailBody}</div>
-    </div>
-    <div style='background:#f8fafc;padding:0.85rem 1.5rem;font-size:0.78rem;color:#94a3b8;'>
-      This message was sent via the FSUU Dental Clinic patient portal. Reply to: {$senderEmail}
-    </div>
-  </div>
+    </td></tr>
+  </table>
 </body>
 </html>";
 
-            $headers  = "MIME-Version: 1.0\r\n";
-            $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-            $headers .= "From: {$senderName} <{$senderEmail}>\r\n";
-            $headers .= "Reply-To: {$senderEmail}\r\n";
+            try {
+                $mail = new PHPMailer(true);
+                $mail->isSMTP();
+                $mail->Host       = SMTP_HOST;
+                $mail->SMTPAuth   = true;
+                $mail->Username   = SMTP_USER;
+                $mail->Password   = SMTP_PASS;
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = SMTP_PORT;
 
-            ob_start();
-            $emailSent = @mail($clinicEmail, $emailSubject, $emailHtml, $headers);
-            ob_end_clean();
+                $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
+                $mail->addAddress($recipient['email'], $recipientName);
+                $mail->isHTML(true);
+                $mail->Subject = $subjectLine;
+                $mail->Body    = $htmlBody;
+                $mail->AltBody = "Hello {$recipientName}, {$senderName} sent you a message: \"{$message}\". Log in to reply: {$loginUrl}";
+
+                $mail->send();
+                $emailSent = true;
+            } catch (Exception $e) {
+                // Email failure is non-fatal — message is still saved
+                $emailSent = false;
+            }
         }
 
         echo json_encode([

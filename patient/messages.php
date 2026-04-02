@@ -62,7 +62,7 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
     <nav class="sidebar">
         <div class="brand">
             <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
-            FSUU Dental
+            FSUU Dental Clinic
         </div>
         <div class="sidebar-nav-wrap">
         <div class="sidebar-section-label">Menu</div>
@@ -376,6 +376,24 @@ function sendReply() {
 
     const btn = document.getElementById('replySendBtn');
     btn.disabled = true;
+
+    // Optimistically render the message instantly — no waiting for server
+    const container = document.getElementById('chatMessages');
+    const timeStr   = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    const tempId    = 'tmp_' + Date.now();
+    container.insertAdjacentHTML('beforeend',
+        `<div class="msg-row mine" id="${tempId}">
+            <div class="msg-content">
+                <div class="msg-bubble">${escHtml(msg)}</div>
+                <div class="msg-time text-end">${timeStr}</div>
+            </div>
+        </div>`);
+    container.scrollTop = container.scrollHeight;
+
+    // Clear input immediately
+    input.value        = '';
+    input.style.height = '';
+
     const fd = new FormData();
     fd.append('action', 'send');
     fd.append('receiver_id', RECIPIENT_ID);
@@ -385,14 +403,19 @@ function sendReply() {
         .then(r => r.json())
         .then(res => {
             if (res.success) {
-                input.value = '';
-                input.style.height = '';
-                loadThread(false);
+                // Replace optimistic bubble with server-confirmed thread (silent — already scrolled)
+                loadThread(true);
             } else {
+                document.getElementById(tempId)?.remove();
+                input.value = msg;
                 alert('Failed: ' + (res.message || 'Unknown error'));
             }
         })
-        .catch(() => alert('Network error. Please try again.'))
+        .catch(() => {
+            document.getElementById(tempId)?.remove();
+            input.value = msg;
+            alert('Network error. Please try again.');
+        })
         .finally(() => { btn.disabled = false; });
 }
 

@@ -36,7 +36,7 @@ $appointments = $stmt->get_result();
         <nav class="sidebar">
             <div class="brand">
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
-                FSUU Dental
+                FSUU Dental Clinic
             </div>
             <div class="sidebar-nav-wrap">
             <div class="sidebar-section-label">Menu</div>

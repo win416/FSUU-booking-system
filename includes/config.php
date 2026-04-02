@@ -18,11 +18,10 @@ ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
 ini_set('session.cookie_secure', 0); // Set to 1 if using HTTPS
 
-// Email configuration (for Gmail)
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USER', 'your-email@gmail.com');
-define('SMTP_PASS', 'your-app-password'); // Use App Password for Gmail
+// Email configuration (Loaded from secrets)
+if (file_exists(__DIR__ . '/config.secrets.php')) {
+    require_once __DIR__ . '/config.secrets.php';
+}
 
 // Appointment rules
 define('MAX_BOOKINGS_PER_DAY', 20);
@@ -36,9 +35,6 @@ define('CLINIC_EMAIL', SMTP_USER); // Dental clinic contact email
 // Google OAuth — real credentials loaded from gitignored config.secrets.php
 // To create credentials: https://console.cloud.google.com/
 // Redirect URI: http://localhost/FSUU-booking-system-1/auth/google_auth.php
-if (file_exists(__DIR__ . '/config.secrets.php')) {
-    require_once __DIR__ . '/config.secrets.php';
-}
 if (!defined('GOOGLE_CLIENT_ID'))     define('GOOGLE_CLIENT_ID',     'YOUR_GOOGLE_CLIENT_ID');
 if (!defined('GOOGLE_CLIENT_SECRET')) define('GOOGLE_CLIENT_SECRET', 'YOUR_GOOGLE_CLIENT_SECRET');
 define('GOOGLE_REDIRECT_URI', SITE_URL . '/auth/google_auth.php');

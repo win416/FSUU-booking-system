@@ -17,6 +17,8 @@ if ($freshStmt) {
         $currentUser['last_name']      = $freshRow['last_name'];
         $currentUser['contact_number'] = $freshRow['contact_number'];
         $currentUser['email']          = $freshRow['email'];
+        // Sync session so topbar always reflects the latest name/email
+        SessionManager::setUser($currentUser);
     }
 }
 
@@ -89,7 +91,7 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
         <nav class="sidebar">
             <div class="brand">
                 <img src="../img/fsuu%20dental.jpg" alt="Logo" class="sidebar-logo">
-                FSUU Admin
+                FSUU Dental Clinic
             </div>
             <div class="sidebar-nav-wrap">
             <div class="sidebar-section-label">Menu</div>

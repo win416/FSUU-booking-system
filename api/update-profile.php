@@ -27,12 +27,12 @@ try {
         $stmt->bind_param("sssi", $first_name, $last_name, $contact, $user_id);
         
         if ($stmt->execute()) {
-            // Update session data
+            // Refresh session with updated values using the proper session manager
             $updated_user = SessionManager::getUser();
-            $updated_user['first_name'] = $first_name;
-            $updated_user['last_name'] = $last_name;
+            $updated_user['first_name']     = $first_name;
+            $updated_user['last_name']      = $last_name;
             $updated_user['contact_number'] = $contact;
-            $_SESSION['user'] = $updated_user;
+            SessionManager::setUser($updated_user);
             
             echo json_encode(['success' => true, 'message' => 'Personal information updated successfully', 'refresh' => true]);
         } else {

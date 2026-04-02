@@ -1,13 +1,20 @@
 <?php
 require_once '../includes/session.php';
 require_once '../includes/db_connection.php';
+require_once '../includes/config.php';
+require_once '../vendor/autoload.php';
 
-// Ensure program column exists
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+// Ensure required columns exist
 $db = getDB();
 $db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS program VARCHAR(20) DEFAULT NULL AFTER contact_number");
+$db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code VARCHAR(6) DEFAULT NULL AFTER program");
+$db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER verification_code");
 
 $error = '';
-$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fsuu_id = trim($_POST['fsuu_id']);
@@ -18,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $last_name = trim($_POST['last_name']);
     $contact = trim($_POST['contact_number']);
     $program = trim($_POST['program'] ?? '');
-    
+
     // Validation
     if ($password !== $confirm_password) {
         $error = 'Passwords do not match';
@@ -26,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = 'Password must be at least 8 characters';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Invalid email format';
+    } elseif (!str_ends_with($email, '@urios.edu.ph')) {
+        $error = 'Only @urios.edu.ph email addresses are allowed';
     } elseif (empty($program)) {
         $error = 'Please select your program';
     } else {
@@ -33,28 +42,64 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $check = $db->prepare("SELECT user_id FROM users WHERE fsuu_id = ? OR email = ?");
         $check->bind_param("ss", $fsuu_id, $email);
         $check->execute();
-        $result = $check->get_result();
-        
-        if ($result->num_rows > 0) {
+        if ($check->get_result()->num_rows > 0) {
             $error = 'FSUU ID or Email already registered';
         } else {
-            // Hash password and insert user
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            
-            $insert = $db->prepare("INSERT INTO users (fsuu_id, email, password, first_name, last_name, contact_number, program, role) VALUES (?, ?, ?, ?, ?, ?, ?, 'student')");
-            $insert->bind_param("sssssss", $fsuu_id, $email, $hashed_password, $first_name, $last_name, $contact, $program);
-            
-            if ($insert->execute()) {
-                $user_id = $db->insert_id;
-                
-                // Create empty medical info
-                $medical = $db->prepare("INSERT INTO medical_info (user_id) VALUES (?)");
-                $medical->bind_param("i", $user_id);
-                $medical->execute();
-                
-                $success = 'Registration successful! You can now login.';
-            } else {
-                $error = 'Registration failed. Please try again.';
+            // Generate 6-digit verification code
+            $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+            // Send verification email via Gmail SMTP before inserting
+            $mail = new PHPMailer(true);
+            try {
+                $mail->isSMTP();
+                $mail->Host       = SMTP_HOST;        // smtp.gmail.com
+                $mail->SMTPAuth   = true;
+                $mail->Username   = SMTP_USER;        // your Gmail address
+                $mail->Password   = SMTP_PASS;        // your Gmail App Password
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = SMTP_PORT;        // 587
+
+                $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
+                $mail->addAddress($email, $first_name . ' ' . $last_name);
+
+                $mail->isHTML(true);
+                $mail->Subject = 'Your FSUU Dental Clinic Verification Code';
+                $mail->Body = "
+                    <div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px;'>
+                        <h2 style='color:#2c6fad;'>FSUU Dental Clinic</h2>
+                        <p>Hello, <strong>{$first_name}</strong>!</p>
+                        <p>Use the verification code below to complete your registration:</p>
+                        <div style='font-size:36px;font-weight:bold;letter-spacing:8px;text-align:center;padding:16px 0;color:#2c6fad;'>{$verification_code}</div>
+                        <p style='color:#888;font-size:13px;'>This code expires in " . OTP_EXPIRY_MINUTES . " minutes. Do not share it with anyone.</p>
+                    </div>";
+                $mail->AltBody = "Your FSUU Dental Clinic verification code is: {$verification_code}. It expires in " . OTP_EXPIRY_MINUTES . " minutes.";
+
+                $mail->send();
+
+                // Email sent — now insert the user
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $insert = $db->prepare(
+                    "INSERT INTO users (fsuu_id, email, password, first_name, last_name, contact_number, program, role, verification_code, is_verified)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, 'student', ?, 0)"
+                );
+                $insert->bind_param("ssssssss", $fsuu_id, $email, $hashed_password, $first_name, $last_name, $contact, $program, $verification_code);
+
+                if ($insert->execute()) {
+                    $user_id = $db->insert_id;
+
+                    // Create empty medical info record
+                    $medical = $db->prepare("INSERT INTO medical_info (user_id) VALUES (?)");
+                    $medical->bind_param("i", $user_id);
+                    $medical->execute();
+
+                    // Redirect to verification page
+                    header('Location: verify.php?email=' . urlencode($email));
+                    exit;
+                } else {
+                    $error = 'Registration failed. Please try again.';
+                }
+            } catch (Exception $e) {
+                $error = 'Could not send verification email. Please try again later. (' . $mail->ErrorInfo . ')';
             }
         }
     }
@@ -81,11 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="card-body p-4">
                     <?php if($error): ?>
-                        <div class="alert alert-danger"><?php echo $error; ?></div>
-                    <?php endif; ?>
-                    
-                    <?php if($success): ?>
-                        <div class="alert alert-success"><?php echo $success; ?></div>
+                        <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
                     <?php endif; ?>
                     
                     <form method="POST" action="">
@@ -108,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="mb-3">
                             <label>Email Address</label>
                             <input type="email" name="email" class="form-control" required>
-                            <small class="text-muted">Use your FSUU email</small>
+                            <small class="text-muted">Use your URIOS email (@urios.edu.ph)</small>
                         </div>
                         
                         <div class="mb-3">

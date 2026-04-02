@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password` VARCHAR(255) DEFAULT NULL,
   `contact_number` VARCHAR(20) DEFAULT NULL,
   `program` VARCHAR(20) DEFAULT NULL,
+  `verification_code` VARCHAR(6) DEFAULT NULL,
+  `is_verified` TINYINT(1) NOT NULL DEFAULT 0,
   `role` ENUM('student','staff','dentist','admin') NOT NULL DEFAULT 'student',
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   `profile_picture` VARCHAR(255) DEFAULT NULL,
@@ -139,7 +141,7 @@ INSERT IGNORE INTO `services` (`service_name`, `description`, `duration_minutes`
 ('Permanent Tooth Filling', 'Restoring damaged teeth with durable filling materials.', 60, 1);
 
 -- Default admin account (password: Admin@12345)
-INSERT IGNORE INTO `users` (`fsuu_id`, `first_name`, `last_name`, `email`, `password`, `role`, `is_active`) VALUES
-('ADMIN001', 'Admin', 'User', 'admin@fsuudental.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1);
+INSERT IGNORE INTO `users` (`fsuu_id`, `first_name`, `last_name`, `email`, `password`, `role`, `is_verified`, `is_active`) VALUES
+('ADMIN001', 'Admin', 'User', 'admin@fsuudental.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1, 1);
 
 SET FOREIGN_KEY_CHECKS = 1;
