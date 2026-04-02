@@ -19,7 +19,7 @@ SessionManager::requireAdmin();
         /* Remove browser's default print date/title header and URL footer */
         @page { size: A4 landscape; margin: 0; }
         @media print {
-            * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             html, body { overflow: hidden !important; zoom: 0.72; padding: 8mm !important; }
             ::-webkit-scrollbar { display: none !important; }
             .sidebar, .no-print, .topbar { display: none !important; }
