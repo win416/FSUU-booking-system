@@ -43,18 +43,7 @@
 <!-- Sidebar overlay backdrop (mobile) -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<style>
-@media (max-width: 767px) {
-    #msgDropdown,
-    #notifDropdown {
-        position: fixed !important;
-        top: 56px !important;
-        left: 8px !important;
-        right: 8px !important;
-        width: calc(100vw - 16px) !important;
-    }
-}
-</style>
+<link rel="stylesheet" href="../assets/css/admin-topbar.css">
 
 <div class="admin-topbar no-print">
     <!-- Hamburger toggle (mobile only) -->

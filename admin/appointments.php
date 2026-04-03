@@ -34,30 +34,8 @@ $result = $db->query($query);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
+    <link href="../assets/css/admin-appointments.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
-    <style>
-    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-    .filter-tab {
-        display: inline-block;
-        padding: 6px 20px;
-        border-radius: 50px;
-        border: 1.5px solid #29ABE2;
-        color: #29ABE2;
-        background: #fff;
-        font-size: 0.875rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: background 0.15s, color 0.15s;
-        white-space: nowrap;
-    }
-    .filter-tab:hover { background: #e8f7fd; color: #1C9DD6; border-color: #1C9DD6; }
-    .filter-tab.active { background: #29ABE2; color: #fff; border-color: #29ABE2; }
-    .filter-tab.active:hover { background: #1C9DD6; border-color: #1C9DD6; color: #fff; }
-    .btn-dark.complete-btn { background: #29ABE2; border-color: #1C9DD6; }
-    .btn-dark.complete-btn:hover { background: #1C9DD6; border-color: #1C9DD6; }
-    tbody tr.clickable-row { cursor: pointer; }
-    tbody tr.clickable-row:hover { background-color: #f0f8ff; }
-    </style>
 <body>
     <div class="dashboard-wrapper">
         <!-- Sidebar Navigation -->

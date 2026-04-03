@@ -8,15 +8,11 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-// Ensure required columns exist
-$db = getDB();
-$db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS program VARCHAR(20) DEFAULT NULL AFTER contact_number");
-$db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code VARCHAR(6) DEFAULT NULL AFTER program");
-$db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER verification_code");
-
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $db = getDB(); // Initialize database connection
+    
     $fsuu_id = trim($_POST['fsuu_id']);
     $email = trim($_POST['email']);
     $password = $_POST['password'];
@@ -42,64 +38,63 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $check = $db->prepare("SELECT user_id FROM users WHERE fsuu_id = ? OR email = ?");
         $check->bind_param("ss", $fsuu_id, $email);
         $check->execute();
+        
         if ($check->get_result()->num_rows > 0) {
             $error = 'FSUU ID or Email already registered';
         } else {
-            // Generate 6-digit verification code
+            // 1. Setup Data
             $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-            // Send verification email via Gmail SMTP before inserting
-            $mail = new PHPMailer(true);
-            try {
-                $mail->isSMTP();
-                $mail->Host       = SMTP_HOST;        // smtp.gmail.com
-                $mail->SMTPAuth   = true;
-                $mail->Username   = SMTP_USER;        // your Gmail address
-                $mail->Password   = SMTP_PASS;        // your Gmail App Password
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port       = SMTP_PORT;        // 587
+            // 2. INSERT User
+            $insert = $db->prepare(
+                "INSERT INTO users (fsuu_id, email, password, first_name, last_name, contact_number, program, role, verification_code, is_verified)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 'student', ?, 0)"
+            );
+            $insert->bind_param("ssssssss", $fsuu_id, $email, $hashed_password, $first_name, $last_name, $contact, $program, $verification_code);
 
-                $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
-                $mail->addAddress($email, $first_name . ' ' . $last_name);
+            if ($insert->execute()) {
+                $user_id = $db->insert_id;
 
-                $mail->isHTML(true);
-                $mail->Subject = 'Your FSUU Dental Clinic Verification Code';
-                $mail->Body = "
-                    <div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px;'>
-                        <h2 style='color:#2c6fad;'>FSUU Dental Clinic</h2>
-                        <p>Hello, <strong>{$first_name}</strong>!</p>
-                        <p>Use the verification code below to complete your registration:</p>
-                        <div style='font-size:36px;font-weight:bold;letter-spacing:8px;text-align:center;padding:16px 0;color:#2c6fad;'>{$verification_code}</div>
-                        <p style='color:#888;font-size:13px;'>This code expires in " . OTP_EXPIRY_MINUTES . " minutes. Do not share it with anyone.</p>
-                    </div>";
-                $mail->AltBody = "Your FSUU Dental Clinic verification code is: {$verification_code}. It expires in " . OTP_EXPIRY_MINUTES . " minutes.";
+                // Create empty medical info record
+                $medical = $db->prepare("INSERT INTO medical_info (user_id) VALUES (?)");
+                $medical->bind_param("i", $user_id);
+                $medical->execute();
 
-                $mail->send();
+                // 3. Try Email
+                try {
+                    $mail = new PHPMailer(true);
+                    $mail->isSMTP();
+                    $mail->Host       = SMTP_HOST;
+                    $mail->SMTPAuth   = true;
+                    $mail->Username   = SMTP_USER;
+                    $mail->Password   = SMTP_PASS;
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->Port       = SMTP_PORT;
 
-                // Email sent — now insert the user
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $insert = $db->prepare(
-                    "INSERT INTO users (fsuu_id, email, password, first_name, last_name, contact_number, program, role, verification_code, is_verified)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, 'student', ?, 0)"
-                );
-                $insert->bind_param("ssssssss", $fsuu_id, $email, $hashed_password, $first_name, $last_name, $contact, $program, $verification_code);
+                    $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
+                    $mail->addAddress($email, $first_name . ' ' . $last_name);
 
-                if ($insert->execute()) {
-                    $user_id = $db->insert_id;
-
-                    // Create empty medical info record
-                    $medical = $db->prepare("INSERT INTO medical_info (user_id) VALUES (?)");
-                    $medical->bind_param("i", $user_id);
-                    $medical->execute();
-
-                    // Redirect to verification page
-                    header('Location: verify.php?email=' . urlencode($email));
-                    exit;
-                } else {
-                    $error = 'Registration failed. Please try again.';
+                    $mail->isHTML(true);
+                    $mail->Subject = 'Your FSUU Dental Clinic Verification Code';
+                    $mail->Body = "
+                        <div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px;'>
+                            <h2 style='color:#2c6fad;'>FSUU Dental Clinic</h2>
+                            <p>Hello, <strong>{$first_name}</strong>!</p>
+                            <p>Use the verification code below to complete your registration:</p>
+                            <div style='font-size:36px;font-weight:bold;letter-spacing:8px;text-align:center;padding:16px 0;color:#2c6fad;'>{$verification_code}</div>
+                            <p style='color:#888;font-size:13px;'>This code expires in " . OTP_EXPIRY_MINUTES . " minutes.</p>
+                        </div>";
+                    
+                    $mail->send();
+                } catch (Exception $e) {
+                    // Silently continue so user can still reach verify.php
                 }
-            } catch (Exception $e) {
-                $error = 'Could not send verification email. Please try again later. (' . $mail->ErrorInfo . ')';
+
+                header('Location: verify.php?email=' . urlencode($email));
+                exit;
+            } else {
+                $error = 'Registration failed. Please try again.';
             }
         }
     }

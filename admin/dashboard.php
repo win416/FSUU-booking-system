@@ -91,12 +91,6 @@ foreach ($weekly_data as $date => $count) {
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-    /* Mobile only: anchor hero text to bottom-left */
-    @media (max-width: 767px) {
-        .fac-hero-text { bottom: 14px !important; left: 14px !important; }
-    }
-    </style>
 </head>
 <body>
     <div class="dashboard-wrapper">

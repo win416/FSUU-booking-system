@@ -45,19 +45,6 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
-    <style>
-    /* Hero text always white */
-    .fac-hero-text h2,
-    .fac-hero-text p,
-    .fac-hero-text strong {
-        color: #fff !important;
-        text-shadow: 0 2px 10px rgba(0,0,0,0.6) !important;
-    }
-    /* Mobile only: anchor text to bottom-left */
-    @media (max-width: 767px) {
-        .fac-hero-text { bottom: 14px !important; left: 14px !important; }
-    }
-    </style>
 </head>
 <body>
     <div class="dashboard-wrapper">

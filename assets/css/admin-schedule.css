@@ -229,3 +229,11 @@
 .nav-tabs {
     border-bottom: 1px solid #E0E0E0;
 }
+
+/* ── Calendar Timegrid ── */
+.fc-timegrid-event .fc-event-main { padding: 0; }
+
+/* ── Additional Legend Dot States ── */
+.legend-dot--appt-pending  { background: #fd7e14; }
+.legend-dot--appt-approved { background: #198754; }
+.legend-dot--appt-done     { background: #6c757d; }

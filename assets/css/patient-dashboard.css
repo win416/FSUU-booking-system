@@ -630,7 +630,7 @@ body {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: #1A1A1A;
+    background: #29ABE2;
     color: #fff;
     display: flex;
     align-items: center;
@@ -716,6 +716,15 @@ body {
 
     .card-stats .card-body { padding: 1rem; }
     .card-stats h2 { font-size: 1.6rem; }
+
+    /* Anchor hero text to bottom-left on mobile */
+    .fac-hero-text { bottom: 14px !important; left: 14px !important; }
+}
+
+/* Ensure strong text in hero is always white */
+.fac-hero-text strong {
+    color: #fff !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.6) !important;
 }
 
 @media (max-width: 575.98px) {

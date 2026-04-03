@@ -641,7 +641,7 @@ label:hover .avatar-cam-overlay { opacity: 1; }
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: #1A1A1A;
+    background: #29ABE2;
     color: #fff;
     display: flex;
     align-items: center;
@@ -736,6 +736,9 @@ label:hover .avatar-cam-overlay { opacity: 1; }
     /* Stat cards 2-per-row on tablet */
     .row.g-3 > .col-md-3,
     .row.g-4 > .col-md-3 { flex: 0 0 50%; max-width: 50%; }
+
+    /* Anchor hero text to bottom-left on mobile */
+    .fac-hero-text { bottom: 14px !important; left: 14px !important; }
 }
 
 @media (max-width: 575.98px) {

@@ -24,37 +24,6 @@ $unread_notif = (int)$unread_stmt->get_result()->fetch_assoc()['c'];
     <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
     <link href="../assets/css/patient-messages.css?v=10" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
-    <style>
-    /* Consistent blue/white bubble colors */
-    .msg-row.mine .msg-bubble { background: #29ABE2 !important; color: #fff !important; }
-    .msg-row.theirs .msg-bubble { background: #fff !important; color: #1A1A1A !important; }
-    .reply-bar textarea:focus { border-color: #29ABE2 !important; }
-    .reply-send-btn { background: #29ABE2 !important; }
-    .reply-send-btn:hover { background: #1C9DD6 !important; }
-    @media (max-width: 575px) {
-        /* Remove main-content padding so messages fills full height */
-        .main-content { padding: 0 !important; padding-top: 56px !important; }
-        /* Compose button */
-        .compose-btn { padding: 0.25rem 0.5rem !important; font-size: 0.72rem !important; line-height: 1 !important; height: 28px !important; }
-        /* Full-screen inbox, hide right panel by default */
-        .msg-layout { flex-direction: column !important; height: calc(100vh - 56px) !important; overflow: hidden !important; }
-        .inbox-panel { width: 100% !important; max-height: none !important; flex: 1 !important; border-right: none !important; border-bottom: none !important; }
-        .right-panel { display: none !important; flex: 1 !important; height: 100% !important; }
-        /* When chat is active: show right panel, hide inbox */
-        .msg-layout.chat-active .inbox-panel { display: none !important; }
-        .msg-layout.chat-active .right-panel { display: flex !important; flex-direction: column !important; overflow: hidden !important; height: 100% !important; }
-        .msg-layout.chat-active { height: calc(100vh - 56px) !important; overflow: hidden !important; }
-        /* Reply bar always visible at bottom */
-        .msg-layout.chat-active .chat-messages { flex: 1 !important; overflow-y: auto !important; min-height: 0 !important; }
-        .msg-layout.chat-active .reply-bar { flex-shrink: 0 !important; position: relative !important; bottom: auto !important; }
-        /* thread-mode: show threadView only; compose-mode: show composeView only */
-        #threadView { height: 100% !important; overflow: hidden !important; }
-        .msg-layout.thread-mode #threadView { display: flex !important; flex-direction: column !important; }
-        .msg-layout.compose-mode #composeView { display: flex !important; flex-direction: column !important; }
-        /* Never show compose on mobile (not supported) - hide by default */
-        #composeView { display: none !important; }
-    }
-    </style>
 </head>
 <body>
 <div class="dashboard-wrapper">

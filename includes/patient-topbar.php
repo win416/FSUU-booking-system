@@ -40,18 +40,7 @@
 })();
 </script>
 <?php /* Patient Top Bar — include inside .main-content, before container */ ?>
-<style>
-@media (max-width: 767px) {
-    #ptMsgDropdown,
-    #ptNotifDropdown {
-        position: fixed !important;
-        top: 56px !important;
-        left: 8px !important;
-        right: 8px !important;
-        width: calc(100vw - 16px) !important;
-    }
-}
-</style>
+<link rel="stylesheet" href="../assets/css/patient-topbar.css">
 <!-- Sidebar overlay backdrop (mobile) -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 

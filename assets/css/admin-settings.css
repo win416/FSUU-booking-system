@@ -1,0 +1,30 @@
+/* =============================================================================
+   Admin Settings
+   ============================================================================= */
+
+/* ── Services Table ── */
+#servicesTableBody td:last-child { white-space: nowrap; }
+#servicesTableBody td:last-child .btn { margin: 0 1px; }
+
+/* ── Settings Page Tab Overrides ── */
+#settingsTabs.nav-tabs { border-bottom: 1px solid #E0E0E0; }
+#settingsTabs .nav-link { color: #4D4D4D; border: none; border-bottom: 2px solid transparent; background: transparent; padding: 0.6rem 1.1rem; }
+#settingsTabs .nav-link:hover { color: #29ABE2; border-bottom-color: #A8E0F5; background: transparent; }
+#settingsTabs .nav-link.active { color: #29ABE2 !important; font-weight: 600; border-bottom: 2px solid #29ABE2 !important; background: transparent !important; border-top: none !important; border-left: none !important; border-right: none !important; }
+
+/* ── Info Card ── */
+.card.info-card { border: 1px solid #E0E0E0; border-radius: 10px; }
+.card.info-card .card-header { background: #F8F8F8; color: #1A1A1A; border-bottom: 1px solid #E0E0E0; border-radius: 10px 10px 0 0; }
+.card.info-card a { color: #1A1A1A; text-decoration: underline; }
+
+/* ── Mobile Responsiveness ── */
+@media (max-width: 767.98px) {
+    #settingsTabs .nav-link { padding: 0.5rem 0.65rem; font-size: 0.85rem; }
+    #settingsTabs .nav-link i { display: none; }
+    .card.info-card { margin-top: 1rem; }
+}
+@media (max-width: 575.98px) {
+    #settingsTabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #settingsTabs .nav-link { white-space: nowrap; font-size: 0.78rem; padding: 0.5rem 0.5rem; }
+    #servicesTableBody td:last-child { white-space: normal; }
+}

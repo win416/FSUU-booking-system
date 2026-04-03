@@ -15,44 +15,6 @@ SessionManager::requireAdmin();
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link href="../assets/css/admin-reports.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
-    <style>
-        /* Remove browser's default print date/title header and URL footer */
-        @page { size: A4 landscape; margin: 0; }
-        @media print {
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            html, body { overflow: hidden !important; zoom: 0.72; padding: 8mm !important; }
-            ::-webkit-scrollbar { display: none !important; }
-            .sidebar, .no-print, .topbar { display: none !important; }
-            .main-content { margin-left: 0 !important; padding: 0.5rem !important; }
-            .dashboard-wrapper { display: flex !important; }
-            .print-header { display: block !important; }
-            .card {
-                break-inside: avoid;
-                box-shadow: none !important;
-                border: 1px solid #dee2e6 !important;
-            }
-            /* Force ALL rows to flex so columns sit side by side regardless of breakpoint */
-            .row { display: flex !important; flex-wrap: nowrap !important; gap: 8px !important; }
-            /* Row 1: Trends (col-lg-8) 65% + Status (col-lg-4) 33% */
-            .col-lg-8 { flex: 0 0 65% !important; max-width: 65% !important; padding: 0 !important; }
-            .col-lg-4 { flex: 0 0 33% !important; max-width: 33% !important; padding: 0 !important; }
-            /* Row 2: Most Popular + Service Breakdown 50/50 */
-            .col-md-6 { flex: 0 0 49% !important; max-width: 49% !important; padding: 0 !important; }
-            /* Detail table full width */
-            .col-12 { flex: 0 0 100% !important; max-width: 100% !important; padding: 0 !important; }
-            .chart-container { height: 180px !important; }
-            .chart-container-sm { height: 160px !important; }
-            /* Status distribution donut needs extra height for legend */
-            #statusChart { height: 220px !important; }
-            #statusChart ~ * { display: block !important; }
-            .card:has(#statusChart) .chart-container { height: 220px !important; overflow: visible !important; }
-            .service-progress .progress-bar { background: #29ABE2 !important; }
-            .print-footer { display: block !important; }
-        }
-        .print-header { display: none; }
-        .print-footer { display: none; }
-        .export-badge { font-size: 0.7rem; vertical-align: middle; }
-    </style>
 </head>
 <body>
     <div class="dashboard-wrapper">

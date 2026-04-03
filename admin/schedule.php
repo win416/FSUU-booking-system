@@ -91,17 +91,6 @@ $all_events = array_merge($block_events, $appt_events);
     <link href="../assets/css/admin-dashboard.css" rel="stylesheet">
     <link href="../assets/css/admin-schedule.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
-    <style>
-        /* Calendar event styles */
-        .fc-event { cursor: pointer; }
-        .fc-timegrid-event .fc-event-main { padding: 0; }
-        /* Legend dots */
-        .legend-dot { display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px; }
-        .legend-dot--appt-pending  { background:#fd7e14; }
-        .legend-dot--appt-approved { background:#198754; }
-        .legend-dot--appt-done     { background:#6c757d; }
-        .legend-dot--blocked       { background:#dc3545; }
-    </style>
 </head>
 <body>
     <div class="dashboard-wrapper">
