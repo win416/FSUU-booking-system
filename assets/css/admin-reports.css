@@ -231,8 +231,8 @@
         flex-wrap: wrap;
     }
     .card-stats h2 { font-size: 1.7rem; }
-    .chart-container { height: 180px; }
-    .chart-container-sm { height: 180px; }
+    .chart-container { height: 200px !important; min-height: 200px; }
+    .chart-container-sm { height: 200px !important; min-height: 200px; }
 }
 
 @media (max-width: 575.98px) {

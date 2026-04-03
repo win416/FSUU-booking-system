@@ -79,3 +79,15 @@ td code {
 tbody tr.clickable-row:hover {
     background-color: #f0f8ff;
 }
+
+/* ── Mobile Responsive ── */
+@media (max-width: 767.98px) {
+    /* Allow search form to use full available width */
+    .patient-search-form { max-width: 100%; }
+}
+
+@media (max-width: 575.98px) {
+    /* Hide role column on very small screens */
+    thead tr th:nth-child(4),
+    tbody tr td:nth-child(4) { display: none; }
+}

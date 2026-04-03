@@ -730,6 +730,9 @@ label:hover .avatar-cam-overlay { opacity: 1; }
         padding-top: calc(1rem + 56px) !important;
     }
 
+    /* Reduce topbar side padding on mobile */
+    .admin-topbar { padding: 0 0.75rem; }
+
     .card-stats .card-body { padding: 1rem; }
     .card-stats h2 { font-size: 1.6rem; }
 
@@ -739,6 +742,15 @@ label:hover .avatar-cam-overlay { opacity: 1; }
 
     /* Anchor hero text to bottom-left on mobile */
     .fac-hero-text { bottom: 14px !important; left: 14px !important; }
+
+    /* Wrap page header rows (title + action button) so they stack instead of squishing */
+    .main-content .d-flex.justify-content-between.align-items-center {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Card headers with legend/action items should also wrap */
+    .card-header.d-flex { flex-wrap: wrap; gap: 0.4rem; }
 }
 
 @media (max-width: 575.98px) {
@@ -747,6 +759,10 @@ label:hover .avatar-cam-overlay { opacity: 1; }
         padding-top: calc(0.75rem + 56px) !important;
     }
 
+    /* Compact topbar on very small screens */
+    .admin-topbar { padding: 0 0.5rem; }
+    .admin-topbar-inner { gap: 0.3rem; }
+
     .card-stats h2 { font-size: 1.5rem; }
     .fac-hero-text h2 { font-size: 1.3rem; }
     .fac-hero-text p { font-size: 0.85rem; }
@@ -754,9 +770,9 @@ label:hover .avatar-cam-overlay { opacity: 1; }
     .fac-slide { height: 180px !important; }
     .fac-slide img { height: 180px !important; }
 
-    /* Stat cards full-width on phone */
+    /* Stat cards full-width on small phones */
     .row.g-3 > .col-md-3,
-    .row.g-4 > .col-md-3 { flex: 0 0 50%; max-width: 50%; }
+    .row.g-4 > .col-md-3 { flex: 0 0 100%; max-width: 100%; }
 
     .notif-dropdown {
         width: calc(100vw - 16px);
@@ -774,5 +790,21 @@ label:hover .avatar-cam-overlay { opacity: 1; }
         left: 8px !important;
         right: 8px !important;
         width: calc(100vw - 16px) !important;
+    }
+
+    /* Reduce notif-btn touch target but keep it tappable */
+    .notif-btn { width: 36px; height: 36px; font-size: 1.15rem; }
+
+    /* Page title row: stack vertically on small phones */
+    .main-content .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.5rem;
+    }
+    /* Action buttons in page header go full-width */
+    .main-content .d-flex.justify-content-between.align-items-center > .btn,
+    .main-content .d-flex.justify-content-between.align-items-center > a.btn {
+        width: 100%;
+        justify-content: center;
     }
 }

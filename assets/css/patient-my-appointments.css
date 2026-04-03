@@ -1,7 +1,7 @@
 /* Mobile appointment cards */
 .appt-card-mobile { display: none; }
 
-@media (max-width: 575px) {
+@media (max-width: 575.98px) {
     .appt-table-wrap { display: none !important; }
     .appt-card-mobile { display: block; }
     .book-btn { font-size: 0.78rem !important; padding: 6px 14px !important; }

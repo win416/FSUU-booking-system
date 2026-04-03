@@ -28,3 +28,28 @@
 /* ── Clickable Rows ── */
 tbody tr.clickable-row { cursor: pointer; }
 tbody tr.clickable-row:hover { background-color: #f0f8ff; }
+
+/* ── Mobile Responsive ── */
+@media (max-width: 767.98px) {
+    /* Make filter-tabs full width and wrap to multiple rows */
+    .filter-tabs {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    .filter-tab {
+        flex: 1 1 auto;
+        text-align: center;
+        padding: 6px 12px;
+        font-size: 0.82rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    /* Hide FSUU ID and Service columns on very small screens */
+    thead tr th:nth-child(3),
+    thead tr th:nth-child(4),
+    tbody tr.clickable-row td:nth-child(3),
+    tbody tr.clickable-row td:nth-child(4) {
+        display: none;
+    }
+}

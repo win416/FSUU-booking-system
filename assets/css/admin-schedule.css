@@ -237,3 +237,64 @@
 .legend-dot--appt-pending  { background: #fd7e14; }
 .legend-dot--appt-approved { background: #198754; }
 .legend-dot--appt-done     { background: #6c757d; }
+
+/* ── List View Styles (used on mobile as default) ── */
+.fc-list-day-cushion { background: #f0f8ff !important; }
+.fc-list-day-text, .fc-list-day-side-text {
+    color: #29ABE2 !important;
+    font-weight: 700;
+}
+.fc-list-event:hover td { background: #f0f8ff !important; }
+.fc-list-event-title a { color: #1A1A1A !important; font-size: 0.9rem; }
+.fc-list-event-time { color: #4D4D4D; font-size: 0.82rem; }
+.fc-list-empty-cushion { color: #4D4D4D; }
+
+/* ── Mobile Responsive ── */
+@media (max-width: 767.98px) {
+    /* Override FullCalendar's space-between so nav + view buttons sit together */
+    .fc-header-toolbar.fc-toolbar {
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        gap: 0.25rem !important;
+    }
+    /* Title: full-width row below all buttons */
+    .fc-toolbar-chunk:nth-child(2) {
+        order: 10 !important;
+        flex: 0 0 100% !important;
+    }
+    .fc .fc-toolbar-title {
+        font-size: 1rem;
+        font-weight: 700;
+        text-align: left;
+    }
+    /* Compact buttons so all 6 fit in one row */
+    .fc .fc-button {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.72rem !important;
+        border-radius: 6px !important;
+    }
+    /* Reduce day frame height */
+    .fc .fc-daygrid-day-frame {
+        min-height: 65px !important;
+        max-height: 65px !important;
+    }
+    .fc-timegrid-slot { height: 2em; }
+    .fc-col-header-cell-cushion { font-size: 0.75rem; }
+    .fc-list-event td { padding: 0.6rem 0.75rem; }
+}
+
+@media (max-width: 575.98px) {
+    .fc .fc-daygrid-day-frame {
+        min-height: 48px !important;
+        max-height: 48px !important;
+    }
+    .fc-event-title { font-size: 0.65rem; }
+    .fc-timegrid-slot { height: 1.6em; }
+    .fc .fc-toolbar-title { font-size: 0.95rem; }
+    .fc .fc-daygrid-day-number { font-size: 0.75rem; padding: 2px 4px; }
+    .fc .fc-daygrid-more-link { font-size: 0.62rem; }
+    .fc .fc-button { padding: 0.28rem 0.55rem; font-size: 0.75rem; }
+    /* List view: tighter on tiny phones */
+    .fc-list-event td { padding: 0.5rem 0.6rem; }
+    .fc-list-event-title a { font-size: 0.85rem; }
+}

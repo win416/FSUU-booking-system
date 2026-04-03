@@ -273,9 +273,14 @@ $all_events = array_merge($block_events, $appt_events);
     document.addEventListener('DOMContentLoaded', function () {
 
         const calEl = document.getElementById('clinicCalendar');
+        const isMobile = window.innerWidth < 768;
         const calendar = new FullCalendar.Calendar(calEl, {
-            initialView: 'timeGridWeek',
-            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' },
+            initialView: isMobile ? 'listWeek' : 'timeGridWeek',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            },
             height: 'auto',
             dayMaxEvents: 2,
             dayMaxEventRows: 3,

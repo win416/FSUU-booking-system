@@ -355,6 +355,10 @@ function sendReply() {
         .then(res => {
             if (res.success) {
                 loadThread(true);
+                if (!res.email_sent) {
+                    showToast('Message sent. Email notification could not be delivered' +
+                        (res.email_error ? ': ' + res.email_error : '.'));
+                }
             } else {
                 document.getElementById(tempId)?.remove();
                 input.value = msg;
@@ -467,6 +471,10 @@ document.getElementById('chatSendBtn').addEventListener('click', function() {
                 loadInbox(false);
                 const avHtml = `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
                 showThread(sentId, sentName, avHtml, sentSubject);
+                if (!res.email_sent) {
+                    showToast('Message sent. Email notification could not be delivered' +
+                        (res.email_error ? ': ' + res.email_error : '.'));
+                }
             } else {
                 alert('Failed: ' + (res.message || 'Unknown error'));
             }
@@ -571,6 +579,20 @@ if (openWith) {
                 showThread(parseInt(openWith), name, avHtml, openSubject);
             }
         });
+}
+
+// ── Toast helper ─────────────────────────────────────────────────────────────
+function showToast(msg) {
+    const id = 'msgtoast_' + Date.now();
+    document.body.insertAdjacentHTML('beforeend',
+        `<div id="${id}" style="position:fixed;bottom:24px;right:24px;z-index:9999;
+            background:#f59e0b;color:#1a1a1a;padding:12px 18px;border-radius:10px;
+            box-shadow:0 4px 16px rgba(0,0,0,0.18);font-size:0.875rem;max-width:360px;
+            line-height:1.5;display:flex;align-items:flex-start;gap:10px;">
+            <i class="bi bi-exclamation-triangle-fill" style="flex-shrink:0;margin-top:2px;"></i>
+            <span>${msg}</span>
+         </div>`);
+    setTimeout(() => document.getElementById(id)?.remove(), 6000);
 }
 
 // Mobile back button

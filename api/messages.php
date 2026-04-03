@@ -297,6 +297,7 @@ if ($action === 'send') {
 </html>";
 
             try {
+                $debugLog = '';
                 $mail = new PHPMailer(true);
                 $mail->isSMTP();
                 $mail->Host       = SMTP_HOST;
@@ -305,27 +306,51 @@ if ($action === 'send') {
                 $mail->Password   = SMTP_PASS;
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port       = SMTP_PORT;
+                $mail->Timeout    = 15;
+                $mail->CharSet    = PHPMailer::CHARSET_UTF8;
+                // Capture full SMTP debug output to variable
+                $mail->SMTPDebug  = 2;
+                $mail->Debugoutput = function($str, $level) use (&$debugLog) {
+                    $debugLog .= trim($str) . "\n";
+                };
 
                 $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
                 $mail->addAddress($recipient['email'], $recipientName);
                 $mail->isHTML(true);
                 $mail->Subject = $subjectLine;
                 $mail->Body    = $htmlBody;
-                $mail->AltBody = "Hello {$recipientName}, {$senderName} sent you a message: \"{$message}\". Log in to reply: {$loginUrl}";
+                $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $htmlBody));
 
                 $mail->send();
                 $emailSent = true;
+                // Log success with debug for confirmation
+                error_log("[FSUU-Mailer] SUCCESS sent to user_id={$receiverId} ({$recipient['email']})");
             } catch (Exception $e) {
                 // Email failure is non-fatal — message is still saved
-                $emailSent = false;
+                $emailSent    = false;
+                $emailErrMsg  = $e->getMessage();
+                $smtpInfo     = $mail->ErrorInfo ?? '';
+                error_log("[FSUU-Mailer] FAILED user_id={$receiverId} ({$recipient['email']}): {$emailErrMsg} | ErrorInfo: {$smtpInfo}");
+                error_log("[FSUU-Mailer] SMTP Debug:\n{$debugLog}");
+
+                // Detect Gmail daily sending limit
+                if (stripos($smtpInfo, '5.4.5') !== false || stripos($smtpInfo, 'limit exceeded') !== false
+                    || stripos($emailErrMsg, 'limit exceeded') !== false) {
+                    $emailErrMsg = 'Gmail daily sending limit exceeded. Emails will resume tomorrow.';
+                }
+            } catch (\Exception $e) {
+                $emailSent   = false;
+                $emailErrMsg = $e->getMessage();
+                error_log("[FSUU-Mailer] Unexpected error for user_id={$receiverId}: {$emailErrMsg}\nDebug:\n{$debugLog}");
             }
         }
 
         echo json_encode([
-            'success'    => true,
-            'message_id' => $db->insert_id,
-            'created_at' => date('Y-m-d H:i:s'),
-            'email_sent' => $emailSent,
+            'success'      => true,
+            'message_id'   => $db->insert_id,
+            'created_at'   => date('Y-m-d H:i:s'),
+            'email_sent'   => $emailSent,
+            'email_error'  => $emailSent ? null : ($emailErrMsg ?? 'Unknown error'),
         ]);
     } else {
         echo json_encode(['success' => false, 'message' => 'DB error']);
