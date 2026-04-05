@@ -51,8 +51,17 @@ try {
             throw new Exception('Emergency contact details are required');
         }
 
-        $stmt = $db->prepare("UPDATE medical_info SET allergies = ?, medical_conditions = ?, medications = ?, emergency_contact_name = ?, emergency_contact_relationship = ?, emergency_contact_number = ? WHERE user_id = ?");
-        $stmt->bind_param("ssssssi", $allergies, $conditions, $medications, $emergency_name, $emergency_relationship, $emergency_number, $user_id);
+        // Use INSERT ... ON DUPLICATE KEY UPDATE to handle both insert and update
+        $stmt = $db->prepare("INSERT INTO medical_info (user_id, allergies, medical_conditions, medications, emergency_contact_name, emergency_contact_relationship, emergency_contact_number) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?) 
+                              ON DUPLICATE KEY UPDATE 
+                              allergies = VALUES(allergies), 
+                              medical_conditions = VALUES(medical_conditions), 
+                              medications = VALUES(medications), 
+                              emergency_contact_name = VALUES(emergency_contact_name), 
+                              emergency_contact_relationship = VALUES(emergency_contact_relationship), 
+                              emergency_contact_number = VALUES(emergency_contact_number)");
+        $stmt->bind_param("issssss", $user_id, $allergies, $conditions, $medications, $emergency_name, $emergency_relationship, $emergency_number);
 
         if ($stmt->execute()) {
             echo json_encode(['success' => true, 'message' => 'Medical record updated successfully']);

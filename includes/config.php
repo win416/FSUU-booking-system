@@ -28,9 +28,15 @@ define('MAX_BOOKINGS_PER_DAY', 20);
 define('MIN_HOURS_BEFORE_CANCEL', 24);
 define('SESSION_TIMEOUT', 1800); // 30 minutes in seconds
 
-define('SMTP_FROM_NAME', 'FSUU Dental Clinic');
+// DELETE OR COMMENT OUT THIS LINE (Line 31 in your image):
+// define('SMTP_FROM_NAME', 'FSUU Dental Clinic'); 
+
 define('OTP_EXPIRY_MINUTES', 5);
-define('CLINIC_EMAIL', SMTP_USER); // Dental clinic contact email
+
+// KEEP THIS PART (Lines 34-36):
+if (!defined('SMTP_FROM_NAME')) {
+    define('SMTP_FROM_NAME', 'FSUU Dental Clinic');
+}
 
 // Google OAuth — real credentials loaded from gitignored config.secrets.php
 // To create credentials: https://console.cloud.google.com/

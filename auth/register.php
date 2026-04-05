@@ -72,7 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                     $mail->Port       = SMTP_PORT;
 
-                    $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
+                    $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+                    $mail->addReplyTo(SMTP_FROM_EMAIL, SMTP_FROM_NAME); // Ensure replies go to system email
                     $mail->addAddress($email, $first_name . ' ' . $last_name);
 
                     $mail->isHTML(true);
@@ -85,6 +86,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <div style='font-size:36px;font-weight:bold;letter-spacing:8px;text-align:center;padding:16px 0;color:#2c6fad;'>{$verification_code}</div>
                             <p style='color:#888;font-size:13px;'>This code expires in " . OTP_EXPIRY_MINUTES . " minutes.</p>
                         </div>";
+                    $mail->AltBody = "Your FSUU Dental Clinic verification code is: {$verification_code}";
+                    
+                    // Add headers to improve deliverability
+                    $mail->addCustomHeader('X-Mailer', 'FSUU Dental System');
+                    $mail->addCustomHeader('X-Priority', '3');
                     
                     $mail->send();
                 } catch (Exception $e) {

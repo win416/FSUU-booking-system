@@ -67,7 +67,8 @@ if (isset($_POST['resend'])) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = SMTP_PORT;
 
-        $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
+        $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+        $mail->addReplyTo(SMTP_FROM_EMAIL, SMTP_FROM_NAME); // Ensure replies go to system email
         $mail->addAddress($email, $user['first_name']);
 
         $mail->isHTML(true);
@@ -81,6 +82,11 @@ if (isset($_POST['resend'])) {
                 <p style='color:#888;font-size:13px;'>This code expires in " . OTP_EXPIRY_MINUTES . " minutes. Do not share it with anyone.</p>
             </div>";
         $mail->AltBody = "Your new verification code is: {$new_code}";
+        
+        // Add headers to improve deliverability
+        $mail->addCustomHeader('X-Mailer', 'FSUU Dental System');
+        $mail->addCustomHeader('X-Priority', '3');
+        
         $mail->send();
         $success = 'A new verification code has been sent to your email.';
     } catch (Exception $e) {

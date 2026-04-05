@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Manila');
 require_once '../includes/session.php';
 require_once '../includes/db_connection.php';
 require_once '../includes/config.php';
@@ -242,9 +243,6 @@ if ($action === 'send') {
                 <div style='color:#29ABE2;font-size:1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;'>FSUU Dental Clinic</div>
                 <div style='color:#ffffff;font-size:1.25rem;font-weight:700;margin-top:4px;'>You have a new message</div>
               </td>
-              <td align='right'>
-                <span style='background:#29ABE2;color:#fff;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;'>In-App Message</span>
-              </td>
             </tr></table>
           </td>
         </tr>
@@ -314,12 +312,17 @@ if ($action === 'send') {
                     $debugLog .= trim($str) . "\n";
                 };
 
-                $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
+                $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+                $mail->addReplyTo(SMTP_FROM_EMAIL, SMTP_FROM_NAME); // Ensure replies go to system email
                 $mail->addAddress($recipient['email'], $recipientName);
                 $mail->isHTML(true);
                 $mail->Subject = $subjectLine;
                 $mail->Body    = $htmlBody;
                 $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $htmlBody));
+                
+                // Add headers to improve deliverability
+                $mail->addCustomHeader('X-Mailer', 'FSUU Dental System');
+                $mail->addCustomHeader('X-Priority', '3');
 
                 $mail->send();
                 $emailSent = true;
