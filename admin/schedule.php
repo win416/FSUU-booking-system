@@ -32,14 +32,31 @@ $calendar_blocks = $db->query("
     WHERE block_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 2 MONTH) AND DATE_ADD(CURDATE(), INTERVAL 3 MONTH)
 ");
 $block_events = [];
+$blocked_full_dates = []; // Track full-day blocked dates for background styling
+$blocked_dates_info = []; // Track blocked dates with reasons for display
 while ($row = $calendar_blocks->fetch_assoc()) {
+    if ($row['is_full_day']) {
+        $blocked_full_dates[] = $row['block_date'];
+        $blocked_dates_info[$row['block_date']] = $row['reason'] ?: 'Blocked';
+    }
+    // Build title with reason
+    $reasonText = $row['reason'] ?: 'Blocked';
+    $title = '🚫 ' . $reasonText;
+    
+    // We show block info via overlay in the day column, so hide the all-day event
+    // but keep it in case the view is list/month where overlay doesn't work
     $block_events[] = [
-        'title'           => $row['is_full_day'] ? '🚫 Full Day Blocked' : ('🚫 ' . ($row['reason'] ?: 'Partial Block')),
+        'title'           => $title,
         'start'           => $row['block_date'],
         'backgroundColor' => '#dc3545',
         'borderColor'     => '#dc3545',
         'textColor'       => '#fff',
         'allDay'          => true,
+        'display'         => 'background',  // Use background display so it doesn't show as event bar
+        'extendedProps'   => [
+            'reason'    => $row['reason'],
+            'isBlocked' => true,
+        ],
     ];
 }
 
@@ -59,7 +76,7 @@ $appt_events = [];
 while ($row = $appt_query->fetch_assoc()) {
     $startDT = $row['appointment_date'] . 'T' . $row['appointment_time'];
     $endDT   = $row['appointment_date'] . 'T' . date('H:i:s', strtotime($row['appointment_time']) + ((int)$row['duration_minutes'] * 60));
-    $colors  = ['approved' => '#198754', 'pending' => '#fd7e14', 'completed' => '#6c757d'];
+    $colors  = ['approved' => '#198754', 'pending' => '#29ABE2', 'completed' => '#6c757d'];
     $color   = $colors[$row['status']] ?? '#1A1A1A';
     $appt_events[] = [
         'id'              => 'appt_' . $row['appointment_id'],
@@ -149,6 +166,76 @@ $all_events = array_merge($block_events, $appt_events);
                     </div>
                 </div>
 
+                <!-- Blocked Dates Table -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-calendar-x me-2"></i>Blocked Dates</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <?php if ($upcoming->num_rows > 0): ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="padding: 0.85rem 1.25rem;">Date</th>
+                                        <th style="padding: 0.85rem 1.25rem;">Time</th>
+                                        <th style="padding: 0.85rem 1.25rem;">Reason</th>
+                                        <th style="padding: 0.85rem 1.25rem;">Created By</th>
+                                        <th style="padding: 0.85rem 1.25rem; text-align: right; width: 80px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php while ($block = $upcoming->fetch_assoc()): ?>
+                                    <tr id="block-row-<?php echo $block['block_id']; ?>" 
+                                        class="block-row-clickable"
+                                        style="cursor: pointer;"
+                                        data-id="<?php echo $block['block_id']; ?>"
+                                        data-date="<?php echo $block['block_date']; ?>"
+                                        data-fullday="<?php echo $block['is_full_day']; ?>"
+                                        data-start="<?php echo $block['start_time']; ?>"
+                                        data-end="<?php echo $block['end_time']; ?>"
+                                        data-reason="<?php echo htmlspecialchars($block['reason'] ?? ''); ?>">
+                                        <td style="padding: 0.85rem 1.25rem;">
+                                            <strong><?php echo date('M j, Y', strtotime($block['block_date'])); ?></strong>
+                                            <br><small class="text-muted"><?php echo date('l', strtotime($block['block_date'])); ?></small>
+                                        </td>
+                                        <td style="padding: 0.85rem 1.25rem;">
+                                            <?php if ($block['is_full_day']): ?>
+                                                <span class="badge bg-danger">Full Day</span>
+                                            <?php else: ?>
+                                                <span class="text-muted">
+                                                    <?php echo date('g:i A', strtotime($block['start_time'])); ?> - 
+                                                    <?php echo date('g:i A', strtotime($block['end_time'])); ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td style="padding: 0.85rem 1.25rem;">
+                                            <?php echo htmlspecialchars($block['reason'] ?: '—'); ?>
+                                        </td>
+                                        <td style="padding: 0.85rem 1.25rem;">
+                                            <?php echo htmlspecialchars(($block['first_name'] ?? '') . ' ' . ($block['last_name'] ?? '')); ?>
+                                        </td>
+                                        <td style="padding: 0.85rem 1.25rem; text-align: right;" onclick="event.stopPropagation();">
+                                            <button class="btn btn-sm btn-outline-danger delete-block-btn"
+                                                data-id="<?php echo $block['block_id']; ?>"
+                                                data-date="<?php echo date('M j, Y', strtotime($block['block_date'])); ?>"
+                                                title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php endwhile; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php else: ?>
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-calendar-check fs-1 d-block mb-2"></i>
+                            No upcoming blocked dates
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -159,15 +246,16 @@ $all_events = array_merge($block_events, $appt_events);
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="bi bi-calendar-x-fill me-2"></i>Block Schedule</h5>
+                    <h5 class="modal-title"><i class="bi bi-calendar-x-fill me-2"></i><span id="blockModalTitle">Block Schedule</span></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div id="blockModalAlert"></div>
                     <form id="blockForm">
+                        <input type="hidden" name="block_id" id="block_id" value="">
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" name="block_date" id="block_date" required min="<?php echo date('Y-m-d'); ?>">
+                            <input type="date" class="form-control" name="block_date" id="block_date" required>
                         </div>
                         <div class="mb-3 form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="is_full_day" name="is_full_day" checked>
@@ -222,14 +310,14 @@ $all_events = array_merge($block_events, $appt_events);
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Reason <span class="text-muted fw-normal">(optional)</span></label>
-                            <input type="text" class="form-control" name="reason" placeholder="e.g. Clinic maintenance, Holiday, Staff meeting">
+                            <input type="text" class="form-control" name="reason" id="block_reason" placeholder="e.g. Clinic maintenance, Holiday, Staff meeting">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-danger" id="saveBlock">
-                        <i class="bi bi-calendar-x me-1"></i>Block Date
+                        <i class="bi bi-calendar-x me-1"></i><span id="saveBlockText">Block Date</span>
                     </button>
                 </div>
             </div>
@@ -238,22 +326,25 @@ $all_events = array_merge($block_events, $appt_events);
 
     <!-- Day Detail Modal -->
     <div class="modal fade" id="dayModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content" style="border-radius:16px; border:none; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="border-bottom:1px solid #E0E0E0; padding:1.25rem 1.5rem;">
-                    <h5 class="modal-title fw-bold" id="dayModalTitle">
-                        <i class="bi bi-calendar3 me-2 text-muted"></i>Schedule for <span id="dayModalDate"></span>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:8px; border:none; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                <div class="modal-header" style="border-bottom:1px solid #e5e7eb; padding:1rem 1.25rem;">
+                    <h5 class="modal-title fw-bold" id="dayModalTitle" style="font-size:1rem;">
+                        <i class="bi bi-calendar3 me-2"></i>Schedule for <span id="dayModalDate"></span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0" id="dayModalBody">
-                    <div class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary"></div> <span class="text-muted ms-2">Loading...</span></div>
+                    <div class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                        <p class="text-muted mt-2 mb-0" style="font-size:0.875rem;">Loading...</p>
+                    </div>
                 </div>
-                <div class="modal-footer" style="border-top:1px solid #E0E0E0; padding:1rem 1.5rem;">
+                <div class="modal-footer" style="border-top:1px solid #e5e7eb; padding:0.75rem 1rem; gap:8px;">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-danger btn-sm" id="dayModalBlockBtn">
                         <i class="bi bi-calendar-x me-1"></i>Block This Date
                     </button>
-                    <button type="button" class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -264,6 +355,8 @@ $all_events = array_merge($block_events, $appt_events);
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
     const calendarEvents = <?php echo json_encode($all_events); ?>;
+    const blockedFullDates = <?php echo json_encode($blocked_full_dates); ?>;
+    const blockedDatesInfo = <?php echo json_encode($blocked_dates_info); ?>;
 
     function showAlert(container, type, message) {
         $(container).html('<div class="alert alert-' + type + ' alert-dismissible fade show py-2 mb-0">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
@@ -284,20 +377,52 @@ $all_events = array_merge($block_events, $appt_events);
             height: 'auto',
             dayMaxEvents: 2,
             dayMaxEventRows: 3,
+            hiddenDays: [0],  // Hide Sunday (0 = Sunday)
             slotMinTime: '08:00:00',
-            slotMaxTime: '18:00:00',
+            slotMaxTime: '17:00:00',
+            slotDuration: '00:30:00',  // 30 minute slots
+            slotLabelInterval: '00:30:00',  // Label every 30 minutes
+            slotLabelContent: function(arg) {
+                // Format as "8:00 - 8:30" (shorter format)
+                const startDate = arg.date;
+                const startHour = startDate.getHours();
+                const startMin = startDate.getMinutes();
+                const endMin = startMin + 30;
+                const endHour = endMin >= 60 ? startHour + 1 : startHour;
+                const endMinutes = endMin >= 60 ? 0 : endMin;
+                
+                const formatTime = (h, m) => {
+                    const hour = h % 12 || 12;
+                    return hour + ':' + (m < 10 ? '0' : '') + m;
+                };
+                const ampm = startHour >= 12 ? 'pm' : 'am';
+                return formatTime(startHour, startMin) + '-' + formatTime(endHour, endMinutes) + ampm;
+            },
+            expandRows: true,  // Expand rows to fill available height
             allDaySlot: true,
+            allDayText: '',  // Remove "all-day" text to prevent overlap
             nowIndicator: true,
+            businessHours: [
+                {
+                    daysOfWeek: [1, 2, 3, 4, 5], // Mon-Fri
+                    startTime: '13:00',
+                    endTime: '15:30'
+                },
+                {
+                    daysOfWeek: [6], // Saturday
+                    startTime: '09:00',
+                    endTime: '12:00'
+                }
+            ],
             events: calendarEvents,
             eventContent: function (arg) {
                 const service = arg.event.extendedProps.service;
                 if (service) {
-                    // Appointment event: show name + service
-                    const timeText = arg.timeText ? `<div class="fc-event-time" style="font-size:0.7rem;opacity:0.85">${arg.timeText}</div>` : '';
-                    return { html: `<div style="padding:2px 4px;overflow:hidden">
-                        ${timeText}
-                        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${arg.event.title}</div>
-                        <div style="font-size:0.75rem;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${service}</div>
+                    // Appointment event: show name + service with compact layout
+                    return { html: `<div class="fc-event-content-custom">
+                        <div class="fc-event-time-custom">${arg.timeText || ''}</div>
+                        <div class="fc-event-title-custom">${arg.event.title}</div>
+                        <div class="fc-event-service-custom">${service}</div>
                     </div>` };
                 }
                 // Blocked event: default rendering
@@ -315,10 +440,70 @@ $all_events = array_merge($block_events, $appt_events);
                 openDayModal(info.dateStr);
             },
             dayCellClassNames: function (arg) {
-                if (arg.date.getDay() === 0) return ['fc-day-sunday'];
+                const classes = [];
+                if (arg.date.getDay() === 0) classes.push('fc-day-sunday');
+                // Check if this date is a full-day blocked date (use local date to avoid timezone issues)
+                const y = arg.date.getFullYear();
+                const m = String(arg.date.getMonth() + 1).padStart(2, '0');
+                const d = String(arg.date.getDate()).padStart(2, '0');
+                const dateStr = `${y}-${m}-${d}`;
+                if (blockedFullDates.includes(dateStr)) classes.push('fc-day-blocked');
+                return classes;
+            },
+            viewDidMount: function (arg) {
+                // Apply blocked styling to timegrid columns in week/day views
+                applyBlockedDayStyling();
+            },
+            datesSet: function (arg) {
+                // Re-apply after date navigation
+                applyBlockedDayStyling();
             }
         });
         calendar.render();
+
+        // Helper function to apply blocked day styling to timegrid columns
+        function applyBlockedDayStyling() {
+            setTimeout(function() {
+                // First remove any existing blocked classes and reason overlays/labels to reset state
+                document.querySelectorAll('.fc-day-blocked').forEach(function(el) {
+                    el.classList.remove('fc-day-blocked');
+                });
+                document.querySelectorAll('.blocked-reason-label').forEach(function(el) {
+                    el.remove();
+                });
+                
+                // Then apply only to specifically blocked dates
+                blockedFullDates.forEach(function(dateStr) {
+                    const reason = blockedDatesInfo[dateStr] || 'Blocked';
+                    
+                    // Target timegrid columns (week/day view) - just red background, no overlay
+                    const cols = document.querySelectorAll('.fc-timegrid-col[data-date="' + dateStr + '"]');
+                    cols.forEach(function(col) {
+                        col.classList.add('fc-day-blocked');
+                    });
+                    
+                    // Also target header cells by exact data-date match
+                    const headers = document.querySelectorAll('.fc-col-header-cell[data-date="' + dateStr + '"]');
+                    headers.forEach(function(cell) {
+                        cell.classList.add('fc-day-blocked');
+                    });
+                    
+                    // Month view cells - show reason label
+                    const dayCells = document.querySelectorAll('.fc-daygrid-day[data-date="' + dateStr + '"]');
+                    dayCells.forEach(function(cell) {
+                        cell.classList.add('fc-day-blocked');
+                        // Add reason to month view cell
+                        const dayFrame = cell.querySelector('.fc-daygrid-day-frame');
+                        if (dayFrame && !dayFrame.querySelector('.blocked-reason-label')) {
+                            const label = document.createElement('div');
+                            label.className = 'blocked-reason-label';
+                            label.innerHTML = '<i class="bi bi-slash-circle"></i> ' + reason;
+                            dayFrame.appendChild(label);
+                        }
+                    });
+                });
+            }, 150);
+        }
 
         // Pre-fill date if passed via URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -336,9 +521,59 @@ $all_events = array_merge($block_events, $appt_events);
 
         $.get('../api/get-appointment-details.php', { date: dateStr }, function (res) {
             const appts = (res.appointments || []).filter(a => a.status !== 'declined' && a.status !== 'cancelled');
+            const blocks = res.blocks || [];
             let html = '';
-            if (appts.length === 0) {
-                html = '<div class="text-center py-5"><i class="bi bi-calendar-x" style="font-size:2.5rem;color:#E0E0E0;"></i><p class="text-muted mt-3 mb-0">No appointments on this date.</p></div>';
+            
+            // Display blocked schedules first if any
+            if (blocks.length > 0) {
+                // Hide the Block This Date button since date is already blocked
+                $('#dayModalBlockBtn').hide();
+                
+                blocks.forEach((block, idx) => {
+                    if (idx > 0) html += '<div style="margin:8px 0;"></div>';
+                    html += `<div style="background:linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);border-radius:8px;padding:16px;border:1px solid #fecaca;margin:16px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                            <div style="width:32px;height:32px;background:#dc2626;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-slash-circle" style="font-size:1rem;color:#fff;"></i>
+                            </div>
+                            <div style="flex:1;">
+                                <div style="font-size:0.95rem;font-weight:700;color:#991b1b;">
+                                    <i class="bi bi-calendar-x me-1"></i>Blocked Schedule
+                                </div>
+                                <div style="font-size:0.75rem;color:#7f1d1d;">This date is unavailable for appointments</div>
+                            </div>
+                        </div>`;
+                    if (block.reason) {
+                        html += `<div style="background:#ffffff;border-radius:6px;padding:10px 12px;margin-bottom:8px;border-left:3px solid #dc2626;">
+                            <div style="font-size:0.625rem;color:#991b1b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Reason</div>
+                            <div style="font-size:0.875rem;color:#1f2937;line-height:1.4;">${block.reason}</div>
+                        </div>`;
+                    }
+                    if (block.is_full_day == 1) {
+                        html += `<div style="background:#ffffff;border-radius:6px;padding:10px 12px;border-left:3px solid #dc2626;">
+                            <div style="font-size:0.625rem;color:#991b1b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Duration</div>
+                            <div style="font-size:0.875rem;color:#1f2937;"><i class="bi bi-clock me-1"></i>Full Day</div>
+                        </div>`;
+                    } else if (block.start_time || block.end_time) {
+                        html += `<div style="background:#ffffff;border-radius:6px;padding:10px 12px;border-left:3px solid #dc2626;">
+                            <div style="font-size:0.625rem;color:#991b1b;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Time Range</div>
+                            <div style="font-size:0.875rem;color:#1f2937;"><i class="bi bi-clock me-1"></i>${block.start_time || ''} - ${block.end_time || ''}</div>
+                        </div>`;
+                    }
+                    html += `</div>`;
+                });
+            } else {
+                // Show the Block This Date button when no blocks exist
+                $('#dayModalBlockBtn').show();
+            }
+            
+            if (appts.length === 0 && blocks.length === 0) {
+                html += '<div class="text-center py-4"><i class="bi bi-calendar-x" style="font-size:2rem;color:#d1d5db;"></i><p class="text-muted mt-2 mb-0" style="font-size:0.875rem;">No appointments on this date.</p></div>';
+            } else if (appts.length === 0) {
+                html += `<div class="text-center py-3">
+                    <i class="bi bi-check-circle" style="font-size:1.5rem;color:#9ca3af;"></i>
+                    <p class="text-muted mb-0 mt-2" style="font-size:0.875rem;">No appointments scheduled</p>
+                </div>`;
             } else {
                 const badgeStyle = {
                     pending:   'background:#fff8e1;color:#b45309;border:1px solid #fde68a;',
@@ -347,7 +582,7 @@ $all_events = array_merge($block_events, $appt_events);
                     cancelled: 'background:#fef2f2;color:#991b1b;border:1px solid #fecaca;',
                     declined:  'background:#fef2f2;color:#991b1b;border:1px solid #fecaca;',
                 };
-                html = `<div class="table-responsive">
+                html += `<div class="table-responsive">
                     <table class="table mb-0" style="font-size:0.875rem;">
                         <thead>
                             <tr style="background:#F8F8F8;border-bottom:1px solid #E0E0E0;">
@@ -381,6 +616,7 @@ $all_events = array_merge($block_events, $appt_events);
 
     // Pre-fill block modal date from day modal
     $('#dayModalBlockBtn').click(function () {
+        resetBlockModal();
         const d = $(this).data('date');
         $('#block_date').val(d);
         bootstrap.Modal.getInstance(document.getElementById('dayModal')).hide();
@@ -422,7 +658,88 @@ $all_events = array_merge($block_events, $appt_events);
         }
     });
 
-    // ── Save Block ───────────────────────────────────────────────────────────
+    // ── Reset modal to "Add" mode ────────────────────────────────────────────
+    function resetBlockModal() {
+        $('#block_id').val('');
+        $('#blockForm')[0].reset();
+        $('#is_full_day').prop('checked', true);
+        $('#timeFields').hide();
+        $('#startTimeLabel').text('Select time');
+        $('#endTimeLabel').text('Select time');
+        $('#startTimeDisplay, #endTimeDisplay').removeClass('selected');
+        document.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('active'));
+        $('#blockModalTitle').text('Block Schedule');
+        $('#saveBlockText').text('Block Date');
+        $('#blockModalAlert').html('');
+    }
+
+    // Reset modal when opened via "Block Schedule" button (add mode)
+    $('[data-bs-target="#blockModal"]').click(function() {
+        resetBlockModal();
+    });
+
+    // ── Clickable Block Row (Edit) ───────────────────────────────────────────
+    $(document).on('click', '.block-row-clickable', function () {
+        resetBlockModal();
+        
+        const id = $(this).data('id');
+        const date = $(this).data('date');
+        const isFullDay = $(this).data('fullday') == 1;
+        const startTime = $(this).data('start');
+        const endTime = $(this).data('end');
+        const reason = $(this).data('reason');
+
+        // Set modal to edit mode
+        $('#block_id').val(id);
+        $('#block_date').val(date);
+        $('#block_reason').val(reason);
+        $('#blockModalTitle').text('Edit Block');
+        $('#saveBlockText').text('Update Block');
+
+        if (isFullDay) {
+            $('#is_full_day').prop('checked', true);
+            $('#timeFields').hide();
+        } else {
+            $('#is_full_day').prop('checked', false);
+            $('#timeFields').show();
+            
+            // Set start time
+            if (startTime) {
+                const startVal = startTime.substring(0, 5);
+                $('#start_time_hidden').val(startTime);
+                const startLabel = formatTime(startVal);
+                $('#startTimeLabel').text(startLabel);
+                $('#startTimeDisplay').addClass('selected');
+                document.querySelectorAll('[data-target="start"]').forEach(b => {
+                    b.classList.toggle('active', b.dataset.val === startVal);
+                });
+            }
+            
+            // Set end time
+            if (endTime) {
+                const endVal = endTime.substring(0, 5);
+                $('#end_time_hidden').val(endTime);
+                const endLabel = formatTime(endVal);
+                $('#endTimeLabel').text(endLabel);
+                $('#endTimeDisplay').addClass('selected');
+                document.querySelectorAll('[data-target="end"]').forEach(b => {
+                    b.classList.toggle('active', b.dataset.val === endVal);
+                });
+            }
+        }
+
+        new bootstrap.Modal(document.getElementById('blockModal')).show();
+    });
+
+    // Helper to format time as "h:mm AM/PM"
+    function formatTime(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const hour = h % 12 || 12;
+        return `${hour}:${m.toString().padStart(2, '0')} ${ampm}`;
+    }
+
+    // ── Save Block (Add or Update) ───────────────────────────────────────────
     $('#saveBlock').click(function () {
         const fullDay = $('#is_full_day').is(':checked');
         if (!fullDay) {
@@ -433,13 +750,17 @@ $all_events = array_merge($block_events, $appt_events);
                 return;
             }
         }
+        
+        const blockId = $('#block_id').val();
+        const isEdit = blockId !== '';
+        const apiUrl = isEdit ? '../api/update-block.php' : '../api/block-schedule.php';
         const formData = $('#blockForm').serialize();
-        $.post('../api/block-schedule.php', formData, function (res) {
+        
+        $.post(apiUrl, formData, function (res) {
             if (res.success) {
                 showAlert('#alertContainer', 'success', '<i class="bi bi-check-circle me-2"></i>' + res.message);
                 bootstrap.Modal.getInstance(document.getElementById('blockModal')).hide();
-                $('#blockForm')[0].reset();
-                $('#timeFields').hide();
+                resetBlockModal();
                 setTimeout(() => location.reload(), 1000);
             } else {
                 showAlert('#blockModalAlert', 'danger', res.message);

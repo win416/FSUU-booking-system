@@ -689,6 +689,127 @@ body {
 .topbar-user-logout { color: #ef4444; }
 .topbar-user-logout:hover { background: #fef2f2; color: #dc2626; }
 
+/* ── Clinic Schedule Card (Enhanced) ──────────────────────────────────────── */
+.clinic-schedule-card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.clinic-schedule-card .card-header.bg-gradient-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    padding: 1rem 1.25rem;
+}
+.clinic-schedule-card .card-header h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.schedule-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 0.875rem 1rem;
+    gap: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.schedule-row:last-child {
+    border-bottom: none;
+}
+
+.schedule-icon-wrap {
+    flex: 0 0 auto !important;
+}
+.schedule-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.schedule-icon.bg-primary-soft {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+.schedule-icon.bg-success-soft {
+    background: #ecfdf5;
+    color: #10b981;
+}
+.schedule-icon.bg-danger-soft {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.schedule-info {
+    flex: 1 1 auto !important;
+    min-width: 0;
+}
+.schedule-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1e293b;
+    line-height: 1.3;
+}
+.schedule-days-text {
+    display: none;
+}
+
+.schedule-time-wrap {
+    flex: 0 0 auto !important;
+    margin-left: auto;
+}
+.schedule-time-value {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #334155;
+    background: #f1f5f9;
+    padding: 0.3rem 0.5rem;
+    border-radius: 5px;
+    white-space: nowrap;
+}
+.schedule-closed {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ef4444;
+    background: #fef2f2;
+    padding: 0.3rem 0.5rem;
+    border-radius: 5px;
+}
+
+/* Larger screens - show more detail */
+@media (min-width: 576px) {
+    .schedule-row {
+        padding: 1rem 1.25rem;
+        gap: 1rem;
+    }
+    .schedule-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+    .schedule-label {
+        font-size: 0.95rem;
+    }
+    .schedule-days-text {
+        display: block;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        letter-spacing: 0.2px;
+    }
+    .schedule-time-value,
+    .schedule-closed {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+    }
+}
+
 @media (max-width: 575.98px) {
     .topbar-user-name { display: none; }
     .topbar-user-chevron { display: none; }

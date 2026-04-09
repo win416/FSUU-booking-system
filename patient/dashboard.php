@@ -222,16 +222,47 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                 </div>
 
                 <!-- Clinic Schedule -->
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h5>Clinic Schedule</h5>
+                <div class="card mt-3 clinic-schedule-card" style="border: none; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+                    <div class="card-header border-0 text-white" style="background: #29ABE2; padding: 0.875rem 1rem;">
+                        <h5 class="mb-0" style="font-size: 0.95rem; font-weight: 600;"><i class="bi bi-calendar2-check me-2"></i>Clinic Hours</h5>
                     </div>
-                    <div class="card-body">
-                        <ul class="list-unstyled">
-                            <li><strong>M/TH, T/F:</strong> 8:00 AM - 9:00 PM</li>
-                            <li><strong>WEDNESDAY:</strong> 8:00 AM - 5:00 PM</li>
-                            <li><strong>SATURDAY:</strong> 8:00 AM - 4:00 PM</li>
-                        </ul>
+                    <div class="card-body p-0">
+                        <div style="display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem; border-bottom: 1px solid #f1f5f9;">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #e6f7fc; color: #29ABE2; flex-shrink: 0;">
+                                <i class="bi bi-briefcase"></i>
+                            </div>
+                            <div style="flex: 1; font-weight: 600; font-size: 0.9rem; color: #1e293b;">M/TH, T/F</div>
+                            <div style="flex-shrink: 0;">
+                                <span style="font-size: 0.75rem; font-weight: 600; color: #334155; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap;">8:00 AM – 9:00 PM</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem; border-bottom: 1px solid #f1f5f9;">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #fef3c7; color: #f59e0b; flex-shrink: 0;">
+                                <i class="bi bi-calendar-week"></i>
+                            </div>
+                            <div style="flex: 1; font-weight: 600; font-size: 0.9rem; color: #1e293b;">Wednesday</div>
+                            <div style="flex-shrink: 0;">
+                                <span style="font-size: 0.75rem; font-weight: 600; color: #334155; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap;">8:00 AM – 5:00 PM</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem; border-bottom: 1px solid #f1f5f9;">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #ecfdf5; color: #10b981; flex-shrink: 0;">
+                                <i class="bi bi-sun"></i>
+                            </div>
+                            <div style="flex: 1; font-weight: 600; font-size: 0.9rem; color: #1e293b;">Saturday</div>
+                            <div style="flex-shrink: 0;">
+                                <span style="font-size: 0.75rem; font-weight: 600; color: #334155; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap;">8:00 AM – 4:00 PM</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem;">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #fef2f2; color: #ef4444; flex-shrink: 0;">
+                                <i class="bi bi-moon-stars"></i>
+                            </div>
+                            <div style="flex: 1; font-weight: 600; font-size: 0.9rem; color: #1e293b;">Sunday</div>
+                            <div style="flex-shrink: 0;">
+                                <span style="font-size: 0.75rem; font-weight: 600; color: #ef4444; background: #fef2f2; padding: 0.3rem 0.5rem; border-radius: 5px;">Closed</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

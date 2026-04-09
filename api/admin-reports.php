@@ -45,7 +45,7 @@ $stmt->bind_param("ss", $start_ts, $end_ts);
 $stmt->execute();
 $stats['new_patients'] = $stmt->get_result()->fetch_assoc()['count'];
 
-// 2. Appointment Trends (Daily)
+// 2. Appointment Trends (Daily) - include all dates in range
 $stmt = $db->prepare("
     SELECT appointment_date, COUNT(*) as count 
     FROM appointments 
@@ -56,9 +56,23 @@ $stmt = $db->prepare("
 $stmt->bind_param("ss", $start_date, $end_date);
 $stmt->execute();
 $res = $stmt->get_result();
-$trends = [];
+$appointment_counts = [];
 while ($row = $res->fetch_assoc()) {
-    $trends[] = $row;
+    $appointment_counts[$row['appointment_date']] = (int)$row['count'];
+}
+
+// Generate all dates in range and fill with counts (0 if no appointments)
+$trends = [];
+$current = new DateTime($start_date);
+$end = new DateTime($end_date);
+$end->modify('+1 day'); // Include end date
+while ($current < $end) {
+    $date_str = $current->format('Y-m-d');
+    $trends[] = [
+        'appointment_date' => $date_str,
+        'count' => $appointment_counts[$date_str] ?? 0
+    ];
+    $current->modify('+1 day');
 }
 $stats['trends'] = $trends;
 

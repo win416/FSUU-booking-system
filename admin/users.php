@@ -129,7 +129,16 @@ $role_colors = ['admin' => 'danger', 'dentist' => 'primary', 'staff' => 'success
                                 <tbody>
                                     <?php if ($users_result && $users_result->num_rows > 0): ?>
                                         <?php while ($user = $users_result->fetch_assoc()): ?>
-                                        <tr id="user-row-<?php echo $user['user_id']; ?>">
+                                        <tr id="user-row-<?php echo $user['user_id']; ?>" 
+                                            class="user-row-clickable"
+                                            data-id="<?php echo $user['user_id']; ?>"
+                                            data-fsuu="<?php echo htmlspecialchars($user['fsuu_id']); ?>"
+                                            data-firstname="<?php echo htmlspecialchars($user['first_name']); ?>"
+                                            data-lastname="<?php echo htmlspecialchars($user['last_name']); ?>"
+                                            data-email="<?php echo htmlspecialchars($user['email']); ?>"
+                                            data-contact="<?php echo htmlspecialchars($user['contact_number']); ?>"
+                                            data-role="<?php echo $user['role']; ?>"
+                                            style="cursor: pointer;">
                                             <td><code><?php echo htmlspecialchars($user['fsuu_id']); ?></code></td>
                                             <td><strong><?php echo htmlspecialchars($user['last_name'] . ', ' . $user['first_name']); ?></strong></td>
                                             <td><small><?php echo htmlspecialchars($user['email']); ?></small></td>
@@ -146,18 +155,7 @@ $role_colors = ['admin' => 'danger', 'dentist' => 'primary', 'staff' => 'success
                                                     <span class="badge bg-danger">Inactive</span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary edit-user-btn"
-                                                    data-id="<?php echo $user['user_id']; ?>"
-                                                    data-fsuu="<?php echo htmlspecialchars($user['fsuu_id']); ?>"
-                                                    data-firstname="<?php echo htmlspecialchars($user['first_name']); ?>"
-                                                    data-lastname="<?php echo htmlspecialchars($user['last_name']); ?>"
-                                                    data-email="<?php echo htmlspecialchars($user['email']); ?>"
-                                                    data-contact="<?php echo htmlspecialchars($user['contact_number']); ?>"
-                                                    data-role="<?php echo $user['role']; ?>"
-                                                    title="Edit User">
-                                                    <i class="bi bi-pencil-fill"></i>
-                                                </button>
+                                            <td class="action-buttons" onclick="event.stopPropagation();">
                                                 <button class="btn btn-sm btn-outline-warning reset-password-btn"
                                                     data-id="<?php echo $user['user_id']; ?>"
                                                     data-name="<?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>"
@@ -364,19 +362,25 @@ $role_colors = ['admin' => 'danger', 'dentist' => 'primary', 'staff' => 'success
         }, 'json').fail(() => showAlert('#addUserAlert', 'danger', 'Request failed. Try again.'));
     });
 
-    // Edit User - populate modal
-    $('.edit-user-btn').click(function() {
-        const btn = $(this);
-        $('#edit_user_id').val(btn.data('id'));
-        $('#edit_first_name').val(btn.data('firstname'));
-        $('#edit_last_name').val(btn.data('lastname'));
-        $('#edit_fsuu_id').val(btn.data('fsuu'));
-        $('#edit_email').val(btn.data('email'));
-        $('#edit_contact').val(btn.data('contact'));
-        $('#edit_role').val(btn.data('role'));
+    // Make user rows clickable to edit
+    $('.user-row-clickable').click(function() {
+        const row = $(this);
+        $('#edit_user_id').val(row.data('id'));
+        $('#edit_first_name').val(row.data('firstname'));
+        $('#edit_last_name').val(row.data('lastname'));
+        $('#edit_fsuu_id').val(row.data('fsuu'));
+        $('#edit_email').val(row.data('email'));
+        $('#edit_contact').val(row.data('contact'));
+        $('#edit_role').val(row.data('role'));
         $('#editUserAlert').html('');
         $('#editUserModal').modal('show');
     });
+    
+    // Add hover effect for clickable rows
+    $('.user-row-clickable').hover(
+        function() { $(this).addClass('table-active'); },
+        function() { $(this).removeClass('table-active'); }
+    );
 
     // Save Edit
     $('#saveEditUser').click(function() {

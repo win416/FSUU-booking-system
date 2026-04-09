@@ -31,7 +31,7 @@ SessionManager::requireAdmin();
                 <li class="nav-item"><a class="nav-link" href="patients.php"><i class="bi bi-people"></i> Patients</a></li>
                 <li class="nav-item"><a class="nav-link" href="schedule.php"><i class="bi bi-clock"></i> Schedule</a></li>
                 <li class="nav-item"><a class="nav-link active" href="reports.php"><i class="bi bi-graph-up"></i> Reports</a></li>
-                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
+                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2 hidden">0</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="users.php"><i class="bi bi-person-badge"></i> Users</a></li>
                 <li class="nav-item"><a class="nav-link" href="settings.php"><i class="bi bi-gear"></i> Settings</a></li>
             </ul>
@@ -45,26 +45,26 @@ SessionManager::requireAdmin();
 
                 <!-- Print Header (only visible when printing) -->
                 <div class="print-header mb-4">
-                    <table style="width:100%;margin-bottom:0;">
+                    <table class="print-header-table">
                         <tr>
-                            <td style="vertical-align:middle;width:50%;">
-                                <div style="display:flex;align-items:center;gap:12px;">
-                                    <img src="../img/fsuu%20dental.jpg" alt="FSUU Logo" style="height:52px;border-radius:6px;flex-shrink:0;">
+                            <td class="print-header-left">
+                                <div class="print-header-logo-wrapper">
+                                    <img src="../img/fsuu%20dental.jpg" alt="FSUU Logo" class="print-header-logo">
                                     <div>
-                                        <div style="font-size:1.1rem;font-weight:700;color:#1A1A1A;line-height:1.3;letter-spacing:0.01em;">FSUU Dental Clinic</div>
-                                        <div style="font-size:0.75rem;color:#6b7280;line-height:1.4;">Father Saturnino Urios University</div>
-                                        <div style="font-size:0.72rem;color:#9ca3af;line-height:1.4;">Butuan City, Agusan del Norte</div>
+                                        <div class="print-header-clinic-name">FSUU Dental Clinic</div>
+                                        <div class="print-header-university">Father Saturnino Urios University</div>
+                                        <div class="print-header-location">Butuan City, Agusan del Norte</div>
                                     </div>
                                 </div>
                             </td>
-                            <td style="text-align:right;vertical-align:middle;width:50%;">
-                                <div style="font-size:1.15rem;font-weight:800;color:#29ABE2;letter-spacing:0.06em;text-transform:uppercase;">Appointments Report</div>
-                                <div id="print-range-label" style="font-size:0.78rem;color:#4b5563;margin-top:3px;font-weight:500;"></div>
-                                <div style="font-size:0.7rem;color:#9ca3af;margin-top:2px;">Generated: <span id="print-generated-date"></span></div>
+                            <td class="print-header-right">
+                                <div class="print-header-title">Appointments Report</div>
+                                <div id="print-range-label" class="print-header-range"></div>
+                                <div class="print-header-generated">Generated: <span id="print-generated-date"></span></div>
                             </td>
                         </tr>
                     </table>
-                    <div style="height:3px;background:linear-gradient(90deg,#29ABE2,#1A85B8);border-radius:2px;margin-top:10px;margin-bottom:14px;"></div>
+                    <div class="print-header-divider"></div>
                 </div>
 
                 <!-- Top Bar -->
@@ -160,7 +160,7 @@ SessionManager::requireAdmin();
                 <!-- Detailed Appointments Table -->
                 <div class="card detail-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5><i class="bi bi-table me-2" style="color:#1A1A1A;"></i>Appointment Details</h5>
+                        <h5><i class="bi bi-table me-2 detail-icon"></i>Appointment Details</h5>
                         <span id="detail-count">0 records</span>
                     </div>
                     <div class="card-body p-0">
@@ -189,7 +189,7 @@ SessionManager::requireAdmin();
             </div><!-- /container -->
 
                 <!-- Print Footer -->
-                <div class="print-footer" style="margin-top:24px;border-top:1px solid #dee2e6;padding-top:10px;display:flex;justify-content:space-between;font-size:0.7rem;color:#9ca3af;">
+                <div class="print-footer print-footer-container">
                     <span>FSUU Dental Clinic — Confidential</span>
                     <span>This report is system-generated and does not require a signature.</span>
                 </div>
@@ -285,25 +285,33 @@ SessionManager::requireAdmin();
             const tGrad = tCtx.createLinearGradient(0, 0, 0, 220);
             tGrad.addColorStop(0, 'rgba(41,171,226,0.25)');
             tGrad.addColorStop(1, 'rgba(41,171,226,0.0)');
+            
+            // Format dates to clean "Mar 9" format
+            const formatDate = (dateStr) => {
+                const d = new Date(dateStr);
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            };
+            
             trendsChart = new Chart(tCanvas, {
                 type: 'line',
                 data: {
-                    labels: data.trends.map(t => t.appointment_date),
+                    labels: data.trends.map(t => formatDate(t.appointment_date)),
                     datasets: [{
                         label: 'Appointments',
-                        data: data.trends.map(t => t.count),
+                        data: data.trends.map(t => t.count > 0 ? t.count : null),
                         borderColor: '#29ABE2',
                         backgroundColor: tGrad,
                         fill: true,
-                        tension: 0.42,
+                        tension: 0.4,
                         borderWidth: 3,
-                        pointRadius: 7,
+                        pointRadius: 6,
                         pointBackgroundColor: '#29ABE2',
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2.5,
                         pointHoverRadius: 9,
                         pointHoverBackgroundColor: '#1C9DD6',
-                        pointHoverBorderColor: '#fff'
+                        pointHoverBorderColor: '#fff',
+                        spanGaps: false
                     }]
                 },
                 options: {
@@ -312,20 +320,46 @@ SessionManager::requireAdmin();
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#29ABE2',
-                            titleColor: '#E0E0E0',
+                            backgroundColor: 'rgba(41, 171, 226, 0.95)',
+                            titleColor: '#fff',
                             bodyColor: '#fff',
-                            bodyFont: { weight: 'bold', size: 13 },
-                            padding: 10,
-                            cornerRadius: 8,
+                            bodyFont: { weight: 'bold', size: 14 },
+                            titleFont: { size: 12 },
+                            padding: 12,
+                            cornerRadius: 10,
+                            displayColors: false,
                             callbacks: {
+                                title: ctx => ctx[0].label,
                                 label: ctx => ` ${ctx.parsed.y} appointment${ctx.parsed.y !== 1 ? 's' : ''}`
                             }
                         }
                     },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#4D4D4D', font: { size: 11 } }, border: { display: false } },
-                        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#4D4D4D', font: { size: 11 } }, grid: { color: '#F8F8F8' }, border: { display: false } }
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { 
+                                color: '#4D4D4D', 
+                                font: { size: 11 },
+                                maxRotation: 45,
+                                minRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 15
+                            }, 
+                            border: { display: false } 
+                        },
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { 
+                                stepSize: 1, 
+                                color: '#4D4D4D', 
+                                font: { size: 11 },
+                                callback: function(value) {
+                                    return Number.isInteger(value) ? value : '';
+                                }
+                            }, 
+                            grid: { color: '#F8F8F8' }, 
+                            border: { display: false } 
+                        }
                     }
                 }
             });
@@ -444,7 +478,7 @@ SessionManager::requireAdmin();
                             <div class="progress service-progress flex-grow-1">
                                 <div class="progress-bar" style="width:${pct}%"></div>
                             </div>
-                            <small class="text-muted" style="min-width:32px;">${pct}%</small>
+                            <small class="text-muted service-pct-label">${pct}%</small>
                         </div>
                     </td></tr>`;
             }).join('');

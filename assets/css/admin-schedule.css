@@ -34,6 +34,113 @@
     background: rgba(41, 171, 226, 0.06) !important;
 }
 
+/* Blocked day — red background */
+.fc-day-blocked {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+}
+
+/* Blocked reason label for month view */
+.blocked-reason-label {
+    background: rgba(220, 53, 69, 0.9);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100% - 10px);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.blocked-reason-label i {
+    font-size: 0.55rem;
+    margin-right: 2px;
+}
+
+/* Make day frame position relative for absolute positioning */
+.fc-day-blocked .fc-daygrid-day-frame {
+    position: relative;
+}
+
+/* Time slot styling - 30 minute slots with range labels */
+.fc .fc-timegrid-slot {
+    height: 3em !important;
+}
+.fc .fc-timegrid-slot-label {
+    vertical-align: middle;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    text-align: left !important;
+}
+.fc .fc-timegrid-slot-label-cushion {
+    padding: 0 4px;
+    text-align: left !important;
+}
+.fc .fc-timegrid-axis {
+    width: 85px !important;
+}
+
+/* Timegrid events - ensure proper sizing */
+.fc-timegrid-event {
+    overflow: visible !important;
+    border-radius: 4px !important;
+}
+.fc-timegrid-event .fc-event-main {
+    padding: 0;
+    overflow: visible;
+}
+
+/* Custom event content styling */
+.fc-event-content-custom {
+    padding: 3px 5px;
+    line-height: 1.15;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.fc-event-time-custom {
+    font-size: 0.6rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+.fc-event-title-custom {
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.fc-event-service-custom {
+    font-size: 0.6rem;
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* All-day events styling */
+.fc-daygrid-event, .fc-timegrid-event-harness-inset .fc-timegrid-event {
+    border-radius: 4px !important;
+}
+
+/* Blocked event badge in all-day slot */
+.fc-daygrid-block-event .fc-event-main {
+    padding: 2px 6px;
+}
+
+/* Clickable block row */
+.block-row-clickable:hover {
+    background-color: rgba(41, 171, 226, 0.08) !important;
+}
+.block-row-clickable:hover td {
+    color: #29ABE2;
+}
+
 /* Toolbar buttons */
 .fc .fc-button-primary {
     background-color: #29ABE2 !important;
@@ -230,11 +337,36 @@
     border-bottom: 1px solid #E0E0E0;
 }
 
-/* ── Calendar Timegrid ── */
-.fc-timegrid-event .fc-event-main { padding: 0; }
+/* ── Business Hours Styling ── */
+.fc-non-business {
+    background: rgba(200, 200, 200, 0.15) !important;
+}
+
+/* Time slot labels */
+.fc-timegrid-slot-label {
+    font-size: 0.8rem !important;
+    font-weight: 500;
+    color: #666;
+}
+
+/* All-day slot styling - fix overlapping text */
+.fc .fc-timegrid-axis-cushion {
+    font-size: 0.7rem;
+    color: #999;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.fc .fc-timegrid-slot.fc-timegrid-slot-lane {
+    border-top: 1px solid #E0E0E0;
+}
+
+.fc .fc-timegrid-divider {
+    border-bottom: 2px solid #E0E0E0;
+}
 
 /* ── Additional Legend Dot States ── */
-.legend-dot--appt-pending  { background: #fd7e14; }
+.legend-dot--appt-pending  { background: #29ABE2; }
 .legend-dot--appt-approved { background: #198754; }
 .legend-dot--appt-done     { background: #6c757d; }
 
@@ -278,9 +410,20 @@
         min-height: 65px !important;
         max-height: 65px !important;
     }
-    .fc-timegrid-slot { height: 2em; }
+    .fc-timegrid-slot { height: 2.2em !important; }
+    .fc .fc-timegrid-slot-label { font-size: 0.58rem; }
+    .fc .fc-timegrid-axis { width: 70px !important; }
     .fc-col-header-cell-cushion { font-size: 0.75rem; }
     .fc-list-event td { padding: 0.6rem 0.75rem; }
+    .fc-event-content-custom { padding: 1px 3px; }
+    .fc-event-time-custom { font-size: 0.55rem; }
+    .fc-event-title-custom { font-size: 0.62rem; }
+    .fc-event-service-custom { font-size: 0.52rem; }
+    /* Blocked reason label - smaller on mobile */
+    .blocked-reason-label {
+        font-size: 0.55rem;
+        padding: 1px 3px;
+    }
 }
 
 @media (max-width: 575.98px) {
@@ -289,7 +432,9 @@
         max-height: 48px !important;
     }
     .fc-event-title { font-size: 0.65rem; }
-    .fc-timegrid-slot { height: 1.6em; }
+    .fc-timegrid-slot { height: 2em !important; }
+    .fc .fc-timegrid-slot-label { font-size: 0.5rem; }
+    .fc .fc-timegrid-axis { width: 60px !important; }
     .fc .fc-toolbar-title { font-size: 0.95rem; }
     .fc .fc-daygrid-day-number { font-size: 0.75rem; padding: 2px 4px; }
     .fc .fc-daygrid-more-link { font-size: 0.62rem; }
@@ -297,4 +442,8 @@
     /* List view: tighter on tiny phones */
     .fc-list-event td { padding: 0.5rem 0.6rem; }
     .fc-list-event-title a { font-size: 0.85rem; }
+    .fc-event-content-custom { padding: 1px 2px; }
+    .fc-event-time-custom { display: none; }
+    .fc-event-title-custom { font-size: 0.58rem; }
+    .fc-event-service-custom { display: none; }
 }

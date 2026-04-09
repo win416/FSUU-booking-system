@@ -247,7 +247,13 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                         <tbody id="servicesTableBody">
                                             <?php if ($services_result && $services_result->num_rows > 0): ?>
                                                 <?php while ($svc = $services_result->fetch_assoc()): ?>
-                                                <tr id="service-row-<?php echo $svc['service_id']; ?>">
+                                                <tr id="service-row-<?php echo $svc['service_id']; ?>" 
+                                                    class="service-row-clickable"
+                                                    data-id="<?php echo $svc['service_id']; ?>"
+                                                    data-name="<?php echo htmlspecialchars($svc['service_name']); ?>"
+                                                    data-desc="<?php echo htmlspecialchars($svc['description'] ?? ''); ?>"
+                                                    data-duration="<?php echo $svc['duration_minutes'] ?? 30; ?>"
+                                                    style="cursor: pointer;">
                                                     <td><strong><?php echo htmlspecialchars($svc['service_name']); ?></strong></td>
                                                     <td><small class="text-muted"><?php echo htmlspecialchars($svc['description'] ?? ''); ?></small></td>
                                                     <td><?php echo htmlspecialchars($svc['duration_minutes'] ?? ''); ?> min</td>
@@ -258,15 +264,7 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                                             <span class="badge bg-secondary">Inactive</span>
                                                         <?php endif; ?>
                                                     </td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-outline-primary edit-service-btn"
-                                                            data-id="<?php echo $svc['service_id']; ?>"
-                                                            data-name="<?php echo htmlspecialchars($svc['service_name']); ?>"
-                                                            data-desc="<?php echo htmlspecialchars($svc['description'] ?? ''); ?>"
-                                                            data-duration="<?php echo $svc['duration_minutes'] ?? 30; ?>"
-                                                            title="Edit">
-                                                            <i class="bi bi-pencil-fill"></i>
-                                                        </button>
+                                                    <td class="action-buttons" onclick="event.stopPropagation();">
                                                         <button class="btn btn-sm btn-outline-warning toggle-service-btn"
                                                             data-id="<?php echo $svc['service_id']; ?>"
                                                             data-active="<?php echo $svc['is_active']; ?>"
@@ -512,15 +510,22 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
         }, 'json').fail(() => showAlert('#addServiceAlert', 'danger', 'Request failed.'));
     });
 
-    $('.edit-service-btn').click(function() {
-        const btn = $(this);
-        $('#edit_service_id').val(btn.data('id'));
-        $('#edit_service_name').val(btn.data('name'));
-        $('#edit_service_desc').val(btn.data('desc'));
-        $('#edit_service_duration').val(btn.data('duration'));
+    // Make service rows clickable to edit
+    $('.service-row-clickable').click(function() {
+        const row = $(this);
+        $('#edit_service_id').val(row.data('id'));
+        $('#edit_service_name').val(row.data('name'));
+        $('#edit_service_desc').val(row.data('desc'));
+        $('#edit_service_duration').val(row.data('duration'));
         $('#editServiceAlert').html('');
         $('#editServiceModal').modal('show');
     });
+    
+    // Add hover effect for clickable rows
+    $('.service-row-clickable').hover(
+        function() { $(this).addClass('table-active'); },
+        function() { $(this).removeClass('table-active'); }
+    );
 
     $('#saveEditService').click(function() {
         $.post('../api/settings.php', $('#editServiceForm').serialize() + '&action=edit_service', function(res) {

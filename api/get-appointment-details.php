@@ -34,7 +34,25 @@ if (!empty($date)) {
     while ($row = $res->fetch_assoc()) {
         $appointments[] = $row;
     }
-    echo json_encode(['success' => true, 'appointments' => $appointments]);
+    
+    // Also fetch blocked schedule information for this date
+    $blockStmt = $db->prepare("
+        SELECT block_id, reason, is_full_day,
+               TIME_FORMAT(start_time,'%h:%i %p') AS start_time,
+               TIME_FORMAT(end_time,'%h:%i %p') AS end_time
+        FROM blocked_schedules
+        WHERE block_date = ?
+        ORDER BY start_time ASC
+    ");
+    $blockStmt->bind_param("s", $date);
+    $blockStmt->execute();
+    $blockRes = $blockStmt->get_result();
+    $blocks = [];
+    while ($row = $blockRes->fetch_assoc()) {
+        $blocks[] = $row;
+    }
+    
+    echo json_encode(['success' => true, 'appointments' => $appointments, 'blocks' => $blocks]);
     exit();
 }
 

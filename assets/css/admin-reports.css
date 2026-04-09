@@ -187,6 +187,127 @@
 .print-footer { display: none; }
 .export-badge { font-size: 0.7rem; vertical-align: middle; }
 
+/* Print Header Styles */
+.print-header-table {
+    width: 100%;
+    margin-bottom: 0;
+}
+.print-header-left {
+    vertical-align: middle;
+    width: 50%;
+}
+.print-header-logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.print-header-logo {
+    height: 52px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+.print-header-clinic-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1A1A1A;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+}
+.print-header-university {
+    font-size: 0.75rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+.print-header-location {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    line-height: 1.4;
+}
+.print-header-right {
+    text-align: right;
+    vertical-align: middle;
+    width: 50%;
+}
+.print-header-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #29ABE2;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.print-header-range {
+    font-size: 0.78rem;
+    color: #4b5563;
+    margin-top: 3px;
+    font-weight: 500;
+}
+.print-header-generated {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+.print-header-divider {
+    height: 3px;
+    background: linear-gradient(90deg, #29ABE2, #1A85B8);
+    border-radius: 2px;
+    margin-top: 10px;
+    margin-bottom: 14px;
+}
+
+/* Top Bar Styles */
+.reports-subtitle {
+    font-size: 0.8rem;
+}
+.date-filter-wrapper {
+    border-color: #e2e8f0 !important;
+}
+.date-filter-icon {
+    font-size: 0.8rem;
+}
+.date-separator {
+    font-size: 0.8rem;
+}
+.report-update-btn {
+    border-radius: 8px;
+    height: 36px;
+}
+.report-export-btn {
+    border-radius: 8px;
+    height: 36px;
+}
+.export-dropdown-menu {
+    border-radius: 12px;
+}
+
+/* Detail Card Styles */
+.detail-icon {
+    color: #1A1A1A;
+}
+
+/* Print Footer */
+.print-footer-container {
+    margin-top: 24px;
+    border-top: 1px solid #dee2e6;
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #9ca3af;
+}
+
+/* Service Progress Bar Width (dynamically set via JS) */
+.service-progress-width {
+    /* Width set dynamically via style attribute in JS */
+}
+.service-pct-label {
+    min-width: 32px;
+}
+
+/* Badge hidden by default */
+#sidebarMsgBadge.hidden {
+    display: none;
+}
+
 @page { size: A4 landscape; margin: 0; }
 @media print {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }

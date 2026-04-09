@@ -45,11 +45,25 @@ $stats_pending = $db->query("
     SELECT COUNT(*) as pending_count FROM appointments WHERE status = 'pending'
 ")->fetch_assoc();
 
+// Total patients
+$total_patients = $db->query("
+    SELECT COUNT(*) as count FROM users WHERE role = 'student'
+")->fetch_assoc()['count'] ?? 0;
+
+// This month's appointments
+$this_month = $db->query("
+    SELECT COUNT(*) as count FROM appointments 
+    WHERE MONTH(appointment_date) = MONTH(CURDATE()) 
+    AND YEAR(appointment_date) = YEAR(CURDATE())
+")->fetch_assoc()['count'] ?? 0;
+
 $stats = [
     'total_today'     => $stats_today['total_today']    ?? 0,
     'pending_count'   => $stats_pending['pending_count'] ?? 0,
     'approved_count'  => $stats_today['approved_count']  ?? 0,
     'completed_count' => $stats_today['completed_count'] ?? 0,
+    'total_patients'  => $total_patients,
+    'this_month'      => $this_month,
 ];
 
 // Weekly stats
@@ -180,7 +194,6 @@ foreach ($weekly_data as $date => $count) {
         </div>
 
 
-
         <div class="row align-items-stretch">
             <!-- Today's Schedule -->
             <div class="col-md-6 d-flex">
@@ -255,14 +268,24 @@ foreach ($weekly_data as $date => $count) {
                                     <?php if($pending->num_rows > 0): ?>
                                         <?php while($appt = $pending->fetch_assoc()): ?>
                                         <tr>
-                                            <td><?php echo date('M d, h:i A', strtotime($appt['appointment_date'] . ' ' . $appt['appointment_time'])); ?></td>
-                                            <td><?php echo $appt['first_name'] . ' ' . $appt['last_name']; ?></td>
-                                            <td><?php echo $appt['service_name']; ?></td>
                                             <td>
-                                                <button class="btn btn-sm btn-success approve-btn" data-id="<?php echo $appt['appointment_id']; ?>">
+                                                <div class="fw-semibold"><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></div>
+                                                <small class="text-muted"><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></small>
+                                            </td>
+                                            <td><?php echo $appt['first_name'] . ' ' . $appt['last_name']; ?></td>
+                                            <td><span class="badge bg-light text-dark"><?php echo $appt['service_name']; ?></span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary edit-pending-btn me-1" 
+                                                    data-id="<?php echo $appt['appointment_id']; ?>" 
+                                                    data-date="<?php echo $appt['appointment_date']; ?>" 
+                                                    data-time="<?php echo $appt['appointment_time']; ?>"
+                                                    title="Reschedule">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-success approve-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Approve">
                                                     <i class="bi bi-check-lg"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-danger decline-btn" data-id="<?php echo $appt['appointment_id']; ?>">
+                                                <button class="btn btn-sm btn-danger decline-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Decline">
                                                     <i class="bi bi-x-lg"></i>
                                                 </button>
                                             </td>
@@ -270,7 +293,10 @@ foreach ($weekly_data as $date => $count) {
                                         <?php endwhile; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="4" class="text-center">No pending approvals</td>
+                                            <td colspan="4" class="text-center py-4">
+                                                <i class="bi bi-check-circle text-success fs-3"></i>
+                                                <p class="mb-0 mt-2 text-muted">All caught up! No pending approvals.</p>
+                                            </td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -332,6 +358,44 @@ foreach ($weekly_data as $date => $count) {
 
     </div> <!-- closing main-content -->
 </div> <!-- closing dashboard-wrapper -->
+
+    <!-- Reschedule Modal -->
+    <div class="modal fade" id="rescheduleModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-calendar-event me-2"></i>Reschedule Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rescheduleForm">
+                        <input type="hidden" id="reschedule_id" name="appointment_id">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">New Date</label>
+                            <input type="date" class="form-control" id="reschedule_date" name="appointment_date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">New Time</label>
+                            <select class="form-select" id="reschedule_time" name="appointment_time" required>
+                                <option value="">Select time...</option>
+                            </select>
+                            <small class="text-muted">Mon-Fri: 1:00 PM - 3:30 PM | Sat: 9:00 AM - 12:00 PM</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Reason (Optional)</label>
+                            <textarea class="form-control" id="reschedule_reason" name="reason" rows="2" placeholder="e.g., Patient requested new time"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveReschedule">
+                        <i class="bi bi-check-lg me-1"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -444,6 +508,100 @@ foreach ($weekly_data as $date => $count) {
                 }
             });
         }
+    });
+
+    // Reschedule button
+    $('.edit-pending-btn').click(function() {
+        const id = $(this).data('id');
+        const date = $(this).data('date');
+        const time = $(this).data('time');
+        
+        $('#reschedule_id').val(id);
+        $('#reschedule_date').val(date);
+        $('#reschedule_reason').val('');
+        
+        loadTimeSlots(date, time);
+        
+        const modal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+        modal.show();
+    });
+
+    // When date changes, reload time slots
+    $('#reschedule_date').change(function() {
+        const date = $(this).val();
+        if (date) {
+            loadTimeSlots(date);
+        }
+    });
+
+    function loadTimeSlots(date, selectedTime = null) {
+        const timeSelect = $('#reschedule_time');
+        timeSelect.html('<option value="">Loading...</option>');
+        
+        const dayOfWeek = new Date(date).getDay();
+        let slots = [];
+        
+        if (dayOfWeek === 0) {
+            timeSelect.html('<option value="">Clinic closed on Sundays</option>');
+            return;
+        } else if (dayOfWeek === 6) {
+            slots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00'];
+        } else {
+            slots = ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
+        }
+        
+        let options = '<option value="">Select time...</option>';
+        slots.forEach(slot => {
+            const time24 = slot + ':00';
+            const hour = parseInt(slot.split(':')[0]);
+            const min = slot.split(':')[1];
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+            const label = `${hour12}:${min} ${ampm}`;
+            const selected = (selectedTime && time24 === selectedTime) ? 'selected' : '';
+            options += `<option value="${time24}" ${selected}>${label}</option>`;
+        });
+        
+        timeSelect.html(options);
+    }
+
+    // Save reschedule
+    $('#saveReschedule').click(function() {
+        const id = $('#reschedule_id').val();
+        const date = $('#reschedule_date').val();
+        const time = $('#reschedule_time').val();
+        const reason = $('#reschedule_reason').val();
+        
+        if (!date || !time) {
+            alert('Please select both date and time');
+            return;
+        }
+        
+        $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+        
+        $.ajax({
+            url: '../api/update-appointment.php',
+            method: 'POST',
+            data: {
+                appointment_id: id,
+                action: 'reschedule',
+                appointment_date: date,
+                appointment_time: time,
+                reason: reason
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message || 'Error updating appointment');
+                    $('#saveReschedule').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Changes');
+                }
+            },
+            error: function() {
+                alert('Server error occurred.');
+                $('#saveReschedule').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Changes');
+            }
+        });
     });
     </script>
 

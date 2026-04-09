@@ -147,6 +147,9 @@ $result = $db->query($query);
                                             </td>
                                             <td>
                                                 <?php if($appt['status'] == 'pending'): ?>
+                                                    <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
                                                     <button class="btn btn-sm btn-success approve-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Approve">
                                                         <i class="bi bi-check-lg"></i>
                                                     </button>
@@ -154,6 +157,9 @@ $result = $db->query($query);
                                                         <i class="bi bi-x-lg"></i>
                                                     </button>
                                                 <?php elseif($appt['status'] == 'approved'): ?>
+                                                    <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
                                                     <button class="btn btn-sm btn-dark complete-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Mark as Completed">
                                                         <i class="bi bi-check-all"></i> Complete
                                                     </button>
@@ -188,6 +194,44 @@ $result = $db->query($query);
                     <div class="text-center p-4">
                         <div class="spinner-border text-primary" role="status"></div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit/Reschedule Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-calendar-event me-2"></i>Reschedule Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <input type="hidden" id="edit_appointment_id" name="appointment_id">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">New Date</label>
+                            <input type="date" class="form-control" id="edit_date" name="appointment_date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">New Time</label>
+                            <select class="form-select" id="edit_time" name="appointment_time" required>
+                                <option value="">Select time...</option>
+                            </select>
+                            <small class="text-muted">Mon-Fri: 1:00 PM - 3:30 PM | Sat: 9:00 AM - 12:00 PM</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Reason for Reschedule (Optional)</label>
+                            <textarea class="form-control" id="edit_reason" name="reason" rows="2" placeholder="e.g., Patient requested new time"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveReschedule">
+                        <i class="bi bi-check-lg me-1"></i>Save Changes
+                    </button>
                 </div>
             </div>
         </div>
@@ -245,8 +289,103 @@ $result = $db->query($query);
         }
 
         // Stop action buttons from triggering row click
-        $('.approve-btn, .decline-btn, .complete-btn').click(function(e) {
+        $('.approve-btn, .decline-btn, .complete-btn, .edit-btn').click(function(e) {
             e.stopPropagation();
+        });
+
+        // Edit/Reschedule button
+        $('.edit-btn').click(function() {
+            const id = $(this).data('id');
+            const date = $(this).data('date');
+            const time = $(this).data('time');
+            
+            $('#edit_appointment_id').val(id);
+            $('#edit_date').val(date);
+            $('#edit_reason').val('');
+            
+            // Load time slots for the date
+            loadTimeSlots(date, time);
+            
+            const modal = new bootstrap.Modal(document.getElementById('editModal'));
+            modal.show();
+        });
+
+        // When date changes, reload time slots
+        $('#edit_date').change(function() {
+            const date = $(this).val();
+            if (date) {
+                loadTimeSlots(date);
+            }
+        });
+
+        function loadTimeSlots(date, selectedTime = null) {
+            const timeSelect = $('#edit_time');
+            timeSelect.html('<option value="">Loading...</option>');
+            
+            const dayOfWeek = new Date(date).getDay();
+            let slots = [];
+            
+            if (dayOfWeek === 0) { // Sunday - closed
+                timeSelect.html('<option value="">Clinic closed on Sundays</option>');
+                return;
+            } else if (dayOfWeek === 6) { // Saturday
+                slots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00'];
+            } else { // Mon-Fri
+                slots = ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
+            }
+            
+            let options = '<option value="">Select time...</option>';
+            slots.forEach(slot => {
+                const time24 = slot + ':00';
+                const hour = parseInt(slot.split(':')[0]);
+                const min = slot.split(':')[1];
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const hour12 = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+                const label = `${hour12}:${min} ${ampm}`;
+                const selected = (selectedTime && time24 === selectedTime) ? 'selected' : '';
+                options += `<option value="${time24}" ${selected}>${label}</option>`;
+            });
+            
+            timeSelect.html(options);
+        }
+
+        // Save reschedule
+        $('#saveReschedule').click(function() {
+            const id = $('#edit_appointment_id').val();
+            const date = $('#edit_date').val();
+            const time = $('#edit_time').val();
+            const reason = $('#edit_reason').val();
+            
+            if (!date || !time) {
+                alert('Please select both date and time');
+                return;
+            }
+            
+            $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+            
+            $.ajax({
+                url: '../api/update-appointment.php',
+                method: 'POST',
+                data: {
+                    appointment_id: id,
+                    action: 'reschedule',
+                    appointment_date: date,
+                    appointment_time: time,
+                    reason: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Error updating appointment');
+                        $('#saveReschedule').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Changes');
+                    }
+                },
+                error: function() {
+                    alert('Server error occurred.');
+                    $('#saveReschedule').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Changes');
+                }
+            });
         });
 
         // Row click → View Details

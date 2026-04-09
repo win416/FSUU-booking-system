@@ -51,6 +51,11 @@ body {
     box-shadow: 0 0 0 3px rgba(41, 171, 226, 0.15);
     background-color: #ffffff;
 }
+/* Hide browser's default password reveal icon */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none;
+}
 .btn-register { 
     background: #29ABE2; 
     color: #ffffff; 
