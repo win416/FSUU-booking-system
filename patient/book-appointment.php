@@ -190,7 +190,7 @@ function serviceBgImage(string $name): string {
                             <div class="clinic-hours-notice mb-3">
                                 <i class="bi bi-info-circle-fill me-2"></i>
                                 <strong>Clinic Hours:</strong>
-                                Mon–Fri: 1:00 PM – 3:30 PM &nbsp;|&nbsp; Saturday: 9:00 AM – 12:00 PM &nbsp;|&nbsp; Sunday: Closed
+                                M/TH, T/F: 8:00 AM – 9:00 PM &nbsp;|&nbsp; Wednesday: 8:00 AM – 5:00 PM &nbsp;|&nbsp; Saturday: 8:00 AM – 4:00 PM &nbsp;|&nbsp; Sunday: Closed
                             </div>
                             <div class="row g-3">
                                 <div class="col-md-7">
@@ -519,7 +519,7 @@ function initCalendar() {
                 calTipTimer = setTimeout(hideCalTip, 120);
             });
 
-            $(el).on('click', function () {
+            $(el).on('click touchend', function () {
                 hideCalTip();
             });
         },
@@ -536,10 +536,14 @@ function initCalendar() {
             const dow = clicked.getDay();
             if (dow === 0) { new bootstrap.Modal(document.getElementById('sundayModal')).show(); return; }
 
-            // Check blocked — silently ignore, tooltip already shown on hover
+            // Check blocked date and explain why (mobile-friendly feedback)
             const blocked = calendar.getEvents().find(e =>
                 e.display === 'background' && e.extendedProps.isFullDay && e.startStr === info.dateStr);
-            if (blocked) return;
+            if (blocked) {
+                const reason = blocked.extendedProps.reason || 'Management decision';
+                showToast('info', `This date is blocked: ${reason}`);
+                return;
+            }
 
             // Highlight selected date
             calendar.getEvents().filter(e => e.extendedProps.isSelected).forEach(e => e.remove());
@@ -610,9 +614,12 @@ function displayTimeSlots(slots, maxPerDay) {
     });
     html += '</div>';
 
-    const countHtml = `<p class="slots-availability-note mb-2">
+    const countHtml = `<p class="slots-availability-note mb-1">
         <i class="bi bi-check-circle-fill text-success me-1"></i>
         <strong>${availCount}</strong> slot${availCount !== 1 ? 's' : ''} available
+    </p>
+    <p class="text-muted small mb-2">
+        These are the only times available because they match the dentist's schedule.
     </p>`;
 
     $('#timeSlotsContainer').html(countHtml + html);

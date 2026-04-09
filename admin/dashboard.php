@@ -310,19 +310,19 @@ foreach ($weekly_data as $date => $count) {
         <div class="row align-items-stretch">
             <!-- Weekly Chart -->
             <div class="col-md-8 d-flex">
-                <div class="card w-100" style="border-radius:14px; border:none; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
-                    <div class="card-header d-flex align-items-center justify-content-between" style="background:#fff; border-bottom:1px solid #E0E0E0; border-radius:14px 14px 0 0; padding:1rem 1.5rem;">
+                <div class="card w-100 dashboard-card">
+                    <div class="card-header d-flex align-items-center justify-content-between dashboard-card-header">
                         <div>
-                            <h5 class="mb-0" style="font-weight:700; color:#1A1A1A; font-size:1rem;">
-                                <i class="bi bi-bar-chart-line me-2" style="color:#1A1A1A;"></i>Weekly Appointments
+                            <h5 class="mb-0 dashboard-card-title">
+                                <i class="bi bi-bar-chart-line me-2 dashboard-card-title-icon"></i>Weekly Appointments
                             </h5>
-                            <small class="text-muted" style="font-size:0.75rem;">Last 7 days overview</small>
+                            <small class="text-muted dashboard-card-subtitle">Last 7 days overview</small>
                         </div>
-                        <span class="badge" style="background:#F8F8F8; color:#1A1A1A; font-size:0.75rem; font-weight:600; border-radius:20px; padding:0.35rem 0.85rem; border:1px solid #E0E0E0;">
+                        <span class="badge dashboard-week-badge">
                             This Week
                         </span>
                     </div>
-                    <div class="card-body" style="padding:1.25rem 1.5rem 1rem;">
+                    <div class="card-body dashboard-card-body-compact">
                         <canvas id="weeklyChart" height="100"></canvas>
                     </div>
                 </div>
@@ -330,13 +330,13 @@ foreach ($weekly_data as $date => $count) {
 
             <!-- Quick Actions -->
             <div class="col-md-4 d-flex">
-                <div class="card w-100" style="border-radius:14px; border:none; box-shadow:0 2px 12px rgba(0,0,0,0.07);">
-                    <div class="card-header d-flex align-items-center" style="background:#fff; border-bottom:1px solid #E0E0E0; border-radius:14px 14px 0 0; padding:1rem 1.5rem;">
-                        <h5 class="mb-0" style="font-weight:700; color:#1A1A1A; font-size:1rem;">
-                            <i class="bi bi-lightning me-2" style="color:#1A1A1A;"></i>Quick Actions
+                <div class="card w-100 dashboard-card">
+                    <div class="card-header d-flex align-items-center dashboard-card-header">
+                        <h5 class="mb-0 dashboard-card-title">
+                            <i class="bi bi-lightning me-2 dashboard-card-title-icon"></i>Quick Actions
                         </h5>
                     </div>
-                    <div class="card-body" style="padding:1.25rem 1.5rem;">
+                    <div class="card-body dashboard-card-body">
                         <div class="d-grid gap-2">
                             <a href="schedule.php?block=1" class="btn btn-outline-primary">
                                 <i class="bi bi-calendar-x"></i> Block Schedule

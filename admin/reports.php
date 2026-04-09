@@ -73,23 +73,23 @@ SessionManager::requireAdmin();
                             <h2 class="mb-0">
                                 Reports & Analytics
                             </h2>
-                            <small class="text-muted" style="font-size:0.8rem;">Appointment statistics and trends</small>
+                            <small class="text-muted reports-subtitle">Appointment statistics and trends</small>
                         </div>
                     <div class="d-flex gap-2 flex-wrap align-items-center">
-                        <div class="d-flex align-items-center gap-1 bg-white border rounded-3 px-2 py-1" style="border-color:#e2e8f0!important;">
-                            <i class="bi bi-calendar3 text-muted" style="font-size:0.8rem;"></i>
+                        <div class="d-flex align-items-center gap-1 bg-white border rounded-3 px-2 py-1 date-filter-wrapper">
+                            <i class="bi bi-calendar3 text-muted date-filter-icon"></i>
                             <input type="date" id="start_date" class="report-date-input border-0 p-0 ps-1" value="<?php echo date('Y-m-d', strtotime('-30 days')); ?>">
-                            <span class="text-muted" style="font-size:0.8rem;">—</span>
+                            <span class="text-muted date-separator">—</span>
                             <input type="date" id="end_date" class="report-date-input border-0 p-0" value="<?php echo date('Y-m-d'); ?>">
                         </div>
-                        <button id="update-reports" class="btn btn-primary btn-sm px-3" style="border-radius:8px;height:36px;">
+                        <button id="update-reports" class="btn btn-primary btn-sm px-3 report-update-btn">
                             <i class="bi bi-funnel-fill me-1"></i>Filter
                         </button>
                         <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-success dropdown-toggle px-3" data-bs-toggle="dropdown" style="border-radius:8px;height:36px;">
+                            <button class="btn btn-sm btn-outline-success dropdown-toggle px-3 report-export-btn" data-bs-toggle="dropdown">
                                 <i class="bi bi-download me-1"></i>Export
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:12px;">
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 export-dropdown-menu">
                                 <li>
                                     <a class="dropdown-item rounded-2" href="#" id="export-csv">
                                         <i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i>Export as CSV
@@ -298,20 +298,22 @@ SessionManager::requireAdmin();
                     labels: data.trends.map(t => formatDate(t.appointment_date)),
                     datasets: [{
                         label: 'Appointments',
-                        data: data.trends.map(t => t.count > 0 ? t.count : null),
+                        data: data.trends.map(t => Number(t.count) || 0),
                         borderColor: '#29ABE2',
                         backgroundColor: tGrad,
                         fill: true,
-                        tension: 0.4,
+                        tension: 0.35,
+                        cubicInterpolationMode: 'monotone',
                         borderWidth: 3,
-                        pointRadius: 6,
+                        pointRadius: 3,
+                        pointHitRadius: 12,
                         pointBackgroundColor: '#29ABE2',
                         pointBorderColor: '#fff',
-                        pointBorderWidth: 2.5,
-                        pointHoverRadius: 9,
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 6,
                         pointHoverBackgroundColor: '#1C9DD6',
                         pointHoverBorderColor: '#fff',
-                        spanGaps: false
+                        spanGaps: true
                     }]
                 },
                 options: {
@@ -340,17 +342,17 @@ SessionManager::requireAdmin();
                             ticks: { 
                                 color: '#4D4D4D', 
                                 font: { size: 11 },
-                                maxRotation: 45,
+                                maxRotation: 30,
                                 minRotation: 0,
                                 autoSkip: true,
-                                maxTicksLimit: 15
+                                maxTicksLimit: 10
                             }, 
                             border: { display: false } 
                         },
                         y: { 
                             beginAtZero: true, 
                             ticks: { 
-                                stepSize: 1, 
+                                stepSize: 1,
                                 color: '#4D4D4D', 
                                 font: { size: 11 },
                                 callback: function(value) {
@@ -358,15 +360,37 @@ SessionManager::requireAdmin();
                                 }
                             }, 
                             grid: { color: '#F8F8F8' }, 
-                            border: { display: false } 
+                            border: { display: false },
+                            grace: '8%'
                         }
                     }
                 }
             });
 
             // ── Status Doughnut ───────────────────────────────────────────────
-            const sLabels = Object.keys(data.status_breakdown);
-            const sValues = Object.values(data.status_breakdown);
+            const normalizeStatus = (status) => {
+                const key = String(status ?? '').trim().toLowerCase();
+                if (!key) return 'declined';
+                if (key === 'canceled') return 'cancelled';
+                if (['pending', 'approved', 'completed', 'cancelled', 'declined'].includes(key)) return key;
+                return 'declined';
+            };
+            const statusLabel = {
+                pending: 'pending',
+                approved: 'approved',
+                completed: 'completed',
+                cancelled: 'cancelled',
+                declined: 'declined'
+            };
+            const statusCounts = {};
+            Object.entries(data.status_breakdown || {}).forEach(([rawStatus, count]) => {
+                const key = normalizeStatus(rawStatus);
+                statusCounts[key] = (statusCounts[key] || 0) + (Number(count) || 0);
+            });
+            const statusOrder = ['pending', 'approved', 'completed', 'cancelled', 'declined'];
+            const statusKeys = statusOrder.filter(k => (statusCounts[k] || 0) > 0);
+            const sLabels = statusKeys.map(k => statusLabel[k]);
+            const sValues = statusKeys.map(k => statusCounts[k]);
             const sTotal  = sValues.reduce((a, b) => a + b, 0);
             if (statusChart) statusChart.destroy();
             statusChart = new Chart(document.getElementById('statusChart'), {
@@ -375,7 +399,7 @@ SessionManager::requireAdmin();
                     labels: sLabels,
                     datasets: [{
                         data: sValues,
-                        backgroundColor: sLabels.map(l => statusColors[l] || '#adb5bd'),
+                        backgroundColor: statusKeys.map(k => statusColors[k] || statusColors.declined),
                         borderWidth: 2,
                         borderColor: '#fff',
                         hoverOffset: 6

@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
-    <link rel="stylesheet" href="assets/css/index.css?v=19">
+    <link rel="stylesheet" href="assets/css/index.css?v=26">
 </head>
 <body>
     <!-- Navigation -->
@@ -45,31 +45,59 @@
                     <p class="lead text-muted">Comprehensive dental care for the Urian Community</p>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-lg-3 col-md-6">
+            <div class="row services-row">
+                <div class="col-lg-3 col-md-6 service-col">
                     <div class="feature-card">
-                        <h4>Consultation</h4>
-                        <p>Professional dental check-ups and preventive care to keep your smile healthy.</p>
+                        <div class="feature-media">
+                            <img src="img/consultation.jpg" alt="Consultation service" class="feature-image">
+                        </div>
+                        <div class="feature-card-body">
+                            <h4>Consultation</h4>
+                            <p>Professional dental check-ups and preventive care to keep your smile healthy.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-3 col-md-6 service-col">
                     <div class="feature-card">
-                        <h4>Tooth Extraction</h4>
-                        <p>Removing a tooth that is damaged, decayed, or impacted.</p>
+                        <div class="feature-media">
+                            <img src="img/extractions.jpg" alt="Tooth extraction service" class="feature-image">
+                        </div>
+                        <div class="feature-card-body">
+                            <h4>Tooth Extraction</h4>
+                            <p>Removing a tooth that is damaged, decayed, or impacted.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-3 col-md-6 service-col">
                     <div class="feature-card">
-                        <h4>Oral Prophylaxis</h4>
-                        <p>Professional cleaning of teeth to remove plaque, tartar, and stains.</p>
+                        <div class="feature-media">
+                            <img src="img/cleaning.jpg" alt="Oral prophylaxis service" class="feature-image">
+                        </div>
+                        <div class="feature-card-body">
+                            <h4>Oral Prophylaxis</h4>
+                            <p>Professional cleaning of teeth to remove plaque, tartar, and stains.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-3 col-md-6 service-col">
                     <div class="feature-card">
-                        <h4>Permanent Tooth Filling</h4>
-                        <p>Restoring damaged teeth with durable filling materials to maintain function and aesthetics.</p>
+                        <div class="feature-media">
+                            <img src="img/filling.jpg" alt="Permanent tooth filling service" class="feature-image">
+                        </div>
+                        <div class="feature-card-body">
+                            <h4>Permanent Tooth Filling</h4>
+                            <p>Restoring damaged teeth with durable filling materials to maintain function and aesthetics.</p>
+                        </div>
                     </div>
                 </div>
+            </div>
+            <div class="services-nav-mobile d-none">
+                <button class="services-nav-btn" id="servicesPrevBtn" aria-label="Previous service">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="services-nav-btn" id="servicesNextBtn" aria-label="Next service">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
         </div>
     </section>
@@ -216,6 +244,34 @@
         }
         function facSlide(dir) { facGoTo(facIdx + dir); }
         setInterval(() => facSlide(1), 5000);
+
+        // Mobile services slider arrows
+        const servicesRow = document.querySelector('.services-row');
+        const servicesPrevBtn = document.getElementById('servicesPrevBtn');
+        const servicesNextBtn = document.getElementById('servicesNextBtn');
+        if (servicesRow && servicesPrevBtn && servicesNextBtn) {
+            const isMobile = () => window.matchMedia('(max-width: 991px)').matches;
+            const getStep = () => {
+                const firstCard = servicesRow.querySelector('.service-col');
+                return firstCard ? firstCard.getBoundingClientRect().width : servicesRow.clientWidth;
+            };
+            const updateButtons = () => {
+                if (!isMobile()) return;
+                const maxScroll = servicesRow.scrollWidth - servicesRow.clientWidth;
+                servicesPrevBtn.disabled = servicesRow.scrollLeft <= 5;
+                servicesNextBtn.disabled = servicesRow.scrollLeft >= (maxScroll - 5);
+            };
+
+            servicesPrevBtn.addEventListener('click', () => {
+                servicesRow.scrollBy({ left: -getStep(), behavior: 'smooth' });
+            });
+            servicesNextBtn.addEventListener('click', () => {
+                servicesRow.scrollBy({ left: getStep(), behavior: 'smooth' });
+            });
+            servicesRow.addEventListener('scroll', updateButtons, { passive: true });
+            window.addEventListener('resize', updateButtons);
+            updateButtons();
+        }
 
 
         window.addEventListener('scroll', function() {

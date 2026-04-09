@@ -126,21 +126,38 @@ $appointments = $stmt->get_result();
                                                 <td class="py-3"><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></td>
                                                 <td class="py-3">
                                                     <?php
-                                                    $badgeStyle = match($appt['status']) {
+                                                    $status_key = strtolower(trim((string)($appt['status'] ?? '')));
+                                                    if ($status_key === '') {
+                                                        $status_key = 'declined';
+                                                    }
+                                                    if ($status_key === 'canceled') {
+                                                        $status_key = 'cancelled';
+                                                    }
+                                                    $status_label = match($status_key) {
+                                                        'pending'   => 'Pending',
+                                                        'approved'  => 'Approved',
+                                                        'completed' => 'Completed',
+                                                        'cancelled' => 'Cancelled',
+                                                        'declined'  => 'Declined',
+                                                        'no_show'   => 'No Show',
+                                                        default     => 'Declined'
+                                                    };
+                                                    $badgeStyle = match($status_key) {
                                                         'pending'   => 'background:#fef3c7;color:#92400e;',
                                                         'approved'  => 'background:#dcfce7;color:#166534;',
                                                         'completed' => 'background:#dbeafe;color:#1e40af;',
                                                         'cancelled' => 'background:#fee2e2;color:#991b1b;',
                                                         'declined'  => 'background:#fee2e2;color:#991b1b;',
+                                                        'no_show'   => 'background:#fef2f2;color:#991b1b;',
                                                         default     => 'background:#f3f4f6;color:#374151;'
                                                     };
                                                     ?>
                                                     <span style="<?php echo $badgeStyle; ?> font-size:0.75rem;font-weight:600;padding:0.25em 0.75em;border-radius:999px;display:inline-block;">
-                                                        <?php echo ucfirst($appt['status']); ?>
+                                                        <?php echo $status_label; ?>
                                                     </span>
                                                 </td>
                                                 <td class="py-3">
-                                                    <?php if($appt['status'] === 'pending'): ?>
+                                                    <?php if($status_key === 'pending'): ?>
                                                         <button class="btn btn-sm btn-outline-danger rounded-pill cancel-appt" data-id="<?php echo $appt['appointment_id']; ?>">Cancel</button>
                                                     <?php endif; ?>
                                                 </td>
@@ -167,12 +184,29 @@ $appointments = $stmt->get_result();
                     $appointments->data_seek(0);
                     if ($appointments->num_rows > 0):
                         while ($appt = $appointments->fetch_assoc()):
-                            $badgeStyle = match($appt['status']) {
+                            $status_key = strtolower(trim((string)($appt['status'] ?? '')));
+                            if ($status_key === '') {
+                                $status_key = 'declined';
+                            }
+                            if ($status_key === 'canceled') {
+                                $status_key = 'cancelled';
+                            }
+                            $status_label = match($status_key) {
+                                'pending'   => 'Pending',
+                                'approved'  => 'Approved',
+                                'completed' => 'Completed',
+                                'cancelled' => 'Cancelled',
+                                'declined'  => 'Declined',
+                                'no_show'   => 'No Show',
+                                default     => 'Declined'
+                            };
+                            $badgeStyle = match($status_key) {
                                 'pending'   => 'background:#fef3c7;color:#92400e;',
                                 'approved'  => 'background:#dcfce7;color:#166534;',
                                 'completed' => 'background:#dbeafe;color:#1e40af;',
                                 'cancelled' => 'background:#fee2e2;color:#991b1b;',
                                 'declined'  => 'background:#fee2e2;color:#991b1b;',
+                                'no_show'   => 'background:#fef2f2;color:#991b1b;',
                                 default     => 'background:#f3f4f6;color:#374151;'
                             };
                     ?>
@@ -180,14 +214,14 @@ $appointments = $stmt->get_result();
                         <div class="appt-item-top">
                             <div class="appt-service"><?php echo htmlspecialchars($appt['service_name']); ?></div>
                             <span style="<?php echo $badgeStyle; ?> font-size:0.72rem;font-weight:600;padding:0.2em 0.65em;border-radius:999px;white-space:nowrap;">
-                                <?php echo ucfirst($appt['status']); ?>
+                                <?php echo $status_label; ?>
                             </span>
                         </div>
                         <div class="appt-meta">
                             <span><i class="bi bi-calendar3"></i><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></span>
                             <span><i class="bi bi-clock"></i><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></span>
                         </div>
-                        <?php if ($appt['status'] === 'pending'): ?>
+                        <?php if ($status_key === 'pending'): ?>
                         <div class="appt-footer">
                             <span class="text-muted" style="font-size:0.75rem;">Awaiting confirmation</span>
                             <button class="btn btn-sm btn-outline-danger rounded-pill cancel-appt" data-id="<?php echo $appt['appointment_id']; ?>" style="font-size:0.78rem;padding:3px 14px;">Cancel</button>

@@ -877,4 +877,52 @@ body {
         right: 8px !important;
         width: calc(100vw - 16px) !important;
     }
+
+    /* Upcoming appointments: keep desktop table look but fit mobile width */
+    .upcoming-table-wrap {
+        overflow-x: hidden !important;
+    }
+    .upcoming-table {
+        width: 100%;
+        table-layout: fixed;
+        min-width: 0 !important;
+        margin-bottom: 0;
+    }
+    .upcoming-table thead {
+        display: table-header-group;
+    }
+    .upcoming-table td::before {
+        content: none !important;
+    }
+    .upcoming-table th,
+    .upcoming-table td {
+        white-space: normal;
+        word-break: break-word;
+        vertical-align: middle;
+        padding: 0.4rem 0.2rem !important;
+        font-size: 0.74rem;
+    }
+    .upcoming-table th {
+        font-size: 0.62rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    .upcoming-table th:nth-child(1),
+    .upcoming-table td:nth-child(1) { width: 24%; }
+    .upcoming-table th:nth-child(2),
+    .upcoming-table td:nth-child(2) { width: 22%; }
+    .upcoming-table th:nth-child(3),
+    .upcoming-table td:nth-child(3) { width: 34%; }
+    .upcoming-table th:nth-child(4),
+    .upcoming-table td:nth-child(4) { width: 20%; }
+    .upcoming-table .badge {
+        display: inline-block;
+        max-width: 100%;
+        font-size: 0.66rem;
+        padding: 0.22rem 0.36rem;
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }

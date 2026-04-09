@@ -76,7 +76,7 @@ $appt_events = [];
 while ($row = $appt_query->fetch_assoc()) {
     $startDT = $row['appointment_date'] . 'T' . $row['appointment_time'];
     $endDT   = $row['appointment_date'] . 'T' . date('H:i:s', strtotime($row['appointment_time']) + ((int)$row['duration_minutes'] * 60));
-    $colors  = ['approved' => '#198754', 'pending' => '#29ABE2', 'completed' => '#6c757d'];
+    $colors  = ['approved' => '#29ABE2', 'pending' => '#29ABE2', 'completed' => '#6c757d'];
     $color   = $colors[$row['status']] ?? '#1A1A1A';
     $appt_events[] = [
         'id'              => 'appt_' . $row['appointment_id'],
@@ -577,7 +577,7 @@ $all_events = array_merge($block_events, $appt_events);
             } else {
                 const badgeStyle = {
                     pending:   'background:#fff8e1;color:#b45309;border:1px solid #fde68a;',
-                    approved:  'background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;',
+                    approved:  'background:#e9f7fd;color:#1A85B8;border:1px solid #bfe8f8;',
                     completed: 'background:#F8F8F8;color:#4D4D4D;border:1px solid #E0E0E0;',
                     cancelled: 'background:#fef2f2;color:#991b1b;border:1px solid #fecaca;',
                     declined:  'background:#fef2f2;color:#991b1b;border:1px solid #fecaca;',

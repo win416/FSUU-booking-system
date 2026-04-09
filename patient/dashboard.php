@@ -149,24 +149,23 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                     </div>
                     <div class="card-body">
                         <?php if($upcoming_appointments->num_rows > 0): ?>
-                            <div class="table-responsive">
-                                <table class="table">
+                            <div class="table-responsive upcoming-table-wrap">
+                                <table class="table upcoming-table">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
                                             <th>Time</th>
                                             <th>Service</th>
                                             <th>Status</th>
-                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php while($appt = $upcoming_appointments->fetch_assoc()): ?>
                                         <tr>
-                                            <td><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></td>
-                                            <td><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></td>
-                                            <td><?php echo $appt['service_name']; ?></td>
-                                            <td>
+                                            <td data-label="Date"><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></td>
+                                            <td data-label="Time"><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></td>
+                                            <td data-label="Service"><?php echo $appt['service_name']; ?></td>
+                                            <td data-label="Status">
                                                 <?php
                                                 $badge_class = match($appt['status']) {
                                                     'pending' => 'bg-warning',
@@ -178,14 +177,6 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                                                 <span class="badge <?php echo $badge_class; ?>">
                                                     <?php echo ucfirst($appt['status']); ?>
                                                 </span>
-                                            </td>
-                                            <td>
-                                                <?php if($appt['status'] == 'pending'): ?>
-                                                <button class="btn btn-sm btn-danger cancel-appointment" 
-                                                        data-id="<?php echo $appt['appointment_id']; ?>">
-                                                    Cancel
-                                                </button>
-                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                         <?php endwhile; ?>
@@ -223,8 +214,8 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
 
                 <!-- Clinic Schedule -->
                 <div class="card mt-3 clinic-schedule-card" style="border: none; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
-                    <div class="card-header border-0 text-white" style="background: #29ABE2; padding: 0.875rem 1rem;">
-                        <h5 class="mb-0" style="font-size: 0.95rem; font-weight: 600;"><i class="bi bi-calendar2-check me-2"></i>Clinic Hours</h5>
+                    <div class="card-header bg-white" style="padding: 0.875rem 1rem;">
+                        <h5 class="mb-0" style="font-size: 0.95rem; font-weight: 600;"><i class="bi bi-calendar2-check me-2 text-muted"></i>Clinic Hours</h5>
                     </div>
                     <div class="card-body p-0">
                         <div style="display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem; border-bottom: 1px solid #f1f5f9;">
@@ -271,27 +262,6 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
 
         </div>
     </div>
-    
-    <!-- Cancel Appointment Modal -->
-    <div class="modal fade" id="cancelModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Cancel Appointment</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to cancel this appointment?</p>
-                    <textarea id="cancelReason" class="form-control" placeholder="Reason for cancellation (optional)"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-danger" id="confirmCancel">Cancel Appointment</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
     // Facilities Slideshow
     let facIdx = 0;
@@ -308,35 +278,5 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
     setInterval(() => facSlide(1), 5000);
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-    $(document).ready(function() {
-        let appointmentId = null;
-        
-        $('.cancel-appointment').click(function() {
-            appointmentId = $(this).data('id');
-            $('#cancelModal').modal('show');
-        });
-        
-        $('#confirmCancel').click(function() {
-            if(appointmentId) {
-                $.ajax({
-                    url: '../api/cancel-appointment.php',
-                    method: 'POST',
-                    data: {
-                        appointment_id: appointmentId,
-                        reason: $('#cancelReason').val()
-                    },
-                    success: function(response) {
-                        if(response.success) {
-                            location.reload();
-                        } else {
-                            alert(response.message);
-                        }
-                    }
-                });
-            }
-        });
-    });
-    </script>
 </body>
 </html>

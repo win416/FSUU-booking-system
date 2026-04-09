@@ -34,6 +34,7 @@ $history = $histStmt->get_result();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/patient-dashboard.css" rel="stylesheet">
+    <link href="../assets/css/patient-history.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -62,7 +63,7 @@ $history = $histStmt->get_result();
                         <?php endif; ?>
                     </a>
                 </li>
-                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2" style="display:none">0</span></a></li>
+                <li class="nav-item"><a class="nav-link" href="messages.php"><i class="bi bi-chat-dots"></i> Messages <span id="sidebarMsgBadge" class="badge bg-danger rounded-pill ms-2 history-hidden-badge">0</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="profile.php"><i class="bi bi-person"></i> Profile</a></li>
                 <li class="nav-item"><a class="nav-link active" href="history.php"><i class="bi bi-clock-history"></i> History</a></li>
             </ul>
@@ -119,7 +120,7 @@ $history = $histStmt->get_result();
                                     <input type="text" name="emergency_contact_number" class="form-control" value="<?php echo htmlspecialchars($medical['emergency_contact_number'] ?? ''); ?>" required>
                                 </div>
                             </div>
-                            <button type="submit" class="btn" style="background:#29ABE2;color:#fff;border-color:#1C9DD6;">Update Medical Info</button>
+                            <button type="submit" class="btn history-update-medical-btn">Update Medical Info</button>
                         </form>
                     </div>
                 </div>
@@ -128,7 +129,7 @@ $history = $histStmt->get_result();
                 <div class="card">
                     <div class="card-header bg-white d-flex align-items-center justify-content-between">
                         <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-muted"></i>Past Appointments</h5>
-                        <span class="badge" style="background:#e8f7fd;color:#29ABE2;font-size:0.8rem;padding:0.4rem 0.75rem;border-radius:20px;">
+                        <span class="badge history-record-count-badge">
                             <?php echo $history->num_rows; ?> record<?php echo $history->num_rows !== 1 ? 's' : ''; ?>
                         </span>
                     </div>
@@ -138,42 +139,42 @@ $history = $histStmt->get_result();
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th style="padding:0.85rem 1.25rem;">Date</th>
-                                        <th style="padding:0.85rem 1.25rem;">Time</th>
-                                        <th style="padding:0.85rem 1.25rem;">Service</th>
-                                        <th style="padding:0.85rem 1.25rem;">Duration</th>
-                                        <th style="padding:0.85rem 1.25rem;">Status</th>
-                                        <th style="padding:0.85rem 1.25rem;">Notes</th>
+                                        <th class="history-table-cell">Date</th>
+                                        <th class="history-table-cell">Time</th>
+                                        <th class="history-table-cell">Service</th>
+                                        <th class="history-table-cell">Duration</th>
+                                        <th class="history-table-cell">Status</th>
+                                        <th class="history-table-cell">Notes</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php while ($row = $history->fetch_assoc()): ?>
-                                    <tr class="history-row" style="cursor:pointer;"
+                                    <tr class="history-row history-clickable-row"
                                         data-date="<?php echo date('F d, Y', strtotime($row['appointment_date'])); ?>"
                                         data-day="<?php echo date('l', strtotime($row['appointment_date'])); ?>"
                                         data-time="<?php echo date('h:i A', strtotime($row['appointment_time'])); ?>"
                                         data-service="<?php echo htmlspecialchars($row['service_name']); ?>"
                                         data-duration="<?php echo $row['duration_minutes']; ?>"
                                         data-notes="<?php echo htmlspecialchars($row['notes'] ?? ''); ?>">
-                                        <td style="padding:0.85rem 1.25rem;">
+                                        <td class="history-table-cell">
                                             <strong><?php echo date('M d, Y', strtotime($row['appointment_date'])); ?></strong><br>
                                             <small class="text-muted"><?php echo date('l', strtotime($row['appointment_date'])); ?></small>
                                         </td>
-                                        <td style="padding:0.85rem 1.25rem;">
+                                        <td class="history-table-cell">
                                             <?php echo date('h:i A', strtotime($row['appointment_time'])); ?>
                                         </td>
-                                        <td style="padding:0.85rem 1.25rem;">
+                                        <td class="history-table-cell">
                                             <strong><?php echo htmlspecialchars($row['service_name']); ?></strong>
                                         </td>
-                                        <td style="padding:0.85rem 1.25rem;">
-                                            <span style="background:rgba(41,171,226,0.1);color:#29ABE2;border:1px solid rgba(41,171,226,0.25);border-radius:20px;padding:2px 10px;font-size:0.78rem;font-weight:600;">
+                                        <td class="history-table-cell">
+                                            <span class="history-duration-pill">
                                                 <i class="bi bi-clock me-1"></i><?php echo $row['duration_minutes']; ?> mins
                                             </span>
                                         </td>
-                                        <td style="padding:0.85rem 1.25rem;">
+                                        <td class="history-table-cell">
                                             <span class="badge bg-info">Completed</span>
                                         </td>
-                                        <td style="padding:0.85rem 1.25rem;">
+                                        <td class="history-table-cell">
                                             <small class="text-muted"><?php echo $row['notes'] ? htmlspecialchars($row['notes']) : '—'; ?></small>
                                         </td>
                                     </tr>
@@ -183,9 +184,9 @@ $history = $histStmt->get_result();
                         </div>
                         <?php else: ?>
                         <div class="text-center py-5">
-                            <i class="bi bi-calendar-x" style="font-size:2.5rem;color:#E0E0E0;"></i>
+                            <i class="bi bi-calendar-x history-empty-icon"></i>
                             <p class="text-muted mt-3 mb-0">No completed appointments yet.</p>
-                            <a href="book-appointment.php" class="btn btn-sm mt-3" style="background:#29ABE2;color:#fff;">Book your first appointment</a>
+                            <a href="book-appointment.php" class="btn btn-sm mt-3 history-book-btn">Book your first appointment</a>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -197,12 +198,12 @@ $history = $histStmt->get_result();
     <!-- Appointment Detail Modal -->
     <div class="modal fade" id="appointmentDetailModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border-radius:12px;border:none;box-shadow:0 10px 40px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="background:#f0f8ff;border-bottom:1px solid #e0e0e0;border-radius:12px 12px 0 0;padding:1rem 1.5rem;">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-calendar-check me-2" style="color:#29ABE2;"></i>Appointment Details</h5>
+            <div class="modal-content history-modal-content">
+                <div class="modal-header history-modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-calendar-check me-2 history-modal-title-icon"></i>Appointment Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" style="padding:1.5rem;">
+                <div class="modal-body history-modal-body">
                     <div class="row g-3">
                         <div class="col-6">
                             <small class="text-muted d-block">Date</small>
@@ -219,7 +220,7 @@ $history = $histStmt->get_result();
                         </div>
                         <div class="col-6">
                             <small class="text-muted d-block">Duration</small>
-                            <span id="modal-duration" style="background:rgba(41,171,226,0.1);color:#29ABE2;border:1px solid rgba(41,171,226,0.25);border-radius:20px;padding:2px 10px;font-size:0.8rem;font-weight:600;display:inline-block;"></span>
+                            <span id="modal-duration" class="history-modal-duration-pill"></span>
                         </div>
                         <div class="col-6">
                             <small class="text-muted d-block">Status</small>

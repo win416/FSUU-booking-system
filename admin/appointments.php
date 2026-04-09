@@ -6,7 +6,11 @@ SessionManager::requireAdmin();
 $db = getDB();
 
 // Get filter status
-$status_filter = $_GET['status'] ?? 'all';
+$status_filter = strtolower(trim($_GET['status'] ?? 'all'));
+$allowed_filters = ['all', 'pending', 'approved', 'completed', 'cancelled', 'canceled', 'declined', 'no_show'];
+if (!in_array($status_filter, $allowed_filters, true)) {
+    $status_filter = 'all';
+}
 
 // Build query
 $query = "
@@ -17,7 +21,11 @@ $query = "
 ";
 
 if ($status_filter !== 'all') {
-    $query .= " WHERE a.status = '" . $db->real_escape_string($status_filter) . "'";
+    if (in_array($status_filter, ['cancelled', 'canceled', 'declined', 'no_show'], true)) {
+        $query .= " WHERE LOWER(TRIM(a.status)) IN ('cancelled', 'canceled', 'declined', 'no_show')";
+    } else {
+        $query .= " WHERE LOWER(TRIM(a.status)) = '" . $db->real_escape_string($status_filter) . "'";
+    }
 }
 
 $query .= " ORDER BY a.appointment_date DESC, a.appointment_time DESC";
@@ -98,11 +106,11 @@ $result = $db->query($query);
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                     <h2>Manage Appointments</h2>
                     <div class="filter-tabs">
-                        <a href="?status=all" class="filter-tab <?php echo $status_filter == 'all' ? 'active' : ''; ?>">All</a>
-                        <a href="?status=pending" class="filter-tab <?php echo $status_filter == 'pending' ? 'active' : ''; ?>">Pending</a>
-                        <a href="?status=approved" class="filter-tab <?php echo $status_filter == 'approved' ? 'active' : ''; ?>">Approved</a>
-                        <a href="?status=completed" class="filter-tab <?php echo $status_filter == 'completed' ? 'active' : ''; ?>">Completed</a>
-                        <a href="?status=cancelled" class="filter-tab <?php echo $status_filter == 'cancelled' ? 'active' : ''; ?>">Cancelled</a>
+                        <a href="?status=all" class="filter-tab <?php echo $status_filter === 'all' ? 'active' : ''; ?>">All</a>
+                        <a href="?status=pending" class="filter-tab <?php echo $status_filter === 'pending' ? 'active' : ''; ?>">Pending</a>
+                        <a href="?status=approved" class="filter-tab <?php echo $status_filter === 'approved' ? 'active' : ''; ?>">Approved</a>
+                        <a href="?status=completed" class="filter-tab <?php echo $status_filter === 'completed' ? 'active' : ''; ?>">Completed</a>
+                        <a href="?status=cancelled" class="filter-tab <?php echo in_array($status_filter, ['cancelled', 'canceled', 'declined', 'no_show'], true) ? 'active' : ''; ?>">Cancelled</a>
                     </div>
                 </div>
 
@@ -133,20 +141,28 @@ $result = $db->query($query);
                                             <td><?php echo htmlspecialchars($appt['service_name']); ?></td>
                                             <td>
                                                 <?php
-                                                $badge_class = match($appt['status']) {
+                                                $status_key = strtolower(trim((string)($appt['status'] ?? '')));
+                                                $badge_class = match($status_key) {
                                                     'pending' => 'bg-warning',
                                                     'approved' => 'bg-success',
                                                     'completed' => 'bg-info',
-                                                    'cancelled', 'declined' => 'bg-danger',
-                                                    default => 'bg-secondary'
+                                                    'cancelled', 'canceled', 'declined', 'no_show' => 'bg-danger',
+                                                    default => 'bg-danger'
+                                                };
+                                                $status_label = match($status_key) {
+                                                    'pending' => 'Pending',
+                                                    'approved' => 'Approved',
+                                                    'completed' => 'Completed',
+                                                    'cancelled', 'canceled', 'declined', 'no_show' => 'Cancelled',
+                                                    default => 'Cancelled'
                                                 };
                                                 ?>
                                                 <span class="badge <?php echo $badge_class; ?>">
-                                                    <?php echo ucfirst($appt['status']); ?>
+                                                    <?php echo $status_label; ?>
                                                 </span>
                                             </td>
                                             <td>
-                                                <?php if($appt['status'] == 'pending'): ?>
+                                                <?php if($status_key === 'pending'): ?>
                                                     <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
@@ -156,12 +172,16 @@ $result = $db->query($query);
                                                     <button class="btn btn-sm btn-danger decline-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Decline">
                                                         <i class="bi bi-x-lg"></i>
                                                     </button>
-                                                <?php elseif($appt['status'] == 'approved'): ?>
+                                                <?php elseif($status_key === 'approved'): ?>
                                                     <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
                                                     <button class="btn btn-sm btn-dark complete-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Mark as Completed">
                                                         <i class="bi bi-check-all"></i> Complete
+                                                    </button>
+                                                <?php elseif(in_array($status_key, ['cancelled', 'canceled', 'declined', 'no_show'], true)): ?>
+                                                    <button class="btn btn-sm btn-danger" disabled title="Cancelled">
+                                                        <i class="bi bi-x-circle"></i> Cancelled
                                                     </button>
                                                 <?php endif; ?>
                                             </td>
@@ -421,7 +441,7 @@ $result = $db->query($query);
                                             <div class="col-6"><small class="text-muted d-block">Service</small><strong>${data.service_name}</strong></div>
                                             <div class="col-6"><small class="text-muted d-block">Date</small>${new Date(data.appointment_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
                                             <div class="col-6"><small class="text-muted d-block">Time</small>${data.appointment_time}</div>
-                                            <div class="col-6"><small class="text-muted d-block">Status</small><span class="badge ${getStatusBadge(data.status)}">${data.status.toUpperCase()}</span></div>
+                                            <div class="col-6"><small class="text-muted d-block">Status</small><span class="badge ${getStatusBadge(data.status)}">${getStatusLabel(data.status)}</span></div>
                                             ${data.cancellation_reason ? `<div class="col-12"><small class="text-muted d-block">Cancellation Reason</small>${data.cancellation_reason}</div>` : ''}
                                         </div>
                                     </div>
@@ -452,13 +472,30 @@ $result = $db->query($query);
         });
 
         function getStatusBadge(status) {
-            switch(status) {
+            const normalized = (status || '').toString().trim().toLowerCase();
+            switch(normalized) {
                 case 'pending': return 'bg-warning';
                 case 'approved': return 'bg-success';
                 case 'completed': return 'bg-info';
                 case 'cancelled':
+                case 'canceled':
+                case 'no_show':
                 case 'declined': return 'bg-danger';
-                default: return 'bg-secondary';
+                default: return 'bg-danger';
+            }
+        }
+
+        function getStatusLabel(status) {
+            const normalized = (status || '').toString().trim().toLowerCase();
+            switch(normalized) {
+                case 'pending': return 'PENDING';
+                case 'approved': return 'APPROVED';
+                case 'completed': return 'COMPLETED';
+                case 'cancelled':
+                case 'canceled':
+                case 'no_show':
+                case 'declined': return 'CANCELLED';
+                default: return 'CANCELLED';
             }
         }
     });
