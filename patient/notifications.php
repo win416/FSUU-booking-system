@@ -172,28 +172,7 @@ function getDateGroup(string $dateStr): string {
                          data-subject="<?php echo strtolower(htmlspecialchars($notif['subject'])); ?>"
                          data-body="<?php echo strtolower(htmlspecialchars($notif['message'])); ?>">
                         <div class="card-body">
-                            <div class="d-flex gap-3 align-items-start">
-
-                                <!-- Unread dot -->
-                                <?php if ($isUnread): ?>
-                                <div class="unread-dot"></div>
-                                <?php else: ?>
-                                <div style="width:8px;min-width:8px;"></div>
-                                <?php endif; ?>
-
-                                <?php
-                                    $iconClass = match($style['color']) {
-                                        'success'   => 'notif-icon-success',
-                                        'danger'    => 'notif-icon-danger',
-                                        'warning'   => 'notif-icon-warning',
-                                        'dark'      => 'notif-icon-dark',
-                                        default     => 'notif-icon-secondary',
-                                    };
-                                ?>
-                                <!-- Icon -->
-                                <div class="notif-icon <?= $iconClass ?>">
-                                    <i class="bi <?php echo $style['icon']; ?>"></i>
-                                </div>
+                            <div class="d-flex align-items-start">
 
                                 <!-- Content -->
                                 <div class="flex-grow-1 min-w-0">
@@ -207,12 +186,6 @@ function getDateGroup(string $dateStr): string {
                                             <?php endif; ?>
                                             <!-- Actions (visible on hover) -->
                                             <div class="notif-actions">
-                                                <?php if ($isUnread): ?>
-                                                <button class="btn btn-sm btn-link p-0 text-success btn-mark-read"
-                                                        title="Mark as read">
-                                                    <i class="bi bi-check2-circle"></i>
-                                                </button>
-                                                <?php endif; ?>
                                                 <button class="btn btn-sm btn-link p-0 text-danger btn-delete-notif"
                                                         title="Delete">
                                                     <i class="bi bi-trash3"></i>

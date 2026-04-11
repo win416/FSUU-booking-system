@@ -226,7 +226,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 130px 0 60px;
+    padding: 130px 0 90px;
     overflow: hidden;
 }
 
@@ -598,15 +598,23 @@ body {
     flex-shrink: 0;
 }
 
+/* Section headings balance */
+.features-section .display-4,
+#contact .display-4 {
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
 /* Contact Section */
 .contact-section-wrap {
     padding: 60px 0;
 }
 
 .contact-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    align-items: stretch;
 }
 
 .contact-card-item {
@@ -618,6 +626,11 @@ body {
     border-radius: 14px;
     padding: 1rem 1.25rem;
     transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.contact-card-item > div {
+    min-width: 0;
+    flex: 1;
 }
 
 .contact-card-item:hover {
@@ -642,6 +655,16 @@ body {
 .contact-value {
     font-size: 0.9rem;
     color: #555;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+@media (min-width: 992px) {
+    #contact .row.justify-content-center > .col-lg-8 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
 }
 
 /* Footer */
@@ -867,6 +890,12 @@ body {
     #contact .display-4 { font-size: 1.4rem !important; }
     #contact h5 { font-size: 0.95rem !important; }
     #contact p { font-size: 0.85rem !important; }
+    .contact-cards {
+        grid-template-columns: 1fr;
+    }
+    .contact-card-item {
+        width: 100%;
+    }
 
     /* Footer */
     .footer { padding: 40px 0 20px !important; }

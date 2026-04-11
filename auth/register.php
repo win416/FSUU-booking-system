@@ -142,55 +142,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label>FSUU ID Number</label>
-                            <input type="text" name="fsuu_id" class="form-control" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label>Email Address</label>
-                            <input type="email" name="email" id="email" class="form-control" required>
-                            <small id="emailHelp" class="text-muted">Use your URIOS email (@urios.edu.ph)</small>
-                            <div id="emailError" class="invalid-feedback" style="display: none;">
-                                <i class="bi bi-exclamation-circle me-1"></i>Only @urios.edu.ph email addresses are allowed
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>FSUU ID Number</label>
+                                <input type="text" name="fsuu_id" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Contact Number</label>
+                                <input type="text" name="contact_number" class="form-control" required>
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label>Contact Number</label>
-                            <input type="text" name="contact_number" class="form-control" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Program</label>
-                            <select name="program" class="form-control" required>
-                                <option value="" disabled selected>— Select Program —</option>
-                                <option value="AP">AP</option>
-                                <option value="ASP">ASP</option>
-                                <option value="BAP">BAP</option>
-                                <option value="CJEP">CJEP</option>
-                                <option value="CSP">CSP</option>
-                                <option value="ETP">ETP</option>
-                                <option value="GSR">GSR</option>
-                                <option value="LAW">LAW</option>
-                                <option value="TEP">TEP</option>
-                                <option value="THMP">THMP</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label>Password</label>
-                            <div class="position-relative">
-                                <input type="password" id="password" name="password" class="form-control" style="padding-right: 2.5rem;" required>
-                                <i class="bi bi-eye toggle-password" data-target="password" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6c757d;font-size:1.1rem;"></i>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>Email Address</label>
+                                <input type="email" name="email" id="email" class="form-control" required>
+                                <small id="emailHelp" class="text-muted">Use your URIOS email (@urios.edu.ph)</small>
+                                <div id="emailError" class="invalid-feedback" style="display: none;">
+                                    <i class="bi bi-exclamation-circle me-1"></i>Only @urios.edu.ph email addresses are allowed
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Program</label>
+                                <select name="program" class="form-control" required>
+                                    <option value="" disabled selected>— Select Program —</option>
+                                    <option value="AP">AP</option>
+                                    <option value="ASP">ASP</option>
+                                    <option value="BAP">BAP</option>
+                                    <option value="CJEP">CJEP</option>
+                                    <option value="CSP">CSP</option>
+                                    <option value="ETP">ETP</option>
+                                    <option value="GSR">GSR</option>
+                                    <option value="LAW">LAW</option>
+                                    <option value="TEP">TEP</option>
+                                    <option value="THMP">THMP</option>
+                                </select>
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label>Confirm Password</label>
-                            <div class="position-relative">
-                                <input type="password" id="confirm_password" name="confirm_password" class="form-control" style="padding-right: 2.5rem;" required>
-                                <i class="bi bi-eye toggle-password" data-target="confirm_password" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6c757d;font-size:1.1rem;"></i>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>Password</label>
+                                <div class="position-relative">
+                                    <input type="password" id="password" name="password" class="form-control" style="padding-right: 2.5rem;" required>
+                                    <i class="bi bi-eye toggle-password" data-target="password" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6c757d;font-size:1.1rem;"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Confirm Password</label>
+                                <div class="position-relative">
+                                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" style="padding-right: 2.5rem;" required>
+                                    <i class="bi bi-eye toggle-password" data-target="confirm_password" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6c757d;font-size:1.1rem;"></i>
+                                </div>
                             </div>
                         </div>
                         

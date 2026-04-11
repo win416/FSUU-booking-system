@@ -5,14 +5,14 @@ body {
     min-height: 100vh; 
     font-family: 'Inter', sans-serif;
     display: flex;
-    align-items: center;
-    padding: 40px 0;
+    align-items: flex-start;
+    padding: 16px 0;
 }
 .register-container { 
-    max-width: 420px; 
+    max-width: 760px; 
     margin: 0 auto;
     width: 100%;
-    padding: 20px;
+    padding: 12px 20px;
 }
 .card { 
     border: 1px solid #E0E0E0; 
@@ -24,7 +24,7 @@ body {
     background: #ffffff; 
     color: #1A1A1A; 
     border-bottom: 1px solid #E0E0E0;
-    padding: 40px 20px 20px !important; 
+    padding: 28px 20px 16px !important; 
     text-align: center;
 }
 .card-header h4 {
@@ -32,17 +32,17 @@ body {
     color: #1A1A1A;
 }
 .card-body {
-    padding: 30px !important;
+    padding: 20px 24px !important;
     background: #ffffff;
 }
 .form-label, label {
     font-weight: 600;
     color: #4D4D4D;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 .form-control {
     border-radius: 8px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     border: 1px solid #E0E0E0;
     background-color: #ffffff;
 }
@@ -65,7 +65,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.2s ease;
-    margin-top: 10px;
+    margin-top: 6px;
 }
 .btn-register:hover { 
     background: #1C9DD6; 
@@ -85,6 +85,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 
 @media (max-width: 575.98px) {
     body { align-items: flex-start; padding-top: 1rem; }
+    .register-container { max-width: 420px; }
     .register-container { padding: 12px; }
     .card-body { padding: 20px !important; }
     .card-header { padding: 24px 16px 16px !important; }

@@ -126,7 +126,6 @@
 /* ── Notification card ────────────────────────────────────────────── */
 .notif-card {
     border: 1px solid #E0E0E0;
-    border-left: 3px solid #E0E0E0;
     border-radius: 0.55rem;
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.3s ease;
     background: #fff;
@@ -137,25 +136,20 @@
 }
 
 .notif-card.unread {
-    background: #fafafa;
-    border-left-color: #1A1A1A;
+    background: #f8fafc;
 }
 
 .notif-card:hover {
-    box-shadow: 0 4px 18px rgba(0,0,0,.09);
+    box-shadow: 0 3px 12px rgba(0,0,0,.07);
     transform: translateY(-1px);
 }
 
 /* Color variants */
-.notif-card.notif-success              { border-left-color: #16a34a; }
-.notif-card.notif-success.unread       { background: #f0fdf4; }
-.notif-card.notif-danger               { border-left-color: #dc2626; }
-.notif-card.notif-danger.unread        { background: #fff5f5; }
-.notif-card.notif-warning              { border-left-color: #d97706; }
-.notif-card.notif-warning.unread       { background: #fffbeb; }
-.notif-card.notif-dark                 { border-left-color: #374151; }
-.notif-card.notif-dark.unread          { background: #f8f8f8; }
-.notif-card.notif-secondary            { border-left-color: #9ca3af; }
+.notif-card.notif-success,
+.notif-card.notif-danger,
+.notif-card.notif-warning,
+.notif-card.notif-dark,
+.notif-card.notif-secondary            { border-color: #E0E0E0; }
 
 /* ── Card body ────────────────────────────────────────────────────── */
 .notif-card .card-body {
@@ -164,34 +158,20 @@
 
 /* ── Unread dot ───────────────────────────────────────────────────── */
 .unread-dot {
-    width: 8px;
-    height: 8px;
-    min-width: 8px;
-    border-radius: 50%;
-    background: #1A1A1A;
-    margin-top: 7px;
-    flex-shrink: 0;
+    display: none !important;
 }
 
 /* ── Icon circle ──────────────────────────────────────────────────── */
 .notif-icon {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.82rem;
-    flex-shrink: 0;
+    display: none !important;
 }
 
 /* Icon color per type */
-.notif-icon-success  { background: #dcfce7; color: #16a34a; }
-.notif-icon-danger   { background: #fee2e2; color: #dc2626; }
-.notif-icon-warning  { background: #fef3c7; color: #d97706; }
-.notif-icon-dark     { background: #f3f4f6; color: #374151; }
-.notif-icon-secondary{ background: #f3f4f6; color: #6b7280; }
+.notif-icon-success,
+.notif-icon-danger,
+.notif-icon-warning,
+.notif-icon-dark,
+.notif-icon-secondary{ display: none !important; }
 
 /* ── Subject & body ───────────────────────────────────────────────── */
 .notif-subject {
@@ -231,11 +211,9 @@
     display: flex;
     align-items: center;
     gap: 0.15rem;
-    opacity: 0;
+    opacity: 1;
     transition: opacity 0.15s;
 }
-
-.notif-card:hover .notif-actions { opacity: 1; }
 
 .notif-actions .btn {
     padding: 0.2rem 0.35rem;
@@ -250,7 +228,9 @@
     padding: 0.2em 0.5em;
     border-radius: 999px;
     vertical-align: middle;
-    animation: pulse-badge 2s infinite;
+    animation: none;
+    background: #e5e7eb !important;
+    color: #4b5563 !important;
 }
 
 @keyframes pulse-badge {
@@ -314,6 +294,8 @@
         gap: 0.75rem;
     }
     .notif-search-wrap { width: 100%; }
+    .notif-card.unread { background: #f8fafc; }
+    #clearAll { display: none !important; }
 }
 
 @media (max-width: 575.98px) {
@@ -321,4 +303,6 @@
     .notif-filter-tabs { padding: 0 0.5rem; }
     .notif-filter-tabs .nav-link { padding: 0.6rem 0.65rem; font-size: 0.8rem; }
     .notif-card .card-body { padding: 0.75rem 0.85rem; }
+    .notif-card.unread { background: #f8fafc; }
+    #clearAll { display: none !important; }
 }
