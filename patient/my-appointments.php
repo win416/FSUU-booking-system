@@ -6,11 +6,45 @@ SessionManager::requireLogin();
 $user = SessionManager::getUser();
 $db = getDB();
 
+$db->query("
+    CREATE TABLE IF NOT EXISTS dentist_appointment_assignments (
+        assignment_id INT(11) NOT NULL AUTO_INCREMENT,
+        appointment_id INT(11) NOT NULL,
+        dentist_id INT(11) NOT NULL,
+        checked_in_at DATETIME DEFAULT NULL,
+        completed_at DATETIME DEFAULT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (assignment_id),
+        UNIQUE KEY uq_appointment (appointment_id),
+        KEY idx_dentist (dentist_id),
+        CONSTRAINT fk_daa_appointment FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE CASCADE,
+        CONSTRAINT fk_daa_dentist FOREIGN KEY (dentist_id) REFERENCES users(user_id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+
+$db->query("
+    CREATE TABLE IF NOT EXISTS dentist_profiles (
+        dentist_id INT(11) NOT NULL,
+        specialization VARCHAR(150) DEFAULT NULL,
+        digital_signature_path VARCHAR(255) DEFAULT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (dentist_id),
+        CONSTRAINT fk_dentist_profile_user FOREIGN KEY (dentist_id) REFERENCES users(user_id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+
 // Get all appointments
 $stmt = $db->prepare("
-    SELECT a.*, s.service_name 
+    SELECT a.*, s.service_name,
+           d.user_id AS dentist_id, d.first_name AS dentist_first_name, d.last_name AS dentist_last_name,
+           d.email AS dentist_email, d.contact_number AS dentist_contact, d.profile_picture AS dentist_profile_picture,
+           dp.specialization AS dentist_specialization, dp.digital_signature_path AS dentist_signature_path
     FROM appointments a
     JOIN services s ON a.service_id = s.service_id
+    LEFT JOIN dentist_appointment_assignments da ON da.appointment_id = a.appointment_id
+    LEFT JOIN users d ON d.user_id = da.dentist_id AND d.role = 'dentist'
+    LEFT JOIN dentist_profiles dp ON dp.dentist_id = d.user_id
     WHERE a.user_id = ?
     ORDER BY a.appointment_date DESC, a.appointment_time DESC
 ");
@@ -112,11 +146,12 @@ $appointments = $stmt->get_result();
                                     <tr>
                                         <th class="ps-4 py-3 fw-semibold text-uppercase" style="font-size:0.72rem;letter-spacing:0.06em;color:#6b7280;">Service</th>
                                         <th class="py-3 fw-semibold text-uppercase" style="font-size:0.72rem;letter-spacing:0.06em;color:#6b7280;">Date</th>
-                                        <th class="py-3 fw-semibold text-uppercase" style="font-size:0.72rem;letter-spacing:0.06em;color:#6b7280;">Time</th>
-                                        <th class="py-3 fw-semibold text-uppercase" style="font-size:0.72rem;letter-spacing:0.06em;color:#6b7280;">Status</th>
-                                        <th class="py-3 fw-semibold text-uppercase" style="font-size:0.72rem;letter-spacing:0.06em;color:#6b7280;">Actions</th>
-                                    </tr>
-                                </thead>
+                                         <th class="py-3 fw-semibold text-uppercase" style="font-size:0.72rem;letter-spacing:0.06em;color:#6b7280;">Time</th>
+                                         <th class="py-3 fw-semibold text-uppercase" style="font-size:0.72rem;letter-spacing:0.06em;color:#6b7280;">Status</th>
+                                         <th class="py-3 fw-semibold text-uppercase" style="font-size:0.72rem;letter-spacing:0.06em;color:#6b7280;">Dentist</th>
+                                         <th class="py-3 fw-semibold text-uppercase" style="font-size:0.72rem;letter-spacing:0.06em;color:#6b7280;">Actions</th>
+                                     </tr>
+                                 </thead>
                                 <tbody>
                                     <?php if($appointments->num_rows > 0): ?>
                                         <?php while($appt = $appointments->fetch_assoc()): ?>
@@ -156,19 +191,44 @@ $appointments = $stmt->get_result();
                                                         <?php echo $status_label; ?>
                                                     </span>
                                                 </td>
-                                                <td class="py-3">
-                                                    <?php if($status_key === 'pending'): ?>
-                                                        <button class="btn btn-sm btn-outline-danger rounded-pill cancel-appt" data-id="<?php echo $appt['appointment_id']; ?>">Cancel</button>
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="5" class="text-center py-5 text-muted">
-                                                <i class="bi bi-calendar-x d-block mb-2" style="font-size:2rem;opacity:0.3;"></i>
-                                                No appointments found.
-                                            </td>
+                                                 <td class="py-3">
+                                                     <?php if (!empty($appt['dentist_id'])): ?>
+                                                         <?php
+                                                         $dentistName = trim(($appt['dentist_first_name'] ?? '') . ' ' . ($appt['dentist_last_name'] ?? ''));
+                                                         $dentistName = $dentistName !== '' ? $dentistName : 'Assigned Dentist';
+                                                         ?>
+                                                         <button
+                                                             type="button"
+                                                             class="btn btn-link p-0 text-decoration-underline dentist-profile-btn"
+                                                             data-dentist-id="<?php echo (int)$appt['dentist_id']; ?>"
+                                                             data-dentist-name="<?php echo htmlspecialchars($dentistName); ?>"
+                                                             data-dentist-email="<?php echo htmlspecialchars($appt['dentist_email'] ?? ''); ?>"
+                                                             data-dentist-contact="<?php echo htmlspecialchars($appt['dentist_contact'] ?? ''); ?>"
+                                                             data-dentist-specialization="<?php echo htmlspecialchars($appt['dentist_specialization'] ?? ''); ?>"
+                                                             data-dentist-picture="<?php echo htmlspecialchars($appt['dentist_profile_picture'] ?? ''); ?>"
+                                                             data-dentist-signature="<?php echo htmlspecialchars($appt['dentist_signature_path'] ?? ''); ?>"
+                                                         >
+                                                             Dr. <?php echo htmlspecialchars($dentistName); ?>
+                                                         </button>
+                                                     <?php else: ?>
+                                                         <span class="text-muted small">To be assigned</span>
+                                                     <?php endif; ?>
+                                                 </td>
+                                                 <td class="py-3">
+                                                     <?php if($status_key === 'pending'): ?>
+                                                         <button class="btn btn-sm btn-outline-danger rounded-pill cancel-appt" data-id="<?php echo $appt['appointment_id']; ?>">Cancel</button>
+                                                     <?php else: ?>
+                                                         <span class="text-muted small">—</span>
+                                                     <?php endif; ?>
+                                                 </td>
+                                             </tr>
+                                         <?php endwhile; ?>
+                                     <?php else: ?>
+                                         <tr>
+                                             <td colspan="6" class="text-center py-5 text-muted">
+                                                 <i class="bi bi-calendar-x d-block mb-2" style="font-size:2rem;opacity:0.3;"></i>
+                                                 No appointments found.
+                                             </td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -217,9 +277,32 @@ $appointments = $stmt->get_result();
                                 <?php echo $status_label; ?>
                             </span>
                         </div>
-                        <div class="appt-meta">
-                            <span><i class="bi bi-calendar3"></i><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></span>
-                            <span><i class="bi bi-clock"></i><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></span>
+                         <div class="appt-meta">
+                             <span><i class="bi bi-calendar3"></i><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></span>
+                             <span><i class="bi bi-clock"></i><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></span>
+                         </div>
+                        <div class="appt-meta" style="margin-top:0.3rem;">
+                            <span><i class="bi bi-person-badge"></i>
+                                <?php if (!empty($appt['dentist_id'])): ?>
+                                    <?php $dentistName = trim(($appt['dentist_first_name'] ?? '') . ' ' . ($appt['dentist_last_name'] ?? '')); ?>
+                                    <button
+                                        type="button"
+                                        class="btn btn-link p-0 text-decoration-underline dentist-profile-btn"
+                                        style="font-size:0.82rem;vertical-align:baseline;"
+                                        data-dentist-id="<?php echo (int)$appt['dentist_id']; ?>"
+                                        data-dentist-name="<?php echo htmlspecialchars($dentistName); ?>"
+                                        data-dentist-email="<?php echo htmlspecialchars($appt['dentist_email'] ?? ''); ?>"
+                                        data-dentist-contact="<?php echo htmlspecialchars($appt['dentist_contact'] ?? ''); ?>"
+                                        data-dentist-specialization="<?php echo htmlspecialchars($appt['dentist_specialization'] ?? ''); ?>"
+                                        data-dentist-picture="<?php echo htmlspecialchars($appt['dentist_profile_picture'] ?? ''); ?>"
+                                        data-dentist-signature="<?php echo htmlspecialchars($appt['dentist_signature_path'] ?? ''); ?>"
+                                    >
+                                        Dr. <?php echo htmlspecialchars($dentistName !== '' ? $dentistName : 'Assigned Dentist'); ?>
+                                    </button>
+                                <?php else: ?>
+                                    <span class="text-muted small">To be assigned</span>
+                                <?php endif; ?>
+                            </span>
                         </div>
                         <?php if ($status_key === 'pending'): ?>
                         <div class="appt-footer">
@@ -260,6 +343,43 @@ $appointments = $stmt->get_result();
         </div>
     </div>
 
+    <div class="modal fade" id="dentistProfileModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-badge me-2"></i>Dentist Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 align-items-start">
+                        <div class="col-md-4 text-center">
+                            <img id="dentistProfileImage" src="../img/default-avatar.png" alt="Dentist Avatar"
+                                 class="rounded-circle border" style="width:120px;height:120px;object-fit:cover;">
+                            <div class="mt-2 text-muted small">Assigned Dentist</div>
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="mb-2" id="dentistProfileName">—</h5>
+                            <div class="mb-2"><strong>Email:</strong> <span id="dentistProfileEmail">—</span></div>
+                            <div class="mb-2"><strong>Contact:</strong> <span id="dentistProfileContact">—</span></div>
+                            <div class="mb-2"><strong>Specialization:</strong> <span id="dentistProfileSpecialization">Not specified</span></div>
+                        </div>
+                    </div>
+                    <div class="mt-3" id="dentistSignatureWrap" style="display:none;">
+                        <div class="fw-semibold mb-2">Digital Signature</div>
+                        <img id="dentistSignatureImage" src="" alt="Dentist Signature"
+                             class="img-fluid border rounded" style="max-height:140px;background:#fff;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a id="dentistMessageBtn" href="messages.php" class="btn btn-primary">
+                        <i class="bi bi-chat-dots me-1"></i>Message Dentist
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -279,6 +399,41 @@ $appointments = $stmt->get_result();
                     else alert(res.message);
                 });
             }
+        });
+
+        $(document).on('click', '.dentist-profile-btn', function() {
+            const dentistId = $(this).data('dentist-id');
+            const name = $(this).data('dentist-name') || 'Assigned Dentist';
+            const email = $(this).data('dentist-email') || 'Not available';
+            const contact = $(this).data('dentist-contact') || 'Not available';
+            const specialization = $(this).data('dentist-specialization') || 'Not specified';
+            const picture = $(this).data('dentist-picture') || '';
+            const signature = $(this).data('dentist-signature') || '';
+
+            $('#dentistProfileName').text('Dr. ' + name);
+            $('#dentistProfileEmail').text(email);
+            $('#dentistProfileContact').text(contact);
+            $('#dentistProfileSpecialization').text(specialization);
+
+            if (picture) {
+                $('#dentistProfileImage').attr('src', '../' + picture);
+            } else {
+                $('#dentistProfileImage').attr('src', '../img/default-avatar.png');
+            }
+
+            if (signature) {
+                $('#dentistSignatureImage').attr('src', '../' + signature);
+                $('#dentistSignatureWrap').show();
+            } else {
+                $('#dentistSignatureWrap').hide();
+            }
+
+            const msgUrl = 'messages.php?compose_to=' + encodeURIComponent(dentistId) +
+                '&compose_name=' + encodeURIComponent(name) +
+                '&compose_subject=' + encodeURIComponent('Appointment Concern');
+            $('#dentistMessageBtn').attr('href', msgUrl);
+
+            $('#dentistProfileModal').modal('show');
         });
     </script>
 </body>

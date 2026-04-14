@@ -33,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Redirect based on role
                 if ($user['role'] == 'admin') {
                     header('Location: ' . SITE_URL . '/admin/dashboard.php');
+                } elseif ($user['role'] == 'dentist') {
+                    header('Location: ' . SITE_URL . '/dentist/dashboard.php');
                 } else {
                     header('Location: ' . SITE_URL . '/patient/dashboard.php');
                 }

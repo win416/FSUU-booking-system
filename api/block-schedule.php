@@ -4,8 +4,8 @@ require_once '../includes/db_connection.php';
 
 header('Content-Type: application/json');
 
-// Ensure only admins can block schedules
-if (!SessionManager::isAdmin()) {
+// Ensure only admins/dentists can block schedules
+if (!SessionManager::isAdmin() && !SessionManager::isDentist()) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }

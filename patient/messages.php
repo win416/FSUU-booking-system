@@ -417,6 +417,20 @@ function setRecipient(id, name) {
     msgToInput.value          = '';
     toSuggestions.style.display = 'none';
 }
+
+function prefillComposeFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const composeTo = params.get('compose_to');
+    const composeName = params.get('compose_name');
+    const composeSubject = params.get('compose_subject');
+    if (!composeTo || !composeName) return;
+
+    showCompose();
+    setRecipient(parseInt(composeTo, 10), composeName);
+    if (composeSubject) {
+        document.getElementById('msgSubject').value = composeSubject;
+    }
+}
 document.getElementById('toChipRemove').addEventListener('click', () => {
     RECIPIENT_ID             = null;
     toChip.style.display     = 'none';
@@ -590,6 +604,7 @@ function showToast(msg) {
 // ── Init ─────────────────────────────────────────────────────────────────────
 loadInbox(false);
 setInterval(() => { if (_activeTab === 'inbox') loadInbox(true); }, 15000);
+prefillComposeFromQuery();
 
 // Mobile back button
 document.getElementById('mobileBackBtn').addEventListener('click', function() {

@@ -76,12 +76,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Handle status change (original functionality)
+    // Admin can no longer approve/decline/complete. Assigned dentist owns those actions.
     $status = $_POST['status'] ?? '';
     $reason = $_POST['reason'] ?? null;
 
     if (empty($appointment_id) || empty($status)) {
         echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+        exit();
+    }
+
+    if (in_array($status, ['approved', 'declined', 'completed'], true)) {
+        echo json_encode(['success' => false, 'message' => 'This action is handled by the assigned dentist.']);
         exit();
     }
 

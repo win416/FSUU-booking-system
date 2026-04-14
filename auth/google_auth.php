@@ -127,6 +127,8 @@ if ($result->num_rows === 1) {
 // Redirect based on role
 if (SessionManager::isAdmin()) {
     header('Location: ' . SITE_URL . '/admin/dashboard.php');
+} elseif (SessionManager::isDentist()) {
+    header('Location: ' . SITE_URL . '/dentist/dashboard.php');
 } else {
     header('Location: ' . SITE_URL . '/patient/dashboard.php');
 }

@@ -29,15 +29,21 @@ switch ($action) {
         $remind  = intval($_POST['reminder_hours'] ?? 0);
         $wd_start = trim($_POST['weekday_start'] ?? '');
         $wd_end   = trim($_POST['weekday_end'] ?? '');
+        $we_start = trim($_POST['wednesday_start'] ?? '');
+        $we_end   = trim($_POST['wednesday_end'] ?? '');
         $sa_start = trim($_POST['saturday_start'] ?? '');
         $sa_end   = trim($_POST['saturday_end'] ?? '');
 
-        if ($max < 1 || $remind < 1 || !$wd_start || !$wd_end || !$sa_start || !$sa_end) {
+        if ($max < 1 || $remind < 1 || !$wd_start || !$wd_end || !$we_start || !$we_end || !$sa_start || !$sa_end) {
             echo json_encode(['success' => false, 'message' => 'All fields are required and must be valid.']);
             exit();
         }
         if ($wd_start >= $wd_end) {
-            echo json_encode(['success' => false, 'message' => 'Weekday start time must be before end time.']);
+            echo json_encode(['success' => false, 'message' => 'M/T/Th/F start time must be before end time.']);
+            exit();
+        }
+        if ($we_start >= $we_end) {
+            echo json_encode(['success' => false, 'message' => 'Wednesday start time must be before end time.']);
             exit();
         }
         if ($sa_start >= $sa_end) {
@@ -49,6 +55,8 @@ switch ($action) {
         saveSetting($db, 'reminder_hours', $remind);
         saveSetting($db, 'weekday_start', $wd_start);
         saveSetting($db, 'weekday_end', $wd_end);
+        saveSetting($db, 'wednesday_start', $we_start);
+        saveSetting($db, 'wednesday_end', $we_end);
         saveSetting($db, 'saturday_start', $sa_start);
         saveSetting($db, 'saturday_end', $sa_end);
 

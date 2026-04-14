@@ -22,6 +22,43 @@ $med_stmt->bind_param("i", $user['user_id']);
 $med_stmt->execute();
 $medical_info = $med_stmt->get_result()->fetch_assoc() ?? [];
 
+// Clinic hours display (auto-sync from admin settings)
+$clinicHours = [
+    'weekday_start' => '08:00',
+    'weekday_end' => '21:00',
+    'wednesday_start' => '08:00',
+    'wednesday_end' => '17:00',
+    'saturday_start' => '08:00',
+    'saturday_end' => '16:00',
+];
+$clinicStmt = $db->prepare("
+    SELECT setting_key, setting_value
+    FROM system_settings
+    WHERE setting_key IN (
+        'weekday_start', 'weekday_end',
+        'wednesday_start', 'wednesday_end',
+        'saturday_start', 'saturday_end'
+    )
+");
+if ($clinicStmt) {
+    $clinicStmt->execute();
+    $clinicRes = $clinicStmt->get_result();
+    while ($row = $clinicRes->fetch_assoc()) {
+        if (array_key_exists($row['setting_key'], $clinicHours)) {
+            $clinicHours[$row['setting_key']] = substr((string)$row['setting_value'], 0, 5);
+        }
+    }
+}
+
+$formatClock = static function($time24) {
+    $dt = DateTime::createFromFormat('H:i', substr((string)$time24, 0, 5));
+    return $dt ? $dt->format('g:i A') : strtoupper((string)$time24);
+};
+$clinicHoursNotice = 'M/TH, T/F: ' . $formatClock($clinicHours['weekday_start']) . ' - ' . $formatClock($clinicHours['weekday_end'])
+    . ' | Wednesday: ' . $formatClock($clinicHours['wednesday_start']) . ' - ' . $formatClock($clinicHours['wednesday_end'])
+    . ' | Saturday: ' . $formatClock($clinicHours['saturday_start']) . ' - ' . $formatClock($clinicHours['saturday_end'])
+    . ' | Sunday: Closed';
+
 /**
  * Map service name keywords to Bootstrap icons.
  */
@@ -190,7 +227,7 @@ function serviceBgImage(string $name): string {
                             <div class="clinic-hours-notice mb-3">
                                 <i class="bi bi-info-circle-fill me-2"></i>
                                 <strong>Clinic Hours:</strong>
-                                M/TH, T/F: 8:00 AM – 9:00 PM &nbsp;|&nbsp; Wednesday: 8:00 AM – 5:00 PM &nbsp;|&nbsp; Saturday: 8:00 AM – 4:00 PM &nbsp;|&nbsp; Sunday: Closed
+                                <?php echo htmlspecialchars($clinicHoursNotice); ?>
                             </div>
                             <div class="row g-3">
                                 <div class="col-md-7">
@@ -330,7 +367,7 @@ function serviceBgImage(string $name): string {
                         </div>
                         <div class="booking-summary-footer" id="sum-status-row">
                             <span class="badge bg-warning text-dark w-100 py-2">
-                                <i class="bi bi-hourglass-split me-1"></i>Pending Admin Approval
+                                <i class="bi bi-hourglass-split me-1"></i>Pending Dentist Approval
                             </span>
                         </div>
                     </div>
@@ -696,8 +733,17 @@ $('#bookingForm').on('submit', function (e) {
         },
         success: function (res) {
             if (res.success) {
-                showToast('success', '<strong>Appointment submitted!</strong> You will be notified once it is approved.');
-                setTimeout(() => window.location.href = 'my-appointments.php', 2200);
+                const dentist = res.assigned_dentist || null;
+                let msg = '<strong>Appointment submitted!</strong> Pending dentist approval.';
+                if (dentist && dentist.user_id) {
+                    const dName = dentist.name ? dentist.name : 'Assigned Dentist';
+                    const safeName = $('<div>').text(dName).html();
+                    msg += `<br><span class="small">Assigned dentist: <strong>Dr. ${safeName}</strong>. You can message them directly from Messages.</span>`;
+                    const target = `messages.php?compose_to=${encodeURIComponent(dentist.user_id)}&compose_name=${encodeURIComponent(dName)}&compose_subject=${encodeURIComponent('Appointment Concern')}`;
+                    msg += `<br><a href="${target}" class="small fw-semibold text-decoration-underline">Message assigned dentist now</a>`;
+                }
+                showToast('success', msg);
+                setTimeout(() => window.location.href = 'my-appointments.php', 3500);
             } else {
                 showToast('danger', res.message || 'Could not book appointment. Please try again.');
                 resetSubmitBtn();

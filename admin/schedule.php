@@ -215,11 +215,11 @@ $all_events = array_merge($block_events, $appt_events);
                                         <td style="padding: 0.85rem 1.25rem;">
                                             <?php echo htmlspecialchars(($block['first_name'] ?? '') . ' ' . ($block['last_name'] ?? '')); ?>
                                         </td>
-                                        <td style="padding: 0.85rem 1.25rem; text-align: right;" onclick="event.stopPropagation();">
-                                            <button class="btn btn-sm btn-outline-danger delete-block-btn"
+                                        <td style="padding: 0.85rem 1.25rem; text-align: right;">
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-block-btn"
                                                 data-id="<?php echo $block['block_id']; ?>"
                                                 data-date="<?php echo date('M j, Y', strtotime($block['block_date'])); ?>"
-                                                title="Delete">
+                                                title="Delete" style="position:relative;z-index:3;pointer-events:auto;">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -679,7 +679,8 @@ $all_events = array_merge($block_events, $appt_events);
     });
 
     // ── Clickable Block Row (Edit) ───────────────────────────────────────────
-    $(document).on('click', '.block-row-clickable', function () {
+    $(document).on('click', '.block-row-clickable', function (e) {
+        if ($(e.target).closest('.delete-block-btn').length) return;
         resetBlockModal();
         
         const id = $(this).data('id');
@@ -769,14 +770,19 @@ $all_events = array_merge($block_events, $appt_events);
     });
 
     // ── Delete Block ─────────────────────────────────────────────────────────
-    $(document).on('click', '.delete-block-btn', function () {
-        const id   = $(this).data('id');
-        const date = $(this).data('date');
+    $(document).on('click', '.delete-block-btn, .delete-block-btn i', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const $btn = $(e.target).closest('.delete-block-btn');
+        const id   = $btn.data('id');
+        const date = $btn.data('date');
+        if (!id) return;
         if (!confirm('Remove block for ' + date + '? Patients will be able to book this date again.')) return;
         $.post('../api/delete-block.php', { block_id: id }, function (res) {
             if (res.success) {
                 showAlert('#alertContainer', 'success', '<i class="bi bi-check-circle me-2"></i>Block removed successfully.');
-                $('#block-row-' + id).fadeOut(400, function () { $(this).remove(); });
+                $('#block-row-' + id).fadeOut(250, function () { $(this).remove(); });
+                setTimeout(() => location.reload(), 350);
             } else {
                 showAlert('#alertContainer', 'danger', res.message || 'Failed to remove block.');
             }

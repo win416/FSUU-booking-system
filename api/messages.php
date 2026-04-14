@@ -18,6 +18,7 @@ if (!SessionManager::isLoggedIn()) {
 $user    = SessionManager::getUser();
 $db      = getDB();
 $isAdmin = SessionManager::isAdmin();
+$isDentist = SessionManager::isDentist();
 $action  = $_REQUEST['action'] ?? '';
 
 // ── Auto-create messages table if missing ──────────────────────────────────
@@ -35,6 +36,19 @@ $db->query("CREATE TABLE IF NOT EXISTS messages (
 )");
 // Add subject column if upgrading from older schema
 $db->query("ALTER TABLE messages ADD COLUMN IF NOT EXISTS subject VARCHAR(255) DEFAULT '' AFTER receiver_id");
+$db->query("CREATE TABLE IF NOT EXISTS dentist_appointment_assignments (
+    assignment_id INT(11) NOT NULL AUTO_INCREMENT,
+    appointment_id INT(11) NOT NULL,
+    dentist_id INT(11) NOT NULL,
+    checked_in_at DATETIME DEFAULT NULL,
+    completed_at DATETIME DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (assignment_id),
+    UNIQUE KEY uq_appointment (appointment_id),
+    KEY idx_dentist (dentist_id),
+    CONSTRAINT fk_daa_appointment FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE CASCADE,
+    CONSTRAINT fk_daa_dentist FOREIGN KEY (dentist_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
 // ── Helper: get first admin user_id ────────────────────────────────────────
 function getAdminId($db) {
@@ -195,10 +209,57 @@ if ($action === 'send') {
         exit();
     }
 
-    // Patients can only send to admins
-    if (!$isAdmin) {
-        $check = $db->prepare("SELECT user_id, email FROM users WHERE user_id = ? AND role = 'admin'");
+    // Recipient restrictions by role
+    if ($isAdmin) {
+        // Admin can send to any non-admin user
+        $check = $db->prepare("SELECT user_id FROM users WHERE user_id = ? AND role != 'admin'");
         $check->bind_param("i", $receiverId);
+        $check->execute();
+        if (!$check->get_result()->fetch_assoc()) {
+            echo json_encode(['success' => false, 'message' => 'Invalid recipient']);
+            exit();
+        }
+    } elseif ($isDentist) {
+        // Dentist can only send to patients assigned to them
+        $check = $db->prepare("
+            SELECT 1
+            FROM dentist_appointment_assignments da
+            JOIN appointments a ON a.appointment_id = da.appointment_id
+            JOIN users u ON u.user_id = a.user_id
+            WHERE da.dentist_id = ?
+              AND a.user_id = ?
+              AND u.role = 'student'
+            LIMIT 1
+        ");
+        $check->bind_param("ii", $user['user_id'], $receiverId);
+        $check->execute();
+        if (!$check->get_result()->fetch_assoc()) {
+            echo json_encode(['success' => false, 'message' => 'You can only message patients assigned to you.']);
+            exit();
+        }
+    } else {
+        // Patients can send to admins and their assigned dentists
+        $check = $db->prepare("
+            SELECT user_id
+            FROM users
+            WHERE user_id = ?
+              AND (
+                    role = 'admin'
+                    OR (
+                        role = 'dentist'
+                        AND EXISTS (
+                            SELECT 1
+                            FROM dentist_appointment_assignments da
+                            JOIN appointments a ON a.appointment_id = da.appointment_id
+                            WHERE da.dentist_id = users.user_id
+                              AND a.user_id = ?
+                              AND LOWER(TRIM(a.status)) NOT IN ('cancelled', 'canceled', 'declined', 'no_show')
+                        )
+                    )
+                  )
+            LIMIT 1
+        ");
+        $check->bind_param("ii", $receiverId, $user['user_id']);
         $check->execute();
         if (!$check->get_result()->fetch_assoc()) {
             echo json_encode(['success' => false, 'message' => 'Invalid recipient']);
@@ -423,24 +484,53 @@ if ($action === 'get_inbox') {
 // ── search_recipients ──────────────────────────────────────────────────────
 if ($action === 'search_recipients') {
     $q = '%' . $db->real_escape_string(trim($_GET['q'] ?? '')) . '%';
-    if (!$isAdmin) {
-        // Patients can only message admins
-        $stmt = $db->prepare("
-            SELECT user_id, first_name, last_name, email, role, profile_picture
-            FROM users
-            WHERE role = 'admin' AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)
-            ORDER BY first_name ASC LIMIT 8
-        ");
-    } else {
-        // Admins can message any patient
+    if ($isAdmin) {
+        // Admins can message any non-admin
         $stmt = $db->prepare("
             SELECT user_id, first_name, last_name, email, role, profile_picture
             FROM users
             WHERE role != 'admin' AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)
             ORDER BY first_name ASC LIMIT 8
         ");
+        $stmt->bind_param("sss", $q, $q, $q);
+    } elseif ($isDentist) {
+        // Dentists can only search/select patients assigned to them
+        $stmt = $db->prepare("
+            SELECT DISTINCT u.user_id, u.first_name, u.last_name, u.email, u.role, u.profile_picture
+            FROM dentist_appointment_assignments da
+            JOIN appointments a ON a.appointment_id = da.appointment_id
+            JOIN users u ON u.user_id = a.user_id
+            WHERE da.dentist_id = ?
+              AND u.role = 'student'
+              AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ? OR u.fsuu_id LIKE ?)
+            ORDER BY u.first_name ASC, u.last_name ASC
+            LIMIT 8
+        ");
+        $stmt->bind_param("issss", $user['user_id'], $q, $q, $q, $q);
+    } else {
+        // Patients can message admins and assigned dentists
+        $stmt = $db->prepare("
+            SELECT user_id, first_name, last_name, email, role, profile_picture
+            FROM users
+            WHERE (
+                    role = 'admin'
+                    OR (
+                        role = 'dentist'
+                        AND EXISTS (
+                            SELECT 1
+                            FROM dentist_appointment_assignments da
+                            JOIN appointments a ON a.appointment_id = da.appointment_id
+                            WHERE da.dentist_id = users.user_id
+                              AND a.user_id = ?
+                              AND LOWER(TRIM(a.status)) NOT IN ('cancelled', 'canceled', 'declined', 'no_show')
+                        )
+                    )
+                  )
+              AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)
+            ORDER BY first_name ASC LIMIT 8
+        ");
+        $stmt->bind_param("isss", $user['user_id'], $q, $q, $q);
     }
-    $stmt->bind_param("sss", $q, $q, $q);
     $stmt->execute();
     $results = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     echo json_encode(['success' => true, 'results' => $results]);
@@ -451,6 +541,48 @@ if ($action === 'search_recipients') {
 if ($action === 'get_admin_id') {
     $adminId = getAdminId($db);
     echo json_encode(['success' => true, 'admin_id' => $adminId]);
+    exit();
+}
+
+// ── get_assigned_dentist (patient helper) ───────────────────────────────────
+if ($action === 'get_assigned_dentist') {
+    if ($isAdmin || $isDentist) {
+        echo json_encode(['success' => false, 'message' => 'Only patients can use this endpoint.']);
+        exit();
+    }
+
+    $stmt = $db->prepare("
+        SELECT d.user_id, d.first_name, d.last_name, d.email, d.profile_picture,
+               MAX(CONCAT(a.appointment_date, ' ', a.appointment_time)) AS last_appt_at
+        FROM dentist_appointment_assignments da
+        JOIN appointments a ON a.appointment_id = da.appointment_id
+        JOIN users d ON d.user_id = da.dentist_id
+        WHERE a.user_id = ?
+          AND d.role = 'dentist'
+          AND LOWER(TRIM(a.status)) NOT IN ('cancelled', 'canceled', 'declined', 'no_show')
+        GROUP BY d.user_id, d.first_name, d.last_name, d.email, d.profile_picture
+        ORDER BY last_appt_at DESC
+        LIMIT 1
+    ");
+    $stmt->bind_param("i", $user['user_id']);
+    $stmt->execute();
+    $dentist = $stmt->get_result()->fetch_assoc();
+
+    if (!$dentist) {
+        echo json_encode(['success' => false, 'message' => 'No assigned dentist found.']);
+        exit();
+    }
+
+    echo json_encode([
+        'success' => true,
+        'dentist' => [
+            'user_id' => (int)$dentist['user_id'],
+            'first_name' => $dentist['first_name'],
+            'last_name' => $dentist['last_name'],
+            'email' => $dentist['email'],
+            'profile_picture' => $dentist['profile_picture']
+        ]
+    ]);
     exit();
 }
 

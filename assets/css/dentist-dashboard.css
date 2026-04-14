@@ -1,0 +1,22 @@
+/* Dentist dashboard uses the same base visual system as admin/patient. */
+
+.logout-link {
+    color: #f87171 !important;
+}
+
+.logout-link:hover {
+    background: rgba(248, 113, 113, 0.1) !important;
+    color: #fca5a5 !important;
+}
+
+.fac-hero .fac-hero-text h2 {
+    color: #fff !important;
+}
+
+.fac-hero .fac-hero-text p {
+    color: #fff !important;
+}
+
+.sidebar .nav-link.logout-link {
+    margin-top: auto;
+}

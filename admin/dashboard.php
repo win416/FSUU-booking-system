@@ -19,7 +19,7 @@ $today_appointments->bind_param("s", $today);
 $today_appointments->execute();
 $today_result = $today_appointments->get_result();
 
-// Get pending approvals
+// Get pending appointments (read-only; approval is handled by assigned dentist)
 $pending = $db->query("
     SELECT a.*, u.first_name, u.last_name, u.fsuu_id, s.service_name
     FROM appointments a
@@ -247,11 +247,11 @@ foreach ($weekly_data as $date => $count) {
                 </div>
             </div>
 
-            <!-- Pending Approvals -->
+            <!-- Pending Appointments -->
             <div class="col-md-6 d-flex">
                 <div class="card mb-4 w-100">
                     <div class="card-header">
-                        <h5>Pending Approvals</h5>
+                        <h5>Pending Appointments</h5>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -261,7 +261,7 @@ foreach ($weekly_data as $date => $count) {
                                         <th>Date</th>
                                         <th>Patient</th>
                                         <th>Service</th>
-                                        <th>Action</th>
+                                        <th>Assigned Dentist</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -274,28 +274,14 @@ foreach ($weekly_data as $date => $count) {
                                             </td>
                                             <td><?php echo $appt['first_name'] . ' ' . $appt['last_name']; ?></td>
                                             <td><span class="badge bg-light text-dark"><?php echo $appt['service_name']; ?></span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary edit-pending-btn me-1" 
-                                                    data-id="<?php echo $appt['appointment_id']; ?>" 
-                                                    data-date="<?php echo $appt['appointment_date']; ?>" 
-                                                    data-time="<?php echo $appt['appointment_time']; ?>"
-                                                    title="Reschedule">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-success approve-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Approve">
-                                                    <i class="bi bi-check-lg"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-danger decline-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Decline">
-                                                    <i class="bi bi-x-lg"></i>
-                                                </button>
-                                            </td>
+                                            <td><span class="text-muted">Assigned dentist handles approval</span></td>
                                         </tr>
                                         <?php endwhile; ?>
                                     <?php else: ?>
                                         <tr>
                                             <td colspan="4" class="text-center py-4">
                                                 <i class="bi bi-check-circle text-success fs-3"></i>
-                                                <p class="mb-0 mt-2 text-muted">All caught up! No pending approvals.</p>
+                                                <p class="mb-0 mt-2 text-muted">All caught up! No pending appointments.</p>
                                             </td>
                                         </tr>
                                     <?php endif; ?>
@@ -465,48 +451,6 @@ foreach ($weekly_data as $date => $count) {
                     border: { display: false, dash: [4, 4] }
                 }
             }
-        }
-    });
-
-    // Approve appointment
-    $('.approve-btn').click(function() {
-        const id = $(this).data('id');
-        if(confirm('Approve this appointment?')) {
-            $.ajax({
-                url: '../api/update-appointment.php',
-                method: 'POST',
-                data: {
-                    appointment_id: id,
-                    status: 'approved'
-                },
-                success: function(response) {
-                    if(response.success) {
-                        location.reload();
-                    }
-                }
-            });
-        }
-    });
-
-    // Decline appointment
-    $('.decline-btn').click(function() {
-        const id = $(this).data('id');
-        const reason = prompt('Reason for declining:');
-        if(reason !== null) {
-            $.ajax({
-                url: '../api/update-appointment.php',
-                method: 'POST',
-                data: {
-                    appointment_id: id,
-                    status: 'declined',
-                    reason: reason
-                },
-                success: function(response) {
-                    if(response.success) {
-                        location.reload();
-                    }
-                }
-            });
         }
     });
 

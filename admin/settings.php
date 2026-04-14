@@ -37,10 +37,12 @@ $services_result = $db->query("SELECT * FROM services ORDER BY service_name ASC"
 // Default values if settings don't exist
 $max_bookings    = $sys_settings['max_bookings_per_day'] ?? 20;
 $reminder_hours  = $sys_settings['reminder_hours'] ?? 24;
-$wday_start      = $sys_settings['weekday_start'] ?? '13:00';
-$wday_end        = $sys_settings['weekday_end'] ?? '15:30';
-$sat_start       = $sys_settings['saturday_start'] ?? '09:00';
-$sat_end         = $sys_settings['saturday_end'] ?? '12:00';
+$wday_start      = '08:00';
+$wday_end        = '21:00';
+$wed_start       = '08:00';
+$wed_end         = '17:00';
+$sat_start       = '08:00';
+$sat_end         = '16:00';
 $clinic_name     = $sys_settings['clinic_name'] ?? 'FSUU Dental Clinic';
 $clinic_email    = $sys_settings['clinic_email'] ?? '';
 $clinic_phone    = $sys_settings['clinic_phone'] ?? '';
@@ -136,10 +138,10 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                                 <small class="text-muted">How many hours before the appointment to send a reminder email.</small>
                                             </div>
 
-                                            <h6 class="fw-bold border-bottom pb-2 mb-3">Operating Hours</h6>
+                                            <h6 class="fw-bold border-bottom pb-2 mb-3">Clinic Hours</h6>
 
                                             <div class="mb-3">
-                                                <label class="form-label fw-semibold">Monday – Friday</label>
+                                                <label class="form-label fw-semibold">Monday / Tuesday / Thursday / Friday</label>
                                                 <div class="row g-2">
                                                     <div class="col-6">
                                                         <label class="form-label small text-muted">Start Time</label>
@@ -148,6 +150,20 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                                     <div class="col-6">
                                                         <label class="form-label small text-muted">End Time</label>
                                                         <input type="time" name="weekday_end" class="form-control" value="<?php echo htmlspecialchars($wday_end); ?>" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Wednesday</label>
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <label class="form-label small text-muted">Start Time</label>
+                                                        <input type="time" name="wednesday_start" class="form-control" value="<?php echo htmlspecialchars($wed_start); ?>" required>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label small text-muted">End Time</label>
+                                                        <input type="time" name="wednesday_end" class="form-control" value="<?php echo htmlspecialchars($wed_end); ?>" required>
                                                     </div>
                                                 </div>
                                             </div>
@@ -170,6 +186,7 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                             <button type="submit" class="btn btn-primary">
                                                 <i class="bi bi-save me-1"></i> Save Booking Settings
                                             </button>
+                                            <small class="d-block text-muted mt-2">Clinic default hours: M/Th & T/F: 8:00 AM - 9:00 PM | Wednesday: 8:00 AM - 5:00 PM | Saturday: 8:00 AM - 4:00 PM</small>
                                         </form>
                                     </div>
                                 </div>
@@ -179,7 +196,8 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                     <div class="card-header"><h6 class="mb-0"><i class="bi bi-info-circle me-1"></i>Info</h6></div>
                                     <div class="card-body small text-muted">
                                         <ul class="mb-0 ps-3">
-                                            <li>Time slots are generated every <strong>30 minutes</strong> within the operating hours.</li>
+                                            <li>Time slots are generated every <strong>30 minutes</strong> within the clinic hours.</li>
+                                            <li>Default clinic hours: <strong>M/T/Th/F: 8:00 AM - 9:00 PM</strong>, <strong>Wednesday: 8:00 AM - 5:00 PM</strong>, <strong>Saturday: 8:00 AM - 4:00 PM</strong>.</li>
                                             <li>Blocked schedules (managed in the <a href="schedule.php">Schedule</a> tab) take priority over these hours.</li>
                                             <li>The clinic is always closed on <strong>Sundays</strong>.</li>
                                         </ul>

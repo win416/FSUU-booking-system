@@ -4,8 +4,8 @@ require_once '../includes/db_connection.php';
 
 header('Content-Type: application/json');
 
-// Ensure only admins can update blocks
-if (!SessionManager::isAdmin()) {
+// Ensure only admins/dentists can update blocks
+if (!SessionManager::isAdmin() && !SessionManager::isDentist()) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
@@ -35,9 +35,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Verify block exists
-    $check = $db->prepare("SELECT block_id FROM blocked_schedules WHERE block_id = ?");
-    $check->bind_param("i", $block_id);
+    // Verify block exists and dentists can only edit their own blocks
+    if (SessionManager::isAdmin()) {
+        $check = $db->prepare("SELECT block_id FROM blocked_schedules WHERE block_id = ?");
+        $check->bind_param("i", $block_id);
+    } else {
+        $current_user_id = SessionManager::getUser()['user_id'];
+        $check = $db->prepare("SELECT block_id FROM blocked_schedules WHERE block_id = ? AND created_by = ?");
+        $check->bind_param("ii", $block_id, $current_user_id);
+    }
     $check->execute();
     if ($check->get_result()->num_rows === 0) {
         echo json_encode(['success' => false, 'message' => 'Block not found']);

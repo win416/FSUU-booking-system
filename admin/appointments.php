@@ -166,19 +166,12 @@ $result = $db->query($query);
                                                     <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-                                                    <button class="btn btn-sm btn-success approve-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Approve">
-                                                        <i class="bi bi-check-lg"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-danger decline-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Decline">
-                                                        <i class="bi bi-x-lg"></i>
-                                                    </button>
+                                                    <span class="text-muted small">Assigned dentist handles approval</span>
                                                 <?php elseif($status_key === 'approved'): ?>
                                                     <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-                                                    <button class="btn btn-sm btn-dark complete-btn" data-id="<?php echo $appt['appointment_id']; ?>" title="Mark as Completed">
-                                                        <i class="bi bi-check-all"></i> Complete
-                                                    </button>
+                                                    <span class="text-muted small">Assigned dentist handles completion</span>
                                                 <?php elseif(in_array($status_key, ['cancelled', 'canceled', 'declined', 'no_show'], true)): ?>
                                                     <button class="btn btn-sm btn-danger" disabled title="Cancelled">
                                                         <i class="bi bi-x-circle"></i> Cancelled
@@ -261,55 +254,8 @@ $result = $db->query($query);
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
     $(document).ready(function() {
-        // Approve
-        $('.approve-btn').click(function() {
-            const id = $(this).data('id');
-            if(confirm('Approve this appointment?')) {
-                updateStatus(id, 'approved');
-            }
-        });
-
-        // Decline
-        $('.decline-btn').click(function() {
-            const id = $(this).data('id');
-            const reason = prompt('Reason for declining:');
-            if(reason !== null) {
-                updateStatus(id, 'declined', reason);
-            }
-        });
-
-        // Complete
-        $('.complete-btn').click(function() {
-            const id = $(this).data('id');
-            if(confirm('Mark this appointment as completed?')) {
-                updateStatus(id, 'completed');
-            }
-        });
-
-        function updateStatus(id, status, reason = null) {
-            $.ajax({
-                url: '../api/update-appointment.php',
-                method: 'POST',
-                data: {
-                    appointment_id: id,
-                    status: status,
-                    reason: reason
-                },
-                success: function(response) {
-                    if(response.success) {
-                        location.reload();
-                    } else {
-                        alert(response.message || 'Error updating appointment');
-                    }
-                },
-                error: function() {
-                    alert('Server error occurred.');
-                }
-            });
-        }
-
         // Stop action buttons from triggering row click
-        $('.approve-btn, .decline-btn, .complete-btn, .edit-btn').click(function(e) {
+        $('.edit-btn').click(function(e) {
             e.stopPropagation();
         });
 

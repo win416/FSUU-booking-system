@@ -33,6 +33,42 @@ $stats = $db->prepare("
 $stats->bind_param("i", $user['user_id']);
 $stats->execute();
 $appointment_stats = $stats->get_result()->fetch_assoc();
+
+// Get clinic hours from admin settings (auto-sync display)
+$clinicHours = [
+    'weekday_start' => '08:00',
+    'weekday_end' => '21:00',
+    'wednesday_start' => '08:00',
+    'wednesday_end' => '17:00',
+    'saturday_start' => '08:00',
+    'saturday_end' => '16:00',
+];
+$clinicStmt = $db->prepare("
+    SELECT setting_key, setting_value
+    FROM system_settings
+    WHERE setting_key IN (
+        'weekday_start', 'weekday_end',
+        'wednesday_start', 'wednesday_end',
+        'saturday_start', 'saturday_end'
+    )
+");
+if ($clinicStmt) {
+    $clinicStmt->execute();
+    $clinicRes = $clinicStmt->get_result();
+    while ($row = $clinicRes->fetch_assoc()) {
+        if (array_key_exists($row['setting_key'], $clinicHours)) {
+            $clinicHours[$row['setting_key']] = substr((string)$row['setting_value'], 0, 5);
+        }
+    }
+}
+
+$formatClock = static function($time24) {
+    $dt = DateTime::createFromFormat('H:i', substr((string)$time24, 0, 5));
+    return $dt ? $dt->format('g:i A') : strtoupper((string)$time24);
+};
+$weekdayHoursLabel = $formatClock($clinicHours['weekday_start']) . ' - ' . $formatClock($clinicHours['weekday_end']);
+$wednesdayHoursLabel = $formatClock($clinicHours['wednesday_start']) . ' - ' . $formatClock($clinicHours['wednesday_end']);
+$saturdayHoursLabel = $formatClock($clinicHours['saturday_start']) . ' - ' . $formatClock($clinicHours['saturday_end']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -224,7 +260,7 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                             </div>
                             <div style="flex: 1; font-weight: 600; font-size: 0.9rem; color: #1e293b;">M/TH, T/F</div>
                             <div style="flex-shrink: 0;">
-                                <span style="font-size: 0.75rem; font-weight: 600; color: #334155; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap;">8:00 AM – 9:00 PM</span>
+                                <span style="font-size: 0.75rem; font-weight: 600; color: #334155; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap;"><?php echo htmlspecialchars($weekdayHoursLabel); ?></span>
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem; border-bottom: 1px solid #f1f5f9;">
@@ -233,7 +269,7 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                             </div>
                             <div style="flex: 1; font-weight: 600; font-size: 0.9rem; color: #1e293b;">Wednesday</div>
                             <div style="flex-shrink: 0;">
-                                <span style="font-size: 0.75rem; font-weight: 600; color: #334155; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap;">8:00 AM – 5:00 PM</span>
+                                <span style="font-size: 0.75rem; font-weight: 600; color: #334155; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap;"><?php echo htmlspecialchars($wednesdayHoursLabel); ?></span>
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem; border-bottom: 1px solid #f1f5f9;">
@@ -242,7 +278,7 @@ $appointment_stats = $stats->get_result()->fetch_assoc();
                             </div>
                             <div style="flex: 1; font-weight: 600; font-size: 0.9rem; color: #1e293b;">Saturday</div>
                             <div style="flex-shrink: 0;">
-                                <span style="font-size: 0.75rem; font-weight: 600; color: #334155; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap;">8:00 AM – 4:00 PM</span>
+                                <span style="font-size: 0.75rem; font-weight: 600; color: #334155; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap;"><?php echo htmlspecialchars($saturdayHoursLabel); ?></span>
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem;">
