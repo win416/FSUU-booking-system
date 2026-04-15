@@ -111,6 +111,29 @@ if ($action === 'assign') {
         exit();
     }
 
+    $apptStmt = $db->prepare("
+        SELECT a.appointment_date, a.appointment_time, u.first_name, u.last_name
+        FROM appointments a
+        JOIN users u ON u.user_id = a.user_id
+        WHERE a.appointment_id = ?
+        LIMIT 1
+    ");
+    $apptStmt->bind_param("i", $appointment_id);
+    $apptStmt->execute();
+    $appt = $apptStmt->get_result()->fetch_assoc();
+    if ($appt) {
+        $patientName = trim(($appt['first_name'] ?? '') . ' ' . ($appt['last_name'] ?? ''));
+        $message = "A new appointment has been assigned to you for " .
+            date('F j, Y', strtotime($appt['appointment_date'])) . " at " .
+            date('g:i A', strtotime($appt['appointment_time'])) . ".";
+        if ($patientName !== '') {
+            $message .= " Patient: " . $patientName . ".";
+        }
+        $notif = $db->prepare("INSERT INTO notifications (user_id, type, subject, message, status) VALUES (?, 'email', 'New Appointment Assigned', ?, 'pending')");
+        $notif->bind_param("is", $dentist_id, $message);
+        $notif->execute();
+    }
+
     echo json_encode(['success' => true, 'message' => 'Appointment assigned to you.']);
     exit();
 }
@@ -198,6 +221,114 @@ if ($action === 'approve' || $action === 'decline') {
     } catch (Throwable $e) {
         $db->rollback();
         echo json_encode(['success' => false, 'message' => 'Failed to update appointment status.']);
+    }
+    exit();
+}
+
+if ($action === 'reschedule') {
+    if (!in_array($owner['status'], ['pending', 'approved'], true)) {
+        echo json_encode(['success' => false, 'message' => 'Only pending or approved appointments can be rescheduled.']);
+        exit();
+    }
+    if (!empty($owner['checked_in_at']) || !empty($owner['completed_at'])) {
+        echo json_encode(['success' => false, 'message' => 'Checked-in or completed appointments cannot be rescheduled.']);
+        exit();
+    }
+
+    $new_date = trim($_POST['appointment_date'] ?? '');
+    $new_time = trim($_POST['appointment_time'] ?? '');
+    $reason = trim($_POST['reason'] ?? '');
+
+    if ($new_date === '' || $new_time === '') {
+        echo json_encode(['success' => false, 'message' => 'Date and time are required.']);
+        exit();
+    }
+    if (strtotime($new_date) < strtotime(date('Y-m-d'))) {
+        echo json_encode(['success' => false, 'message' => 'Cannot reschedule to a past date.']);
+        exit();
+    }
+
+    $dayOfWeek = (int)date('w', strtotime($new_date));
+    if ($dayOfWeek === 0) {
+        echo json_encode(['success' => false, 'message' => 'Clinic is closed on Sundays.']);
+        exit();
+    }
+
+    $hoursStmt = $db->prepare("
+        SELECT setting_key, setting_value
+        FROM system_settings
+        WHERE setting_key IN (
+            CONCAT('dentist_', ?, '_weekday_start'),
+            CONCAT('dentist_', ?, '_weekday_end'),
+            CONCAT('dentist_', ?, '_saturday_start'),
+            CONCAT('dentist_', ?, '_saturday_end')
+        )
+    ");
+    $hoursStmt->bind_param("iiii", $dentist_id, $dentist_id, $dentist_id, $dentist_id);
+    $hoursStmt->execute();
+    $hoursRes = $hoursStmt->get_result();
+
+    $hours = [
+        'weekday_start' => '08:00',
+        'weekday_end' => '12:00',
+        'saturday_start' => '09:00',
+        'saturday_end' => '12:00',
+    ];
+    while ($row = $hoursRes->fetch_assoc()) {
+        $key = (string)$row['setting_key'];
+        $val = substr((string)$row['setting_value'], 0, 5);
+        if (str_ends_with($key, '_weekday_start')) $hours['weekday_start'] = $val;
+        if (str_ends_with($key, '_weekday_end')) $hours['weekday_end'] = $val;
+        if (str_ends_with($key, '_saturday_start')) $hours['saturday_start'] = $val;
+        if (str_ends_with($key, '_saturday_end')) $hours['saturday_end'] = $val;
+    }
+
+    $start = $dayOfWeek === 6 ? $hours['saturday_start'] : $hours['weekday_start'];
+    $end = $dayOfWeek === 6 ? $hours['saturday_end'] : $hours['weekday_end'];
+    $newTimeHHMM = date('H:i', strtotime($new_time));
+    if ($newTimeHHMM < $start || $newTimeHHMM >= $end) {
+        echo json_encode(['success' => false, 'message' => 'Selected time is outside your working hours.']);
+        exit();
+    }
+
+    $apptStmt = $db->prepare("
+        SELECT a.user_id, a.appointment_date, a.appointment_time
+        FROM appointments a
+        WHERE a.appointment_id = ?
+        LIMIT 1
+    ");
+    $apptStmt->bind_param("i", $appointment_id);
+    $apptStmt->execute();
+    $appt = $apptStmt->get_result()->fetch_assoc();
+    if (!$appt) {
+        echo json_encode(['success' => false, 'message' => 'Appointment not found.']);
+        exit();
+    }
+
+    $db->begin_transaction();
+    try {
+        $update = $db->prepare("UPDATE appointments SET appointment_date = ?, appointment_time = ?, updated_at = NOW() WHERE appointment_id = ?");
+        $update->bind_param("ssi", $new_date, $new_time, $appointment_id);
+        $update->execute();
+
+        $oldDate = date('M d, Y', strtotime($appt['appointment_date']));
+        $oldTime = date('g:i A', strtotime($appt['appointment_time']));
+        $newDate = date('M d, Y', strtotime($new_date));
+        $newTime = date('g:i A', strtotime($new_time));
+        $message = "Your appointment has been rescheduled from {$oldDate} at {$oldTime} to {$newDate} at {$newTime}.";
+        if ($reason !== '') {
+            $message .= ' Reason: ' . $reason;
+        }
+
+        $notif = $db->prepare("INSERT INTO notifications (user_id, type, subject, message, status) VALUES (?, 'email', 'Appointment Rescheduled', ?, 'pending')");
+        $notif->bind_param("is", $appt['user_id'], $message);
+        $notif->execute();
+
+        $db->commit();
+        echo json_encode(['success' => true, 'message' => 'Appointment rescheduled successfully.']);
+    } catch (Throwable $e) {
+        $db->rollback();
+        echo json_encode(['success' => false, 'message' => 'Failed to reschedule appointment.']);
     }
     exit();
 }

@@ -489,8 +489,8 @@ $all_events = array_merge($block_events, $appt_events);
                 right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
             },
             height: 'auto',
-            dayMaxEvents: 2,
-            dayMaxEventRows: 3,
+            dayMaxEvents: true,
+            dayMaxEventRows: true,
             hiddenDays: [0],
             slotMinTime: '08:00:00',
             slotMaxTime: '21:00:00',
@@ -523,6 +523,9 @@ $all_events = array_merge($block_events, $appt_events);
             eventContent: function(arg) {
                 if (arg.event.extendedProps && arg.event.extendedProps.isBlocked) return true;
                 const service = arg.event.extendedProps.service || '';
+                if (arg.view.type === 'dayGridMonth') {
+                    return { html: '<div class="fc-event-content-custom"><div class="fc-event-title-custom">' + (arg.timeText ? (arg.timeText + ' ') : '') + arg.event.title + '</div></div>' };
+                }
                 return { html: '<div class="fc-event-content-custom"><div class="fc-event-time-custom">' + (arg.timeText || '') + '</div><div class="fc-event-title-custom">' + arg.event.title + '</div><div class="fc-event-service-custom">' + service + '</div></div>' };
             },
             dateClick: function(info) {

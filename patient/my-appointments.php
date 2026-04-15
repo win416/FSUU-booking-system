@@ -51,6 +51,7 @@ $stmt = $db->prepare("
 $stmt->bind_param("i", $user['user_id']);
 $stmt->execute();
 $appointments = $stmt->get_result();
+$focusAppointmentId = (int)($_GET['appointment_id'] ?? 0);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -155,7 +156,7 @@ $appointments = $stmt->get_result();
                                 <tbody>
                                     <?php if($appointments->num_rows > 0): ?>
                                         <?php while($appt = $appointments->fetch_assoc()): ?>
-                                            <tr style="border-bottom:1px solid #f3f4f6;">
+                                            <tr id="appointment-row-<?php echo (int)$appt['appointment_id']; ?>" style="border-bottom:1px solid #f3f4f6;">
                                                 <td class="ps-4 py-3 fw-semibold" style="color:#111827;"><?php echo htmlspecialchars($appt['service_name']); ?></td>
                                                 <td class="py-3"><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></td>
                                                 <td class="py-3"><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></td>
@@ -270,7 +271,7 @@ $appointments = $stmt->get_result();
                                 default     => 'background:#f3f4f6;color:#374151;'
                             };
                     ?>
-                    <div class="appt-item">
+                    <div class="appt-item" id="appointment-card-<?php echo (int)$appt['appointment_id']; ?>">
                         <div class="appt-item-top">
                             <div class="appt-service"><?php echo htmlspecialchars($appt['service_name']); ?></div>
                             <span style="<?php echo $badgeStyle; ?> font-size:0.72rem;font-weight:600;padding:0.2em 0.65em;border-radius:999px;white-space:nowrap;">
@@ -383,6 +384,19 @@ $appointments = $stmt->get_result();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const focusAppointmentId = <?php echo $focusAppointmentId; ?>;
+        if (focusAppointmentId > 0) {
+            const desktopRow = document.getElementById('appointment-row-' + focusAppointmentId);
+            const mobileCard = document.getElementById('appointment-card-' + focusAppointmentId);
+            const target = window.matchMedia('(max-width: 767.98px)').matches ? (mobileCard || desktopRow) : (desktopRow || mobileCard);
+
+            if (target) {
+                target.classList.add('table-info');
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => target.classList.remove('table-info'), 2500);
+            }
+        }
+
         let cancelId = null;
         $('.cancel-appt').click(function() {
             cancelId = $(this).data('id');

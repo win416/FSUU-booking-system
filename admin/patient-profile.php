@@ -17,7 +17,7 @@ $db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(2
 // Fetch patient + medical info
 $stmt = $db->prepare("
     SELECT u.user_id, u.fsuu_id, u.first_name, u.last_name, u.email,
-           u.contact_number, u.role, u.is_active, u.created_at,
+           u.contact_number, u.program, u.role, u.is_active, u.created_at,
            u.profile_picture,
            m.allergies, m.medical_conditions, m.medications,
            m.emergency_contact_name, m.emergency_contact_number
@@ -143,6 +143,7 @@ $appointments = $appts->get_result();
                                 <span><i class="bi bi-card-text me-1"></i><?php echo htmlspecialchars($patient['fsuu_id']); ?></span>
                                 <span><i class="bi bi-envelope me-1"></i><?php echo htmlspecialchars($patient['email']); ?></span>
                                 <span><i class="bi bi-phone me-1"></i><?php echo htmlspecialchars($patient['contact_number'] ?: 'N/A'); ?></span>
+                                <span><i class="bi bi-mortarboard me-1"></i><?php echo htmlspecialchars($patient['program'] ?: 'N/A'); ?></span>
                                 <span><i class="bi bi-person-badge me-1"></i><?php echo ucfirst($patient['role']); ?></span>
                             </div>
                         </div>

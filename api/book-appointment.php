@@ -281,6 +281,20 @@ try {
                " has been submitted and is pending approval. Assigned dentist: " . $assignedDentistName . ".";
     $notif->bind_param("is", $user['user_id'], $message);
     $notif->execute();
+
+    // Notify assigned dentist
+    $dentistNotif = $db->prepare("
+        INSERT INTO notifications (user_id, type, subject, message, status)
+        VALUES (?, 'email', 'New Appointment Assigned', ?, 'pending')
+    ");
+    $patientName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+    $dentistMessage = "A new appointment has been assigned to you for " .
+        date('F j, Y', strtotime($appointment_date)) . " at " . date('g:i A', strtotime($appointment_time)) . ".";
+    if ($patientName !== '') {
+        $dentistMessage .= " Patient: " . $patientName . ".";
+    }
+    $dentistNotif->bind_param("is", $selectedDentistId, $dentistMessage);
+    $dentistNotif->execute();
     
     $db->commit();
     

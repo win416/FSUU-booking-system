@@ -102,18 +102,58 @@ if (!SessionManager::isDentist()) {
     </div>
 </div>
 
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-calendar-event me-2"></i>Reschedule Appointment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="edit_appointment_id" name="appointment_id">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">New Date</label>
+                        <input type="date" class="form-control" id="edit_date" name="appointment_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">New Time</label>
+                        <select class="form-select" id="edit_time" name="appointment_time" required>
+                            <option value="">Select time...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Reason for Reschedule (Optional)</label>
+                        <textarea class="form-control" id="edit_reason" name="reason" rows="2" placeholder="e.g., Patient requested new time"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveReschedule">
+                    <i class="bi bi-check-lg me-1"></i>Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 let currentFilter = 'all';
+const params = new URLSearchParams(window.location.search);
+const focusAppointmentId = parseInt(params.get('appointment_id') || '0', 10);
 const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+let dentistWorkingHours = null;
 
 function showAlert(type, message) {
     $('#alertContainer').html('<div class="alert alert-' + type + ' alert-dismissible fade show py-2 mb-0">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
 }
 
 function badgeClass(status) {
-    const s = (status || '').toLowerCase();
+    const s = (status || '').toString().trim().toLowerCase();
     if (s === 'pending') return 'bg-warning';
     if (s === 'approved') return 'bg-success';
     if (s === 'completed') return 'bg-info';
@@ -121,7 +161,7 @@ function badgeClass(status) {
 }
 
 function statusLabel(status) {
-    const s = (status || '').toLowerCase();
+    const s = (status || '').toString().trim().toLowerCase();
     if (['cancelled','canceled','declined','no_show'].includes(s)) return 'Cancelled';
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -137,27 +177,31 @@ function fmtTime(t) {
 }
 
 function actionButtons(a) {
-    const s = (a.status || '').toLowerCase();
+    const s = (a.status || '').toString().trim().toLowerCase();
     const checkedIn = !!a.checked_in_at;
     const completed = !!a.completed_at || s === 'completed';
+    const canReschedule = ['pending', 'approved'].includes(s) && !checkedIn && !completed;
+    const editBtn = `<button type="button" class="btn btn-sm btn-outline-primary row-action-btn edit-btn" data-id="${a.appointment_id}" data-date="${a.appointment_date}" data-time="${a.appointment_time}" title="Reschedule"><i class="bi bi-pencil"></i></button>`;
 
     if (s === 'pending') {
         return `
             <div class="d-inline-flex gap-1">
                 <button type="button" class="btn btn-sm btn-success row-action-btn approve-btn" data-id="${a.appointment_id}" title="Approve"><i class="bi bi-check-lg"></i></button>
                 <button type="button" class="btn btn-sm btn-danger row-action-btn decline-btn" data-id="${a.appointment_id}" title="Decline"><i class="bi bi-x-lg"></i></button>
+                ${editBtn}
             </div>
         `;
     }
     if (s === 'approved') {
         return `
             <div class="d-inline-flex gap-1">
+                ${canReschedule ? editBtn : ''}
                 <button type="button" class="btn btn-sm btn-outline-primary row-action-btn checkin-btn" data-id="${a.appointment_id}" ${checkedIn ? 'disabled' : ''} title="Check-in"><i class="bi bi-check2-circle"></i></button>
                 <button type="button" class="btn btn-sm btn-dark row-action-btn complete-btn" data-id="${a.appointment_id}" ${(!checkedIn || completed) ? 'disabled' : ''} title="Complete"><i class="bi bi-check-all"></i></button>
             </div>
         `;
     }
-    return '<span class="text-muted small">—</span>';
+    return '';
 }
 
 function renderRows(items) {
@@ -180,6 +224,15 @@ function renderRows(items) {
         `;
     });
     body.html(html);
+
+    if (focusAppointmentId > 0) {
+        const targetRow = body.find(`tr[data-id="${focusAppointmentId}"]`);
+        if (targetRow.length) {
+            targetRow.addClass('table-info');
+            $('html, body').animate({ scrollTop: Math.max(targetRow.offset().top - 140, 0) }, 250);
+            setTimeout(() => targetRow.removeClass('table-info'), 2500);
+        }
+    }
 }
 
 function loadAppointments() {
@@ -200,6 +253,119 @@ function refreshAfter(res, fallback) {
         showAlert('danger', res.message || fallback);
     }
 }
+
+function fetchDentistWorkingHours() {
+    if (dentistWorkingHours) {
+        return Promise.resolve(dentistWorkingHours);
+    }
+    return $.get('../api/dentist-working-hours.php')
+        .then(res => {
+            if (!res || !res.success || !res.settings) {
+                throw new Error('Failed to load dentist working hours.');
+            }
+            dentistWorkingHours = res.settings;
+            return dentistWorkingHours;
+        });
+}
+
+function loadTimeSlots(date, selectedTime = null) {
+    const timeSelect = $('#edit_time');
+    timeSelect.html('<option value="">Loading...</option>');
+
+    const dayOfWeek = new Date(date).getDay();
+    if (dayOfWeek === 0) {
+        timeSelect.html('<option value="">Clinic closed on Sundays</option>');
+        return;
+    }
+    fetchDentistWorkingHours()
+        .then(settings => {
+            const start = dayOfWeek === 6 ? (settings.saturday_start || '09:00') : (settings.weekday_start || '08:00');
+            const end = dayOfWeek === 6 ? (settings.saturday_end || '12:00') : (settings.weekday_end || '12:00');
+            const toMinutes = (hhmm) => {
+                const [h, m] = String(hhmm).split(':').map(v => parseInt(v, 10));
+                if (!Number.isFinite(h) || !Number.isFinite(m)) return NaN;
+                return (h * 60) + m;
+            };
+            const startMin = toMinutes(start);
+            const endMin = toMinutes(end);
+
+            if (!Number.isFinite(startMin) || !Number.isFinite(endMin) || startMin >= endMin) {
+                timeSelect.html('<option value="">No available schedule for this day</option>');
+                return;
+            }
+
+            let options = '<option value="">Select time...</option>';
+            for (let t = startMin; t < endMin; t += 30) {
+                const hh = String(Math.floor(t / 60)).padStart(2, '0');
+                const mm = String(t % 60).padStart(2, '0');
+                const time24 = `${hh}:${mm}:00`;
+                const hour = parseInt(hh, 10);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const hour12 = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+                const label = `${hour12}:${mm} ${ampm}`;
+                const selected = (selectedTime && time24 === selectedTime) ? 'selected' : '';
+                options += `<option value="${time24}" ${selected}>${label}</option>`;
+            }
+            timeSelect.html(options);
+        })
+        .catch(() => {
+            timeSelect.html('<option value="">Unable to load available times</option>');
+        });
+}
+
+$(document).on('click', '.edit-btn', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    const id = $(this).data('id');
+    const date = $(this).data('date');
+    const today = new Date().toISOString().split('T')[0];
+
+    $('#edit_appointment_id').val(id);
+    $('#edit_date').attr('min', today).val(date);
+    $('#edit_reason').val('');
+    loadTimeSlots(date);
+    editModal.show();
+});
+
+$('#edit_date').on('change', function() {
+    const date = $(this).val();
+    if (date) {
+        loadTimeSlots(date);
+    }
+});
+
+$('#saveReschedule').on('click', function() {
+    const id = $('#edit_appointment_id').val();
+    const date = $('#edit_date').val();
+    const time = $('#edit_time').val();
+    const reason = $('#edit_reason').val().trim();
+    const saveBtn = $(this);
+
+    if (!date || !time) {
+        showAlert('warning', 'Please select both date and time.');
+        return;
+    }
+
+    saveBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+    $.post('../api/dentist-appointments.php', {
+        action: 'reschedule',
+        appointment_id: id,
+        appointment_date: date,
+        appointment_time: time,
+        reason: reason
+    }, function(res) {
+        if (res.success) {
+            editModal.hide();
+            showAlert('success', '<i class="bi bi-check-circle me-1"></i>' + res.message);
+            loadAppointments();
+        } else {
+            showAlert('danger', res.message || 'Failed to reschedule appointment.');
+        }
+    }, 'json').fail(() => showAlert('danger', 'Server error during reschedule.'))
+      .always(() => saveBtn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Changes'));
+});
 
 $(document).on('click', '.approve-btn', function(e) {
     e.preventDefault();

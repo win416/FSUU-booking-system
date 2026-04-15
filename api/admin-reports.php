@@ -93,6 +93,31 @@ while ($row = $res->fetch_assoc()) {
 }
 $stats['services'] = $services;
 
+// 3b. Program booking frequency
+$stmt = $db->prepare("
+    SELECT
+        COALESCE(NULLIF(TRIM(u.program), ''), 'Unspecified') AS program,
+        COUNT(a.appointment_id) AS count
+    FROM appointments a
+    JOIN users u ON u.user_id = a.user_id
+    WHERE a.appointment_date BETWEEN ? AND ?
+      AND u.role IN ('student','staff')
+    GROUP BY COALESCE(NULLIF(TRIM(u.program), ''), 'Unspecified')
+    ORDER BY count DESC, program ASC
+    LIMIT 10
+");
+$stmt->bind_param("ss", $start_date, $end_date);
+$stmt->execute();
+$res = $stmt->get_result();
+$programs = [];
+while ($row = $res->fetch_assoc()) {
+    $programs[] = [
+        'program' => $row['program'],
+        'count' => (int)$row['count']
+    ];
+}
+$stats['programs'] = $programs;
+
 // 4. Monthly Comparison (Current month vs Last month)
 $current_month = date('m');
 $current_year = date('Y');

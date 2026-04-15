@@ -53,7 +53,7 @@ $db->query("
 
 $search = trim($_GET['search'] ?? '');
 $patientsSql = "
-    SELECT DISTINCT u.user_id, u.fsuu_id, u.first_name, u.last_name, u.email, u.contact_number, u.profile_picture,
+    SELECT DISTINCT u.user_id, u.fsuu_id, u.first_name, u.last_name, u.email, u.contact_number, u.program, u.profile_picture,
         (SELECT COUNT(*) FROM dentist_patient_records dpr WHERE dpr.dentist_id = ? AND dpr.patient_id = u.user_id) AS record_count,
         (SELECT MAX(dpr2.created_at) FROM dentist_patient_records dpr2 WHERE dpr2.dentist_id = ? AND dpr2.patient_id = u.user_id) AS last_record_at
     FROM dentist_appointment_assignments da
@@ -150,10 +150,10 @@ $patients = $patientsStmt->get_result();
                                         <tr>
                                             <th style="padding:0.85rem 1.25rem;">Patient</th>
                                             <th style="padding:0.85rem 1.25rem;">FSUU ID</th>
+                                            <th style="padding:0.85rem 1.25rem;">Program</th>
                                             <th style="padding:0.85rem 1.25rem;">Contact</th>
                                             <th style="padding:0.85rem 1.25rem;">Records</th>
                                             <th style="padding:0.85rem 1.25rem;">Last Updated</th>
-                                            <th style="padding:0.85rem 1.25rem; text-align:right;">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -165,6 +165,7 @@ $patients = $patientsStmt->get_result();
                                                 data-email="<?php echo htmlspecialchars($p['email'] ?? ''); ?>"
                                                 data-contact="<?php echo htmlspecialchars($p['contact_number'] ?? ''); ?>"
                                                 data-fsuu-id="<?php echo htmlspecialchars($p['fsuu_id'] ?? ''); ?>"
+                                                data-program="<?php echo htmlspecialchars($p['program'] ?? ''); ?>"
                                                 data-picture="<?php echo htmlspecialchars($p['profile_picture'] ?? ''); ?>"
                                                 style="cursor:pointer;">
                                                 <td style="padding:0.85rem 1.25rem;">
@@ -172,16 +173,10 @@ $patients = $patientsStmt->get_result();
                                                     <small class="text-muted"><?php echo htmlspecialchars($p['email']); ?></small>
                                                 </td>
                                                 <td style="padding:0.85rem 1.25rem;"><?php echo htmlspecialchars($p['fsuu_id'] ?: '—'); ?></td>
+                                                <td style="padding:0.85rem 1.25rem;"><?php echo htmlspecialchars($p['program'] ?: '—'); ?></td>
                                                 <td style="padding:0.85rem 1.25rem;"><?php echo htmlspecialchars($p['contact_number'] ?: '—'); ?></td>
                                                 <td style="padding:0.85rem 1.25rem;"><span class="badge bg-primary"><?php echo (int)$p['record_count']; ?></span></td>
                                                 <td style="padding:0.85rem 1.25rem;"><?php echo $p['last_record_at'] ? date('M j, Y g:i A', strtotime($p['last_record_at'])) : 'No records yet'; ?></td>
-                                                <td style="padding:0.85rem 1.25rem; text-align:right;">
-                                                    <button class="btn btn-sm btn-outline-primary view-records-btn"
-                                                        data-id="<?php echo (int)$p['user_id']; ?>"
-                                                        data-name="<?php echo htmlspecialchars($patientName); ?>">
-                                                        <i class="bi bi-folder2-open"></i> Open
-                                                    </button>
-                                                </td>
                                             </tr>
                                         <?php endwhile; ?>
                                     </tbody>
@@ -256,6 +251,7 @@ $patients = $patientsStmt->get_result();
                             <div class="mb-2"><strong>Email:</strong> <span id="patientProfileEmail">—</span></div>
                             <div class="mb-2"><strong>Contact:</strong> <span id="patientProfileContact">—</span></div>
                             <div class="mb-2"><strong>FSUU ID:</strong> <span id="patientProfileFsuu">—</span></div>
+                            <div class="mb-2"><strong>Program:</strong> <span id="patientProfileProgram">—</span></div>
                         </div>
                     </div>
                 </div>
@@ -304,31 +300,20 @@ $patients = $patientsStmt->get_result();
         });
     }
 
-    $(document).on('click', '.view-records-btn', function(e) {
-        e.stopPropagation();
-        const patientId = $(this).data('id');
-        const patientName = $(this).data('name');
-        $('#record_patient_id').val(patientId);
-        $('#recordsPatientName').text('Records - ' + patientName);
-        $('#treatment_notes').val('');
-        $('#prescription').val('');
-        $('#recordsAlert').html('');
-        loadPatientRecords(patientId);
-        new bootstrap.Modal(document.getElementById('patientRecordsModal')).show();
-    });
-
     $(document).on('click', '.patient-profile-row', function() {
         const patientId = $(this).data('id');
         const name = $(this).data('name') || 'Patient';
         const email = $(this).data('email') || 'Not available';
         const contact = $(this).data('contact') || 'Not available';
         const fsuuId = $(this).data('fsuu-id') || '—';
+        const program = $(this).data('program') || '—';
         const picture = $(this).data('picture') || '';
 
         $('#patientProfileName').text(name);
         $('#patientProfileEmail').text(email);
         $('#patientProfileContact').text(contact);
         $('#patientProfileFsuu').text(fsuuId);
+        $('#patientProfileProgram').text(program);
 
         const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'P';
         if (picture) {

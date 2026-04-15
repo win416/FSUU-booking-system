@@ -1,7 +1,9 @@
 <?php
 require_once '../includes/session.php';
 require_once '../includes/db_connection.php';
+require_once '../includes/appointment_reminders.php';
 SessionManager::requireAdmin();
+processAppointmentRemindersIfDue();
 
 $db = getDB();
 $currentUser = SessionManager::getUser();

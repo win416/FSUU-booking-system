@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/appointment_reminders.php';
 
 class SessionManager {
     
@@ -37,6 +38,7 @@ class SessionManager {
         
         // Update last activity
         $_SESSION['last_activity'] = time();
+        processAppointmentRemindersIfDue();
         return true;
     }
     

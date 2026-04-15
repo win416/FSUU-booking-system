@@ -157,6 +157,26 @@ SessionManager::requireAdmin();
                     </div>
                 </div>
 
+                <!-- Program Booking Frequency -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card chart-card">
+                            <div class="card-body">
+                                <div class="card-title">Program Booking Frequency</div>
+                                <span class="chart-sub">Programs with the highest number of appointment bookings</span>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm" id="programs-table">
+                                        <thead>
+                                            <tr><th>Program</th><th>Bookings</th><th>Share</th></tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Detailed Appointments Table -->
                 <div class="card detail-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -506,6 +526,31 @@ SessionManager::requireAdmin();
                         </div>
                     </td></tr>`;
             }).join('');
+
+            // ── Programs Table ────────────────────────────────────────────────
+            const programs = Array.isArray(data.programs) ? data.programs : [];
+            const programsTotal = programs.reduce((acc, p) => acc + (parseInt(p.count) || 0), 0);
+            const programsTbody = document.querySelector('#programs-table tbody');
+            if (!programs.length) {
+                programsTbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">No program booking data in this period.</td></tr>';
+            } else {
+                programsTbody.innerHTML = programs.map(p => {
+                    const count = parseInt(p.count) || 0;
+                    const pct = programsTotal > 0 ? (count / programsTotal * 100).toFixed(1) : '0.0';
+                    return `<tr>
+                        <td>${escHtml(p.program || 'Unspecified')}</td>
+                        <td><strong>${count}</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress service-progress flex-grow-1">
+                                    <div class="progress-bar" style="width:${pct}%"></div>
+                                </div>
+                                <small class="text-muted service-pct-label">${pct}%</small>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
         }
 
         // ── CSV Export ───────────────────────────────────────────────────────

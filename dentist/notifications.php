@@ -28,6 +28,9 @@ $read_count = $total_count - $unread_count;
 function dentistNotifStyle(array $notif): array {
     $subject = strtolower($notif['subject'] ?? '');
     $type = strtolower($notif['type'] ?? '');
+    if (strpos($subject, 'new appointment assigned') !== false || strpos($subject, 'assigned') !== false) {
+        return ['icon' => 'bi-calendar-check-fill', 'color' => 'primary', 'bg' => 'bg-primary'];
+    }
     if (strpos($subject, 'approved') !== false || strpos($subject, 'confirmed') !== false || strpos($subject, 'completed') !== false) {
         return ['icon' => 'bi-check-circle-fill', 'color' => 'success', 'bg' => 'bg-success'];
     }
@@ -48,6 +51,61 @@ function dentistDateGroup(string $dateStr): string {
     if ($diff < 7 * 86400) return 'This Week';
     if ($diff < 30 * 86400) return 'This Month';
     return 'Older';
+}
+
+function resolveAppointmentIdFromNotification(mysqli $db, int $dentistId, array $notif): ?int {
+    $message = trim((string)($notif['message'] ?? ''));
+    if ($message === '') return null;
+
+    if (!preg_match_all('/([A-Za-z]+ \d{1,2}, \d{4}) at (\d{1,2}:\d{2} [AP]M)/i', $message, $dateMatches, PREG_SET_ORDER)) {
+        return null;
+    }
+
+    $lastMatch = end($dateMatches);
+    $dt = DateTime::createFromFormat('F j, Y g:i A', $lastMatch[1] . ' ' . $lastMatch[2]);
+    if (!$dt) return null;
+
+    $date = $dt->format('Y-m-d');
+    $time = $dt->format('H:i:s');
+
+    $fullName = null;
+    if (preg_match('/Patient:\s*([A-Za-z.\'\-\s]+)\.?/i', $message, $nameMatch)) {
+        $fullName = trim($nameMatch[1]);
+    }
+
+    if ($fullName) {
+        $stmt = $db->prepare("
+            SELECT a.appointment_id
+            FROM dentist_appointment_assignments da
+            JOIN appointments a ON a.appointment_id = da.appointment_id
+            JOIN users u ON u.user_id = a.user_id
+            WHERE da.dentist_id = ?
+              AND a.appointment_date = ?
+              AND a.appointment_time = ?
+              AND TRIM(LOWER(CONCAT(u.first_name, ' ', u.last_name))) = TRIM(LOWER(?))
+            ORDER BY a.created_at DESC
+            LIMIT 1
+        ");
+        $stmt->bind_param("isss", $dentistId, $date, $time, $fullName);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        if ($row) return (int)$row['appointment_id'];
+    }
+
+    $stmt = $db->prepare("
+        SELECT a.appointment_id
+        FROM dentist_appointment_assignments da
+        JOIN appointments a ON a.appointment_id = da.appointment_id
+        WHERE da.dentist_id = ?
+          AND a.appointment_date = ?
+          AND a.appointment_time = ?
+        ORDER BY a.created_at DESC
+        LIMIT 1
+    ");
+    $stmt->bind_param("iss", $dentistId, $date, $time);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    return $row ? (int)$row['appointment_id'] : null;
 }
 ?>
 <!DOCTYPE html>
@@ -124,17 +182,20 @@ function dentistDateGroup(string $dateStr): string {
                         $style = dentistNotifStyle($notif);
                         $isUnread = !$notif['is_read'];
                         $group = dentistDateGroup($notif['created_at']);
+                        $resolvedAppointmentId = resolveAppointmentIdFromNotification($db, (int)$user['user_id'], $notif);
                         if ($group !== $lastGroup):
                             $lastGroup = $group;
                 ?>
                     <div class="notif-date-group" data-group="<?php echo htmlspecialchars($group); ?>"><span><?php echo htmlspecialchars($group); ?></span></div>
                 <?php endif; ?>
-                    <div class="notif-card notif-<?php echo $style['color']; ?> <?php echo $isUnread ? 'unread' : ''; ?>"
-                         data-id="<?php echo $notif['notification_id']; ?>"
-                         data-read="<?php echo $notif['is_read'] ? '1' : '0'; ?>"
-                         data-group="<?php echo htmlspecialchars($group); ?>"
-                         data-subject="<?php echo strtolower(htmlspecialchars($notif['subject'])); ?>"
-                         data-body="<?php echo strtolower(htmlspecialchars($notif['message'])); ?>">
+                     <div class="notif-card notif-<?php echo $style['color']; ?> <?php echo $isUnread ? 'unread' : ''; ?>"
+                          data-id="<?php echo $notif['notification_id']; ?>"
+                          data-read="<?php echo $notif['is_read'] ? '1' : '0'; ?>"
+                          data-group="<?php echo htmlspecialchars($group); ?>"
+                          data-subject="<?php echo strtolower(htmlspecialchars($notif['subject'])); ?>"
+                          data-body="<?php echo strtolower(htmlspecialchars($notif['message'])); ?>"
+                          data-appointment-id="<?php echo (int)($resolvedAppointmentId ?? 0); ?>"
+                          style="cursor:pointer;">
                         <div class="card-body">
                             <div class="d-flex align-items-start">
                                 <div class="flex-grow-1 min-w-0">
@@ -187,8 +248,35 @@ document.getElementById('notifSearch').addEventListener('input', function() {
     });
 });
 document.getElementById('markAllRead')?.addEventListener('click', function() {
-    fetch('../api/mark-notifications-read.php', { method:'POST' })
+    fetch('../api/mark-notifications-read.php', {
+        method:'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'all=true'
+    })
         .then(r => r.json()).then(() => location.reload()).catch(() => {});
+});
+document.querySelectorAll('.notif-card').forEach(card => {
+    card.addEventListener('click', function() {
+        const id = this.dataset.id;
+        const appointmentId = parseInt(this.dataset.appointmentId || '0', 10);
+        const isUnread = this.dataset.read === '0';
+        const go = () => {
+            window.location.href = appointmentId > 0
+                ? ('appointments.php?appointment_id=' + encodeURIComponent(appointmentId))
+                : 'appointments.php';
+        };
+
+        if (!isUnread) {
+            go();
+            return;
+        }
+
+        fetch('../api/mark-notifications-read.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'notification_id=' + encodeURIComponent(id)
+        }).finally(go);
+    });
 });
 </script>
 </body>

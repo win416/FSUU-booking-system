@@ -510,59 +510,56 @@
     color: var(--text-light);
 }
 
-.slots-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-}
-
-.time-slot {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0.45rem 0.8rem;
-    border: 2px solid var(--border-color);
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
+.slot-dropdown-wrap {
+    position: relative;
     background: #fff;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--primary-text);
-    min-width: 80px;
+    border: 1px solid #dbe7ef;
+    border-radius: 0.7rem;
+    padding: 0.55rem 0.65rem 0.6rem;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
 }
 
-.time-slot:hover {
-    border-color: var(--primary-color);
-    background: var(--accent-color);
-    transform: translateY(-2px);
+.slot-dropdown-wrap .form-label {
+    font-size: 0.74rem;
+    color: #6d7a86;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem !important;
 }
 
-.time-slot.selected {
-    background: var(--primary-color);
-    color: #fff;
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+.slot-dropdown {
+    border: 1px solid #cfe1ec;
+    border-radius: 0.6rem;
+    font-weight: 700;
+    font-size: 0.98rem;
+    line-height: 1.2;
+    padding: 0.65rem 2.25rem 0.65rem 0.85rem;
+    color: #1f2a33;
+    background-color: #fdfefe;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #1f9ed8 50%),
+        linear-gradient(135deg, #1f9ed8 50%, transparent 50%),
+        linear-gradient(to right, rgba(31,158,216,0.08), rgba(31,158,216,0.08));
+    background-position:
+        calc(100% - 16px) calc(1em + 1px),
+        calc(100% - 11px) calc(1em + 1px),
+        calc(100% - 2.3rem) 0.35rem;
+    background-size: 5px 5px, 5px 5px, 1px calc(100% - 0.7rem);
+    background-repeat: no-repeat;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
 }
 
-.time-slot.disabled {
-    background: #f8f9fa;
-    color: #adb5bd;
-    cursor: not-allowed;
-    border-color: var(--border-color);
-    opacity: 0.65;
-    transform: none !important;
+.slot-dropdown:focus {
+    border-color: #1f9ed8;
+    box-shadow: 0 0 0 0.2rem rgba(41,171,226,0.16);
+    background-color: #fff;
 }
 
-.slot-time { line-height: 1; }
-
-.slot-tag {
-    font-size: 0.65rem;
-    color: #adb5bd;
-    font-weight: 400;
+.slot-dropdown option[disabled] {
+    color: #9aa0a6;
 }
-
-.slot-tag.past { color: #dc3545; }
 
 /* ── Booking summary sidebar ─────────────────────────────────────────── */
 .booking-summary {
@@ -739,9 +736,8 @@
     .booking-panel-header { padding: 0.75rem 1rem; flex-wrap: wrap; }
     .booking-panel-body { padding: 1rem 0.75rem; }
     .service-card { padding: 1rem 0.75rem 0.75rem; }
-    .time-slot { min-width: 70px; font-size: 0.78rem; padding: 0.4rem 0.6rem; }
     .clinic-hours-notice { font-size: 0.78rem; }
-    .slots-grid { gap: 0.3rem; }
+    .slot-dropdown { font-size: 0.9rem; padding-left: 0.75rem; }
 }
 
 @keyframes toastIn {

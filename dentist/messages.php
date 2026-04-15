@@ -224,37 +224,49 @@ function resetComposeForm() {
     document.getElementById('chatInput').value = '';
 }
 function avatarHtmlFrom(u) {
-    if (u.profile_picture) return `<img src="../${u.profile_picture}" class="thread-avatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`;
-    const n = ((u.first_name||'') + ' ' + (u.last_name||'')).trim();
-    const ch = (n[0] || '?').toUpperCase();
-    return `<div class="msg-avatar-initials" style="width:36px;height:36px;font-size:0.85rem;">${ch}</div>`;
+    const n = ((u.first_name || '') + ' ' + (u.last_name || '')).trim();
+    const initials = n.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || '?';
+    if (u.profile_picture) {
+        return `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;overflow:hidden;padding:0;background:transparent;"><img src="../${escHtml(u.profile_picture)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`;
+    }
+    return `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${initials}</div>`;
 }
 function renderThreads(rows, mode='inbox') {
     const list = document.getElementById('inboxList');
     if (!rows || !rows.length) {
-        list.innerHTML = `<div class="inbox-empty"><i class="bi bi-inbox"></i>${mode === 'sent' ? 'No sent messages yet' : 'No messages yet'}</div>`;
+        list.innerHTML = `<div class="inbox-empty"><i class="bi ${mode === 'sent' ? 'bi-send' : 'bi-inbox'}" style="font-size:1.8rem;display:block;margin-bottom:0.5rem;"></i>${mode === 'sent' ? 'No sent messages' : 'No messages yet'}</div>`;
         return;
     }
     const html = rows.map(t => {
-        const name = `${t.first_name || ''} ${t.last_name || ''}`.trim() || 'Unknown';
-        const subject = t.subject || '(No subject)';
+        const fullName = `${t.first_name || ''} ${t.last_name || ''}`.trim() || 'Unknown';
+        const initials = ((t.first_name?.[0] || '') + (t.last_name?.[0] || '')).toUpperCase() || '?';
+        const av = t.profile_picture
+            ? `<div class="ti-avatar"><img src="../${escHtml(t.profile_picture)}" alt=""></div>`
+            : `<div class="ti-avatar">${initials}</div>`;
         const unread = parseInt(t.unread || 0, 10);
-        const preview = t.last_msg ? escHtml(t.last_msg) : '';
-        const avatar = t.profile_picture
-            ? `<img src="../${t.profile_picture}" class="thread-avatar">`
-            : `<div class="msg-avatar-initials">${(name[0]||'?').toUpperCase()}</div>`;
-        return `<div class="thread-item" data-user="${t.user_id}" data-name="${escHtml(name)}" data-subject="${escHtml(subject)}">
-            ${avatar}
-            <div class="thread-main">
-                <div class="thread-top">
-                    <span class="thread-name">${escHtml(name)}</span>
-                    <span class="thread-time">${timeAgo(t.last_at)}</span>
+        const unreadCls = mode === 'inbox' && unread > 0 ? 'unread' : '';
+        const badge = mode === 'inbox' && unread > 0 ? `<span class="ti-badge">${unread > 99 ? '99+' : unread}</span>` : '';
+        const preview = t.last_msg ? escHtml(t.last_msg.substring(0, 60)) : '<em>No messages</em>';
+        const subjectLabel = t.subject ? escHtml(t.subject) : '(No subject)';
+        const subLine = mode === 'sent'
+            ? `To: ${escHtml(fullName)}`
+            : `${escHtml(fullName)}${t.fsuu_id ? ' · ' + escHtml(t.fsuu_id) : ''}`;
+        return `<div class="thread-item ${unreadCls} ${t.user_id == RECIPIENT_ID && (t.subject || '') == CURRENT_SUBJECT ? 'active' : ''}"
+                     data-user="${t.user_id}"
+                     data-name="${escHtml(fullName)}"
+                     data-subject="${escHtml(t.subject || '')}"
+                     data-ini="${initials}"
+                     data-pic="${escHtml(t.profile_picture || '')}">
+            ${av}
+            <div class="ti-body">
+                <div class="ti-top">
+                    <span class="ti-name">${subjectLabel}</span>
+                    <span class="ti-time">${t.last_at ? timeAgo(t.last_at) : ''}</span>
                 </div>
-                <div class="thread-bottom">
-                    <span class="thread-preview">${escHtml(subject)}${preview ? ' — ' + preview : ''}</span>
-                    ${mode === 'inbox' && unread > 0 ? `<span class="thread-unread">${unread > 99 ? '99+' : unread}</span>` : ''}
-                </div>
+                <div class="ti-sub">${subLine}</div>
+                <div class="ti-preview">${preview}</div>
             </div>
+            ${badge}
         </div>`;
     }).join('');
     list.innerHTML = html;
@@ -262,11 +274,17 @@ function renderThreads(rows, mode='inbox') {
         el.onclick = () => {
             list.querySelectorAll('.thread-item').forEach(x => x.classList.remove('active'));
             el.classList.add('active');
+            el.classList.remove('unread');
+            el.querySelector('.ti-badge') && el.querySelector('.ti-badge').remove();
             const uid = el.getAttribute('data-user');
             const name = el.getAttribute('data-name');
             const subject = el.getAttribute('data-subject');
-            const row = rows.find(r => String(r.user_id) === String(uid)) || {};
-            showThread(uid, name, avatarHtmlFrom(row), subject);
+            const ini = el.getAttribute('data-ini') || '?';
+            const pic = el.getAttribute('data-pic') || '';
+            const avHtml = pic
+                ? `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;flex-shrink:0;border-radius:50%;overflow:hidden;padding:0;background:transparent;"><img src="../${escHtml(pic)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
+                : `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${ini}</div>`;
+            showThread(uid, name, avHtml, subject);
         };
     });
 }
@@ -292,13 +310,39 @@ function loadThread() {
         .then(r => r.json()).then(res => {
             if (!res.success) return;
             const box = document.getElementById('chatMessages');
-            if (!res.messages || !res.messages.length) { box.innerHTML = `<div class="chat-empty">No messages yet</div>`; return; }
-            box.innerHTML = res.messages.map(m => {
-                const mine = parseInt(m.sender_id,10) === ME;
-                const cls = mine ? 'msg-bubble mine' : 'msg-bubble other';
-                const txt = escHtml(m.message_text || '').replace(/\n/g,'<br>');
-                return `<div class="${cls}"><div class="msg-text">${txt}</div><div class="msg-meta">${timeAgo(m.created_at)}</div></div>`;
-            }).join('');
+            if (!res.messages || !res.messages.length) {
+                box.innerHTML = '<div class="text-center text-muted py-5" style="font-size:0.85rem">No messages yet. Say hello! 👋</div>';
+                return;
+            }
+
+            let html = '';
+            let lastDay = '';
+            res.messages.forEach(m => {
+                const day = (m.created_at || '').substring(0, 10);
+                if (day && day !== lastDay) {
+                    const today = new Date().toISOString().substring(0, 10);
+                    html += `<div class="day-divider"><span>${day === today ? 'Today' : day}</span></div>`;
+                    lastDay = day;
+                }
+
+                const mine = parseInt(m.sender_id, 10) === ME;
+                const initials = ((m.first_name?.[0] || '') + (m.last_name?.[0] || '')).toUpperCase() || '?';
+                const avatar = mine
+                    ? ''
+                    : (m.profile_picture
+                        ? `<img src="../${escHtml(m.profile_picture)}" class="msg-avatar" alt="">`
+                        : `<div class="msg-avatar-initials">${initials}</div>`);
+                const timeStr = new Date((m.created_at || '').replace(' ', 'T')).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+                html += `<div class="msg-row ${mine ? 'mine' : 'theirs'}">
+                    ${avatar}
+                    <div class="msg-content">
+                        <div class="msg-bubble">${escHtml(m.message_text || '')}</div>
+                        <div class="msg-time ${mine ? 'text-end' : ''}">${timeStr}</div>
+                    </div>
+                </div>`;
+            });
+
+            box.innerHTML = html;
             box.scrollTop = box.scrollHeight;
             loadInbox();
         }).catch(() => {});
@@ -320,9 +364,16 @@ function sendReply() {
         }).catch(() => {});
 }
 function sendCompose() {
+    const sendBtn = document.getElementById('chatSendBtn');
+    const toChipName = document.getElementById('toChipName');
     const msg = document.getElementById('chatInput').value.trim();
     const subj = document.getElementById('msgSubject').value.trim();
-    if (!RECIPIENT_ID || !msg) return;
+    if (!RECIPIENT_ID) { document.getElementById('msgTo').focus(); return; }
+    if (!msg) { document.getElementById('chatInput').focus(); return; }
+
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Sending…';
+
     const fd = new FormData();
     fd.append('action', 'send');
     fd.append('receiver_id', RECIPIENT_ID);
@@ -330,10 +381,27 @@ function sendCompose() {
     fd.append('message', msg);
     fetch('../api/messages.php', { method:'POST', body:fd })
         .then(r => r.json()).then(res => {
-            if (!res.success) return;
-            switchTab('sent');
-            showEmpty();
-        }).catch(() => {});
+            if (!res.success) {
+                alert('Failed: ' + (res.message || 'Unknown error'));
+                return;
+            }
+            const sentId = RECIPIENT_ID;
+            const sentName = toChipName.textContent || 'Recipient';
+            const sentSubject = subj;
+            const sentIni = sentName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || '?';
+            resetComposeForm();
+            loadInbox();
+            const avHtml = `<div class="msg-avatar-initials" id="threadAvatar" style="width:36px;height:36px;font-size:0.85rem;flex-shrink:0;">${sentIni}</div>`;
+            showThread(sentId, sentName, avHtml, sentSubject);
+            if (!res.email_sent) {
+                alert('Message sent. Email notification could not be delivered' + (res.email_error ? ': ' + res.email_error : '.'));
+            }
+        }).catch(() => {
+            alert('Network error.');
+        }).finally(() => {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="bi bi-send-fill"></i> Send';
+        });
 }
 function attachRecipientSearch() {
     const to = document.getElementById('msgTo');
@@ -345,19 +413,35 @@ function attachRecipientSearch() {
     to.addEventListener('input', () => {
         const q = to.value.trim();
         clearTimeout(t);
-        if (!q) { sugg.innerHTML = ''; return; }
+        if (!q) { sugg.innerHTML = ''; sugg.style.display = 'none'; return; }
         t = setTimeout(() => {
             fetch(`../api/messages.php?action=search_recipients&q=${encodeURIComponent(q)}`)
                 .then(r => r.json()).then(res => {
-                    if (!res.success) return;
+                    if (!res.success) { sugg.innerHTML = ''; sugg.style.display = 'none'; return; }
                     const rows = res.results || [];
-                    if (!rows.length) { sugg.innerHTML = `<div class="sugg-empty">No users found</div>`; return; }
+                    if (!rows.length) {
+                        sugg.innerHTML = '<div style="padding:0.55rem 0.85rem;font-size:0.82rem;color:#94a3b8">No results</div>';
+                        sugg.style.display = 'block';
+                        return;
+                    }
                     sugg.innerHTML = rows.map(u => {
-                        const n = `${u.first_name||''} ${u.last_name||''}`.trim();
-                        return `<div class="sugg-item" data-id="${u.user_id}" data-name="${escHtml(n)}">${escHtml(n)} <span class="text-muted small">(${escHtml(u.email||'')})</span></div>`;
+                        const n = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+                        const initials = `${(u.first_name || '')[0] || ''}${(u.last_name || '')[0] || ''}`.toUpperCase() || '?';
+                        const av = u.profile_picture
+                            ? `<div class="si-av"><img src="../${escHtml(u.profile_picture)}" alt=""></div>`
+                            : `<div class="si-av">${initials}</div>`;
+                        return `<div class="si-item" data-id="${u.user_id}" data-name="${escHtml(n)}">
+                            ${av}
+                            <div>
+                                <div class="si-name">${escHtml(n)}</div>
+                                <div class="si-email">${escHtml(u.email || '')}</div>
+                            </div>
+                        </div>`;
                     }).join('');
-                    sugg.querySelectorAll('.sugg-item').forEach(el => {
-                        el.onclick = () => {
+                    sugg.style.display = 'block';
+                    sugg.querySelectorAll('.si-item').forEach(el => {
+                        el.addEventListener('mousedown', function(e) {
+                            e.preventDefault();
                             RECIPIENT_ID = parseInt(el.getAttribute('data-id'), 10);
                             const nm = el.getAttribute('data-name');
                             toChipName.textContent = nm;
@@ -365,20 +449,24 @@ function attachRecipientSearch() {
                             to.value = '';
                             to.style.display = 'none';
                             sugg.innerHTML = '';
-                        };
+                            sugg.style.display = 'none';
+                        });
                     });
-                }).catch(() => {});
+                }).catch(() => { sugg.innerHTML = ''; sugg.style.display = 'none'; });
         }, 200);
     });
     toChipRemove.onclick = () => {
         RECIPIENT_ID = null;
         toChip.style.display = 'none';
         to.style.display = '';
+        sugg.innerHTML = '';
+        sugg.style.display = 'none';
         to.focus();
     };
     document.addEventListener('click', (e) => {
         if (!document.querySelector('.to-field-wrapper').contains(e.target)) {
             sugg.innerHTML = '';
+            sugg.style.display = 'none';
         }
     });
 }

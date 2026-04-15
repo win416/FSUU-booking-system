@@ -57,7 +57,7 @@ $upcomingAppointmentsStmt = $db->prepare("
     JOIN services s ON s.service_id = a.service_id
     WHERE da.dentist_id = ?
       AND a.appointment_date >= CURDATE()
-      AND a.status IN ('pending', 'approved')
+      AND LOWER(TRIM(a.status)) = 'pending'
     ORDER BY a.appointment_date ASC, a.appointment_time ASC
     LIMIT 10
 ");
@@ -223,7 +223,7 @@ foreach ($weekly_data as $date => $count) {
                 <div class="col-md-6 d-flex">
                     <div class="card mb-4 w-100">
                         <div class="card-header">
-                            <h5>Upcoming Queue</h5>
+                            <h5>Pending Appointments</h5>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -234,20 +234,26 @@ foreach ($weekly_data as $date => $count) {
                                             <th>Time</th>
                                             <th>Patient</th>
                                             <th>Service</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php if ($upcomingAppointments->num_rows > 0): ?>
                                             <?php while ($appointment = $upcomingAppointments->fetch_assoc()): ?>
                                                 <tr>
-                                                    <td><?php echo date('M d, Y', strtotime($appointment['appointment_date'])); ?></td>
-                                                    <td><?php echo date('h:i A', strtotime($appointment['appointment_time'])); ?></td>
-                                                    <td><?php echo htmlspecialchars($appointment['first_name'] . ' ' . $appointment['last_name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($appointment['service_name']); ?></td>
+                                                    <td class="text-nowrap"><?php echo date('M d, Y', strtotime($appointment['appointment_date'])); ?></td>
+                                                    <td class="text-nowrap"><?php echo date('h:i A', strtotime($appointment['appointment_time'])); ?></td>
+                                                    <td class="text-nowrap"><?php echo htmlspecialchars($appointment['first_name'] . ' ' . $appointment['last_name']); ?></td>
+                                                    <td class="text-nowrap"><?php echo htmlspecialchars($appointment['service_name']); ?></td>
+                                                    <td class="text-nowrap">
+                                                        <a href="appointments.php?appointment_id=<?php echo (int)$appointment['appointment_id']; ?>" class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-pencil-square me-1"></i>Manage
+                                                        </a>
+                                                    </td>
                                                 </tr>
                                             <?php endwhile; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="4" class="text-center py-4">No upcoming appointments</td></tr>
+                                            <tr><td colspan="5" class="text-center py-4">No pending appointments</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>

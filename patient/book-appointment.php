@@ -100,7 +100,7 @@ function serviceBgImage(string $name): string {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/patient-dashboard.css">
-    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=3">
+    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=13">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -413,6 +413,7 @@ let selectedService  = null;
 let selectedDate     = null;
 let selectedTime     = null;
 let calendar         = null;
+let slotRefreshTimer = null;
 
 // ── Toast helper ─────────────────────────────────────────────────────
 function showToast(type, msg) {
@@ -502,6 +503,7 @@ $('#changeServiceBtn').on('click', function () {
     $('#step1').removeClass('d-none');
     selectedDate = null;
     selectedTime = null;
+    stopSlotAutoRefresh();
     setStep(1);
     updateSummary();
 });
@@ -596,6 +598,7 @@ function initCalendar() {
                 { weekday: 'long', month: 'long', day: 'numeric' });
             $('#selectedDateLabel').text(pretty);
             loadTimeSlots(info.dateStr);
+            startSlotAutoRefresh();
             updateSummary();
         }
     });
@@ -603,9 +606,27 @@ function initCalendar() {
 }
 
 // ── Time slots ────────────────────────────────────────────────────────
-function loadTimeSlots(date) {
-    $('#timeSlotsContainer').html(
-        '<div class="slots-loading"><span class="spinner-border spinner-border-sm text-primary me-2"></span>Loading slots…</div>');
+function stopSlotAutoRefresh() {
+    if (slotRefreshTimer) {
+        clearInterval(slotRefreshTimer);
+        slotRefreshTimer = null;
+    }
+}
+
+function startSlotAutoRefresh() {
+    stopSlotAutoRefresh();
+    if (!selectedDate || !selectedService) return;
+    slotRefreshTimer = setInterval(() => {
+        if ($('#step2').hasClass('d-none')) return;
+        loadTimeSlots(selectedDate, true);
+    }, 10000);
+}
+
+function loadTimeSlots(date, silent = false) {
+    if (!silent) {
+        $('#timeSlotsContainer').html(
+            '<div class="slots-loading"><span class="spinner-border spinner-border-sm text-primary me-2"></span>Loading slots…</div>');
+    }
 
     $.ajax({
         url: '../api/get-slots.php',
@@ -613,16 +634,18 @@ function loadTimeSlots(date) {
         data: { date: date, service_id: selectedService },
         dataType: 'json',
         success: function (res) {
-            if (res.success) displayTimeSlots(res.slots, res.maxPerDay);
+            if (res.success) displayTimeSlots(res.slots, res.maxPerDay, silent);
             else showToast('danger', res.message || 'Error loading slots.');
         },
         error: () => showToast('danger', 'Connection error loading slots.')
     });
 }
 
-function displayTimeSlots(slots, maxPerDay) {
+function displayTimeSlots(slots, maxPerDay, silent = false) {
     if (!slots || slots.length === 0) {
         $('#timeSlotsContainer').html('<div class="slots-placeholder"><i class="bi bi-x-circle text-danger"></i><span>No slots available for this day.</span></div>');
+        selectedTime = null;
+        updateSummary();
         return;
     }
 
@@ -630,46 +653,61 @@ function displayTimeSlots(slots, maxPerDay) {
     const today = now.toDateString() === new Date(selectedDate + 'T00:00:00').toDateString();
 
     let availCount = 0;
-    let html = '<div class="slots-grid">';
+    let options = '<option value="">Select time...</option>';
+    let selectedStillAvailable = false;
 
     slots.forEach(slot => {
-        const [h, m] = slot.time.split(':');
         const slotDt  = new Date(selectedDate + 'T' + slot.time);
         const isPast  = today && slotDt < now;
         const isFull  = slot.booked >= maxPerDay;
         const isBlock = slot.blocked;
         const disabled = isPast || isFull || isBlock;
         if (!disabled) availCount++;
+        if (!disabled && selectedTime === slot.time) selectedStillAvailable = true;
 
-        let label = '';
-        if (isFull || isBlock) label = '<small class="slot-tag">Full</small>';
-        else if (isPast)       label = '<small class="slot-tag past">Past</small>';
+        let suffix = '';
+        if (isBlock || isFull) suffix = ' — Unavailable';
+        else if (isPast) suffix = ' — Past';
 
-        html += `<div class="time-slot ${disabled ? 'disabled' : ''}" data-time="${slot.time}">
-                    <span class="slot-time">${formatTime(slot.time)}</span>${label}
-                 </div>`;
+        options += `<option value="${slot.time}" ${disabled ? 'disabled' : ''} ${selectedTime === slot.time && !disabled ? 'selected' : ''}>${formatTime(slot.time)}${suffix}</option>`;
     });
-    html += '</div>';
 
-    const countHtml = `<p class="slots-availability-note mb-1">
-        <i class="bi bi-check-circle-fill text-success me-1"></i>
-        <strong>${availCount}</strong> slot${availCount !== 1 ? 's' : ''} available
-    </p>
-    <p class="text-muted small mb-2">
-        These are the only times available because they match the dentist's schedule.
+    if (selectedTime && !selectedStillAvailable) {
+        selectedTime = null;
+        updateSummary();
+        if (silent) {
+            showToast('warning', 'This time slot is already fully booked. Please choose another available time based on dentist availability.');
+        }
+    }
+
+    const countHtml = `<p class="text-muted small mb-2">
+        These are the available times based on dentist availability.
     </p>`;
 
-    $('#timeSlotsContainer').html(countHtml + html);
+    const dropdownHtml = `
+        <div class="slot-dropdown-wrap">
+            <label for="timeSlotSelect" class="form-label fw-semibold mb-1">Available Time</label>
+            <select id="timeSlotSelect" class="form-select slot-dropdown">
+                ${options}
+            </select>
+        </div>
+    `;
+    $('#timeSlotsContainer').html(countHtml + dropdownHtml);
 }
 
 // ── Step 2 → 3: Select time ────────────────────────────────────────────
-$(document).on('click', '.time-slot:not(.disabled)', function () {
-    selectedTime = $(this).data('time');
-    $('.time-slot').removeClass('selected');
-    $(this).addClass('selected');
+$(document).on('change', '#timeSlotSelect', function () {
+    const picked = $(this).val();
+    if (!picked) {
+        selectedTime = null;
+        updateSummary();
+        return;
+    }
+    selectedTime = picked;
 
     $('#step2').addClass('d-none');
     $('#step3').removeClass('d-none');
+    stopSlotAutoRefresh();
     setStep(3);
     updateSummary();
     $('#step3')[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -679,6 +717,8 @@ $('#changeDateBtn').on('click', function () {
     $('#step3').addClass('d-none');
     $('#step2').removeClass('d-none');
     selectedTime = null;
+    if (selectedDate) loadTimeSlots(selectedDate);
+    startSlotAutoRefresh();
     setStep(2);
     updateSummary();
 });
@@ -758,6 +798,8 @@ function resetSubmitBtn() {
     $('#submitBtn .btn-loading').addClass('d-none');
     $('#submitBtn').prop('disabled', false);
 }
+
+window.addEventListener('beforeunload', stopSlotAutoRefresh);
 </script>
 </body>
 </html>

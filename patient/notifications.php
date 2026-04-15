@@ -59,6 +59,36 @@ function getDateGroup(string $dateStr): string {
     if ($diff < 30 * 86400) return 'This Month';
     return 'Older';
 }
+
+function resolvePatientAppointmentIdFromNotification(mysqli $db, int $userId, array $notif): ?int {
+    $message = trim((string)($notif['message'] ?? ''));
+    if ($message === '') return null;
+
+    if (!preg_match_all('/([A-Za-z]+ \d{1,2}, \d{4}) at (\d{1,2}:\d{2} [AP]M)/i', $message, $dateMatches, PREG_SET_ORDER)) {
+        return null;
+    }
+
+    $lastMatch = end($dateMatches);
+    $dt = DateTime::createFromFormat('F j, Y g:i A', $lastMatch[1] . ' ' . $lastMatch[2]);
+    if (!$dt) return null;
+
+    $date = $dt->format('Y-m-d');
+    $time = $dt->format('H:i:s');
+
+    $stmt = $db->prepare("
+        SELECT appointment_id
+        FROM appointments
+        WHERE user_id = ?
+          AND appointment_date = ?
+          AND appointment_time = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+    ");
+    $stmt->bind_param("iss", $userId, $date, $time);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    return $row ? (int)$row['appointment_id'] : null;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -125,9 +155,6 @@ function getDateGroup(string $dateStr): string {
                     <button id="markAllRead" class="btn btn-sm btn-outline-dark <?php echo $unread_count > 0 ? '' : 'd-none'; ?>">
                         <i class="bi bi-check2-all me-1"></i>Mark All Read
                     </button>
-                    <button id="clearAll" class="btn btn-sm btn-outline-danger <?php echo $total_count > 0 ? '' : 'd-none'; ?>">
-                        <i class="bi bi-trash3 me-1"></i>Clear All
-                    </button>
                 </div>
             </div>
 
@@ -158,6 +185,7 @@ function getDateGroup(string $dateStr): string {
                         $style    = getNotifStyle($notif);
                         $isUnread = !$notif['is_read'];
                         $group    = getDateGroup($notif['created_at']);
+                        $resolvedAppointmentId = resolvePatientAppointmentIdFromNotification($db, (int)$user['user_id'], $notif);
                         if ($group !== $lastGroup):
                             $lastGroup = $group;
                 ?>
@@ -170,7 +198,9 @@ function getDateGroup(string $dateStr): string {
                          data-read="<?php echo $notif['is_read'] ? '1' : '0'; ?>"
                          data-group="<?php echo htmlspecialchars($group); ?>"
                          data-subject="<?php echo strtolower(htmlspecialchars($notif['subject'])); ?>"
-                         data-body="<?php echo strtolower(htmlspecialchars($notif['message'])); ?>">
+                         data-body="<?php echo strtolower(htmlspecialchars($notif['message'])); ?>"
+                         data-appointment-id="<?php echo (int)($resolvedAppointmentId ?? 0); ?>"
+                         style="cursor:pointer;">
                         <div class="card-body">
                             <div class="d-flex align-items-start">
 
@@ -180,18 +210,7 @@ function getDateGroup(string $dateStr): string {
                                         <h6 class="notif-subject mb-1 <?php echo $isUnread ? 'fw-bold' : 'fw-semibold text-muted'; ?>">
                                             <?php echo htmlspecialchars($notif['subject']); ?>
                                         </h6>
-                                        <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                                            <?php if ($isUnread): ?>
-                                                <span class="badge-new badge bg-dark">New</span>
-                                            <?php endif; ?>
-                                            <!-- Actions (visible on hover) -->
-                                            <div class="notif-actions">
-                                                <button class="btn btn-sm btn-link p-0 text-danger btn-delete-notif"
-                                                        title="Delete">
-                                                    <i class="bi bi-trash3"></i>
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <?php if ($isUnread): ?><span class="badge-new badge bg-dark">New</span><?php endif; ?>
                                     </div>
                                     <p class="notif-body mb-1 <?php echo $isUnread ? '' : 'text-muted'; ?>">
                                         <?php echo htmlspecialchars($notif['message']); ?>
@@ -282,11 +301,6 @@ function updateCounts() {
         $('#sidebarNotifBadge').hide();
         $('#markAllRead').addClass('d-none');
     }
-    if (allCards.length > 0) {
-        $('#clearAll').removeClass('d-none');
-    } else {
-        $('#clearAll').addClass('d-none');
-    }
 }
 
 // ── Filter tabs ──────────────────────────────────────────────────────
@@ -345,25 +359,30 @@ $('#notifSearch').on('input', function () {
 
 // ── Click to navigate + auto-mark read ──────────────────────────────
 $(document).on('click', '.notif-card', function (e) {
-    if ($(e.target).closest('.notif-actions').length) return; // ignore action btns
     const card = $(this);
+    const appointmentId = parseInt(card.data('appointment-id') || 0, 10);
+
+    const go = () => {
+        const subject = (card.data('subject') || '').toLowerCase();
+        if (subject.includes('appointment') || subject.includes('booking')) {
+            window.location.href = appointmentId > 0
+                ? ('my-appointments.php?appointment_id=' + encodeURIComponent(appointmentId))
+                : 'my-appointments.php';
+        } else if (subject.includes('message')) {
+            window.location.href = 'messages.php';
+        } else if (subject.includes('profile')) {
+            window.location.href = 'profile.php';
+        }
+    };
 
     // Auto-mark as read on click if unread
     if (card.hasClass('unread')) {
         const id = card.data('id');
         $.post('../api/mark-notifications-read.php', { notification_id: id }, function (res) {
             if (res.success) markCardAsRead(card);
-        }, 'json');
-    }
-
-    // Navigate based on subject
-    const subject = (card.data('subject') || '').toLowerCase();
-    if (subject.includes('appointment') || subject.includes('booking')) {
-        window.location.href = 'my-appointments.php';
-    } else if (subject.includes('message')) {
-        window.location.href = 'messages.php';
-    } else if (subject.includes('profile')) {
-        window.location.href = 'profile.php';
+        }, 'json').always(go);
+    } else {
+        go();
     }
 });
 
@@ -405,38 +424,6 @@ $('#markAllRead').on('click', function () {
             $('.notif-card.unread').each(function () { markCardAsRead($(this)); });
             updateCounts();
             showToast('All notifications marked as read', 'success');
-        }
-    }, 'json');
-});
-
-// ── Delete single notification ───────────────────────────────────────
-$(document).on('click', '.btn-delete-notif', function (e) {
-    e.stopPropagation();
-    const card = $(this).closest('.notif-card');
-    const id   = card.data('id');
-    card.addClass('notif-removing');
-    $.post('../api/delete-notification.php', { notification_id: id });
-    setTimeout(function () {
-        card.slideUp(200, function () {
-            $(this).remove();
-            updateCounts();
-            applyFilter();
-        });
-    }, 300);
-    showToast('Notification deleted', 'danger');
-});
-
-// ── Clear all notifications ──────────────────────────────────────────
-$('#clearAll').on('click', function () {
-    if (!confirm('Delete all notifications? This cannot be undone.')) return;
-    $.post('../api/delete-notification.php', { all: true }, function (res) {
-        if (res.success) {
-            $('.notif-card, .notif-date-group').fadeOut(200, function () {
-                $(this).remove();
-                updateCounts();
-                applyFilter();
-            });
-            showToast('All notifications cleared', 'danger');
         }
     }, 'json');
 });

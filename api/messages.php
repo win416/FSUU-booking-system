@@ -220,21 +220,30 @@ if ($action === 'send') {
             exit();
         }
     } elseif ($isDentist) {
-        // Dentist can only send to patients assigned to them
+        // Dentist can send to assigned patients or admins
         $check = $db->prepare("
-            SELECT 1
-            FROM dentist_appointment_assignments da
-            JOIN appointments a ON a.appointment_id = da.appointment_id
-            JOIN users u ON u.user_id = a.user_id
-            WHERE da.dentist_id = ?
-              AND a.user_id = ?
-              AND u.role = 'student'
+            SELECT u.user_id
+            FROM users u
+            WHERE u.user_id = ?
+              AND (
+                    u.role = 'admin'
+                    OR (
+                        u.role IN ('student', 'staff')
+                        AND EXISTS (
+                            SELECT 1
+                            FROM dentist_appointment_assignments da
+                            JOIN appointments a ON a.appointment_id = da.appointment_id
+                            WHERE da.dentist_id = ?
+                              AND a.user_id = u.user_id
+                        )
+                    )
+                  )
             LIMIT 1
         ");
-        $check->bind_param("ii", $user['user_id'], $receiverId);
+        $check->bind_param("ii", $receiverId, $user['user_id']);
         $check->execute();
         if (!$check->get_result()->fetch_assoc()) {
-            echo json_encode(['success' => false, 'message' => 'You can only message patients assigned to you.']);
+            echo json_encode(['success' => false, 'message' => 'You can only message assigned patients or admins.']);
             exit();
         }
     } else {
@@ -494,16 +503,25 @@ if ($action === 'search_recipients') {
         ");
         $stmt->bind_param("sss", $q, $q, $q);
     } elseif ($isDentist) {
-        // Dentists can only search/select patients assigned to them
+        // Dentists can search/select assigned patients and admins
         $stmt = $db->prepare("
-            SELECT DISTINCT u.user_id, u.first_name, u.last_name, u.email, u.role, u.profile_picture
-            FROM dentist_appointment_assignments da
-            JOIN appointments a ON a.appointment_id = da.appointment_id
-            JOIN users u ON u.user_id = a.user_id
-            WHERE da.dentist_id = ?
-              AND u.role = 'student'
+            SELECT u.user_id, u.first_name, u.last_name, u.email, u.role, u.profile_picture
+            FROM users u
+            WHERE (
+                    u.role = 'admin'
+                    OR (
+                        u.role IN ('student', 'staff')
+                        AND EXISTS (
+                            SELECT 1
+                            FROM dentist_appointment_assignments da
+                            JOIN appointments a ON a.appointment_id = da.appointment_id
+                            WHERE da.dentist_id = ?
+                              AND a.user_id = u.user_id
+                        )
+                    )
+                  )
               AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ? OR u.fsuu_id LIKE ?)
-            ORDER BY u.first_name ASC, u.last_name ASC
+            ORDER BY (u.role = 'admin') DESC, u.first_name ASC, u.last_name ASC
             LIMIT 8
         ");
         $stmt->bind_param("issss", $user['user_id'], $q, $q, $q, $q);
