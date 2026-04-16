@@ -14,10 +14,13 @@ if (!in_array($status_filter, $allowed_filters, true)) {
 
 // Build query
 $query = "
-    SELECT a.*, u.first_name, u.last_name, u.fsuu_id, s.service_name 
+    SELECT a.*, u.first_name, u.last_name, u.fsuu_id, s.service_name,
+           d.first_name AS dentist_first_name, d.last_name AS dentist_last_name
     FROM appointments a
     JOIN users u ON a.user_id = u.user_id
     JOIN services s ON a.service_id = s.service_id
+    LEFT JOIN dentist_appointment_assignments da ON da.appointment_id = a.appointment_id
+    LEFT JOIN users d ON d.user_id = da.dentist_id AND d.role = 'dentist'
 ";
 
 if ($status_filter !== 'all') {
@@ -142,6 +145,8 @@ $result = $db->query($query);
                                             <td>
                                                 <?php
                                                 $status_key = strtolower(trim((string)($appt['status'] ?? '')));
+                                                $dentist_name = trim((string)(($appt['dentist_first_name'] ?? '') . ' ' . ($appt['dentist_last_name'] ?? '')));
+                                                $dentist_label = $dentist_name !== '' ? 'Dr. ' . htmlspecialchars($dentist_name) : 'No dentist assigned yet';
                                                 $badge_class = match($status_key) {
                                                     'pending' => 'bg-warning',
                                                     'approved' => 'bg-success',
@@ -166,12 +171,12 @@ $result = $db->query($query);
                                                     <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-                                                    <span class="text-muted small">Assigned dentist handles approval</span>
+                                                    <span class="text-muted small"><?php echo $dentist_label; ?> handles approval</span>
                                                 <?php elseif($status_key === 'approved'): ?>
                                                     <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-                                                    <span class="text-muted small">Assigned dentist handles completion</span>
+                                                    <span class="text-muted small"><?php echo $dentist_label; ?> handles completion</span>
                                                 <?php elseif(in_array($status_key, ['cancelled', 'canceled', 'declined', 'no_show'], true)): ?>
                                                     <button class="btn btn-sm btn-danger" disabled title="Cancelled">
                                                         <i class="bi bi-x-circle"></i> Cancelled
@@ -254,6 +259,15 @@ $result = $db->query($query);
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
     $(document).ready(function() {
+        const targetAppointmentId = new URLSearchParams(window.location.search).get('appointment_id');
+        if (targetAppointmentId) {
+            const targetRow = $(`.clickable-row[data-id="${targetAppointmentId}"]`);
+            if (targetRow.length) {
+                targetRow.addClass('row-focused');
+                targetRow[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
         // Stop action buttons from triggering row click
         $('.edit-btn').click(function(e) {
             e.stopPropagation();

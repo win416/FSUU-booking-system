@@ -23,6 +23,98 @@ function saveSetting($db, $key, $value) {
 
 switch ($action) {
 
+    // ── Dentist Availability (shared with dentist portal) ───────────────────
+    case 'get_dentist_hours':
+        $dentists = [];
+        $dentistRes = $db->query("
+            SELECT user_id, first_name, last_name
+            FROM users
+            WHERE role = 'dentist'
+            ORDER BY first_name ASC, last_name ASC
+        ");
+
+        $keys = [];
+        if ($dentistRes) {
+            while ($d = $dentistRes->fetch_assoc()) {
+                $id = (int)$d['user_id'];
+                $dentists[$id] = [
+                    'user_id' => $id,
+                    'first_name' => $d['first_name'],
+                    'last_name' => $d['last_name'],
+                    'weekday_start' => '08:00',
+                    'weekday_end' => '12:00',
+                    'saturday_start' => '09:00',
+                    'saturday_end' => '12:00',
+                ];
+                $keys[] = "dentist_{$id}_weekday_start";
+                $keys[] = "dentist_{$id}_weekday_end";
+                $keys[] = "dentist_{$id}_saturday_start";
+                $keys[] = "dentist_{$id}_saturday_end";
+            }
+        }
+
+        if (!empty($keys)) {
+            $escaped = array_map(function($k) use ($db) {
+                return "'" . $db->real_escape_string($k) . "'";
+            }, $keys);
+            $settingsRes = $db->query("
+                SELECT setting_key, setting_value
+                FROM system_settings
+                WHERE setting_key IN (" . implode(',', $escaped) . ")
+            ");
+
+            if ($settingsRes) {
+                while ($row = $settingsRes->fetch_assoc()) {
+                    if (preg_match('/^dentist_(\d+)_(weekday_start|weekday_end|saturday_start|saturday_end)$/', $row['setting_key'], $m)) {
+                        $dentist_id = (int)$m[1];
+                        $field = $m[2];
+                        if (isset($dentists[$dentist_id])) {
+                            $dentists[$dentist_id][$field] = substr((string)$row['setting_value'], 0, 5);
+                        }
+                    }
+                }
+            }
+        }
+
+        echo json_encode(['success' => true, 'dentists' => array_values($dentists)]);
+        break;
+
+    case 'save_dentist_hours':
+        $dentist_id = intval($_POST['dentist_id'] ?? 0);
+        $weekday_start = trim($_POST['weekday_start'] ?? '');
+        $weekday_end = trim($_POST['weekday_end'] ?? '');
+        $saturday_start = trim($_POST['saturday_start'] ?? '');
+        $saturday_end = trim($_POST['saturday_end'] ?? '');
+
+        if ($dentist_id <= 0 || !$weekday_start || !$weekday_end || !$saturday_start || !$saturday_end) {
+            echo json_encode(['success' => false, 'message' => 'All dentist availability fields are required.']);
+            exit();
+        }
+        if ($weekday_start >= $weekday_end) {
+            echo json_encode(['success' => false, 'message' => 'Weekday start time must be before end time.']);
+            exit();
+        }
+        if ($saturday_start >= $saturday_end) {
+            echo json_encode(['success' => false, 'message' => 'Saturday start time must be before end time.']);
+            exit();
+        }
+
+        $dentistCheck = $db->prepare("SELECT user_id FROM users WHERE user_id = ? AND role = 'dentist' LIMIT 1");
+        $dentistCheck->bind_param("i", $dentist_id);
+        $dentistCheck->execute();
+        if ($dentistCheck->get_result()->num_rows === 0) {
+            echo json_encode(['success' => false, 'message' => 'Dentist account not found.']);
+            exit();
+        }
+
+        saveSetting($db, "dentist_{$dentist_id}_weekday_start", $weekday_start);
+        saveSetting($db, "dentist_{$dentist_id}_weekday_end", $weekday_end);
+        saveSetting($db, "dentist_{$dentist_id}_saturday_start", $saturday_start);
+        saveSetting($db, "dentist_{$dentist_id}_saturday_end", $saturday_end);
+
+        echo json_encode(['success' => true, 'message' => 'Dentist availability saved successfully.']);
+        break;
+
     // ── Booking & Hours ──────────────────────────────────────────────────────
     case 'save_booking_settings':
         $max     = intval($_POST['max_bookings_per_day'] ?? 0);

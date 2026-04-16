@@ -653,7 +653,8 @@ function displayTimeSlots(slots, maxPerDay, silent = false) {
     const today = now.toDateString() === new Date(selectedDate + 'T00:00:00').toDateString();
 
     let availCount = 0;
-    let options = '<option value="">Select time...</option>';
+    let unavailableCount = 0;
+    let slotButtons = '';
     let selectedStillAvailable = false;
 
     slots.forEach(slot => {
@@ -665,11 +666,18 @@ function displayTimeSlots(slots, maxPerDay, silent = false) {
         if (!disabled) availCount++;
         if (!disabled && selectedTime === slot.time) selectedStillAvailable = true;
 
-        let suffix = '';
-        if (isBlock || isFull) suffix = ' — Unavailable';
-        else if (isPast) suffix = ' — Past';
+        if (disabled) {
+            unavailableCount++;
+            return;
+        }
 
-        options += `<option value="${slot.time}" ${disabled ? 'disabled' : ''} ${selectedTime === slot.time && !disabled ? 'selected' : ''}>${formatTime(slot.time)}${suffix}</option>`;
+        slotButtons += `
+            <button type="button"
+                    class="slot-chip ${selectedTime === slot.time ? 'selected' : ''}"
+                    data-time="${slot.time}">
+                ${formatTime(slot.time)}
+            </button>
+        `;
     });
 
     if (selectedTime && !selectedStillAvailable) {
@@ -680,30 +688,43 @@ function displayTimeSlots(slots, maxPerDay, silent = false) {
         }
     }
 
-    const countHtml = `<p class="text-muted small mb-2">
-        These are the available times based on dentist availability.
-    </p>`;
-
-    const dropdownHtml = `
-        <div class="slot-dropdown-wrap">
-            <label for="timeSlotSelect" class="form-label fw-semibold mb-1">Available Time</label>
-            <select id="timeSlotSelect" class="form-select slot-dropdown">
-                ${options}
-            </select>
-        </div>
-    `;
-    $('#timeSlotsContainer').html(countHtml + dropdownHtml);
-}
-
-// ── Step 2 → 3: Select time ────────────────────────────────────────────
-$(document).on('change', '#timeSlotSelect', function () {
-    const picked = $(this).val();
-    if (!picked) {
+    if (availCount === 0) {
+        $('#timeSlotsContainer').html('<div class="slots-placeholder"><i class="bi bi-x-circle text-danger"></i><span>No available slots for this day.</span></div>');
         selectedTime = null;
         updateSummary();
         return;
     }
-    selectedTime = picked;
+
+    const countHtml = `
+        <div class="slots-meta mb-2">
+            <p class="slots-availability-note mb-0">
+                These are the available times based on dentist availability.
+            </p>
+            <span class="slots-availability-pill">${availCount} slot${availCount !== 1 ? 's' : ''}</span>
+        </div>
+    `;
+
+    const slotPickerHtml = `
+        <div class="slot-picker-wrap">
+            <div class="slot-picker-head">
+                <span class="slot-picker-label">Select Time</span>
+                ${unavailableCount > 0 ? `<span class="slot-picker-note">${unavailableCount} unavailable hidden</span>` : ''}
+            </div>
+            <div class="slot-grid" role="listbox" aria-label="Available Time">
+                ${slotButtons}
+            </div>
+        </div>
+    `;
+    $('#timeSlotsContainer').html(countHtml + slotPickerHtml);
+}
+
+// ── Step 2 → 3: Select time ────────────────────────────────────────────
+$(document).on('click', '.slot-chip', function () {
+    const picked = $(this).data('time');
+    if (!picked) return;
+    selectedTime = String(picked);
+    $('.slot-chip').removeClass('selected');
+    $(this).addClass('selected');
 
     $('#step2').addClass('d-none');
     $('#step3').removeClass('d-none');

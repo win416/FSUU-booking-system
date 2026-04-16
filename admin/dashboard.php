@@ -21,10 +21,13 @@ $today_result = $today_appointments->get_result();
 
 // Get pending appointments (read-only; approval is handled by assigned dentist)
 $pending = $db->query("
-    SELECT a.*, u.first_name, u.last_name, u.fsuu_id, s.service_name
+    SELECT a.*, u.first_name, u.last_name, u.fsuu_id, s.service_name,
+           d.first_name AS dentist_first_name, d.last_name AS dentist_last_name
     FROM appointments a
     JOIN users u ON a.user_id = u.user_id
     JOIN services s ON a.service_id = s.service_id
+    LEFT JOIN dentist_appointment_assignments da ON da.appointment_id = a.appointment_id
+    LEFT JOIN users d ON d.user_id = da.dentist_id AND d.role = 'dentist'
     WHERE a.status = 'pending'
     ORDER BY a.appointment_date, a.appointment_time
     LIMIT 10
@@ -267,14 +270,15 @@ foreach ($weekly_data as $date => $count) {
                                 <tbody>
                                     <?php if($pending->num_rows > 0): ?>
                                         <?php while($appt = $pending->fetch_assoc()): ?>
-                                        <tr>
+                                        <tr class="pending-clickable-row" data-id="<?php echo (int)$appt['appointment_id']; ?>" role="button" tabindex="0">
                                             <td>
                                                 <div class="fw-semibold"><?php echo date('M d, Y', strtotime($appt['appointment_date'])); ?></div>
                                                 <small class="text-muted"><?php echo date('h:i A', strtotime($appt['appointment_time'])); ?></small>
                                             </td>
                                             <td><?php echo $appt['first_name'] . ' ' . $appt['last_name']; ?></td>
                                             <td><span class="badge bg-light text-dark"><?php echo $appt['service_name']; ?></span></td>
-                                            <td><span class="text-muted">Assigned dentist handles approval</span></td>
+                                            <?php $dentist_name = trim((string)(($appt['dentist_first_name'] ?? '') . ' ' . ($appt['dentist_last_name'] ?? ''))); ?>
+                                            <td><span class="text-muted"><?php echo $dentist_name !== '' ? 'Dr. ' . htmlspecialchars($dentist_name) : 'No dentist assigned yet'; ?></span></td>
                                         </tr>
                                         <?php endwhile; ?>
                                     <?php else: ?>
@@ -546,6 +550,20 @@ foreach ($weekly_data as $date => $count) {
                 $('#saveReschedule').prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Changes');
             }
         });
+    });
+
+    // Make pending appointment rows clickable
+    $('.pending-clickable-row').on('click keydown', function(e) {
+        if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') {
+            return;
+        }
+        if (e.type === 'keydown') {
+            e.preventDefault();
+        }
+        $('.pending-clickable-row').removeClass('row-selected');
+        $(this).addClass('row-selected');
+        const appointmentId = $(this).data('id');
+        window.location.href = `appointments.php?status=pending&appointment_id=${encodeURIComponent(appointmentId)}`;
     });
     </script>
 

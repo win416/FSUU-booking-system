@@ -28,6 +28,15 @@
 /* ── Clickable Rows ── */
 tbody tr.clickable-row { cursor: pointer; }
 tbody tr.clickable-row:hover { background-color: #f0f8ff; }
+tbody tr.clickable-row.row-focused {
+    background-color: #d7f0fb !important;
+}
+tbody tr.clickable-row.row-focused > td {
+    background-color: #d7f0fb !important;
+}
+tbody tr.clickable-row.row-focused > td:first-child {
+    box-shadow: inset 3px 0 0 #29ABE2;
+}
 
 /* ── Mobile Responsive ── */
 @media (max-width: 767.98px) {

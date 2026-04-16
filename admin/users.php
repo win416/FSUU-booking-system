@@ -236,7 +236,12 @@ $role_colors = ['admin' => 'danger', 'dentist' => 'primary', 'staff' => 'success
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" minlength="8" required>
+                                <div class="input-group">
+                                    <input type="password" name="password" id="add_password" class="form-control" minlength="8" required>
+                                    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#add_password" aria-label="Show password" title="Show password">
+                                        <i class="bi bi-eye-slash"></i>
+                                    </button>
+                                </div>
                                 <small class="text-muted">Minimum 8 characters</small>
                             </div>
                         </div>
@@ -321,12 +326,22 @@ $role_colors = ['admin' => 'danger', 'dentist' => 'primary', 'staff' => 'success
                         <input type="hidden" name="user_id" id="reset_user_id">
                         <div class="mb-3">
                             <label class="form-label">New Password <span class="text-danger">*</span></label>
-                            <input type="password" name="new_password" id="new_password" class="form-control" minlength="8" required>
+                            <div class="input-group">
+                                <input type="password" name="new_password" id="new_password" class="form-control" minlength="8" required>
+                                <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#new_password" aria-label="Show password" title="Show password">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
                             <small class="text-muted">Minimum 8 characters</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                            <input type="password" name="confirm_password" id="confirm_password" class="form-control" minlength="8" required>
+                            <div class="input-group">
+                                <input type="password" name="confirm_password" id="confirm_password" class="form-control" minlength="8" required>
+                                <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#confirm_password" aria-label="Show password" title="Show password">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -346,6 +361,19 @@ $role_colors = ['admin' => 'danger', 'dentist' => 'primary', 'staff' => 'success
     function showAlert(container, type, message) {
         $(container).html('<div class="alert alert-' + type + ' alert-dismissible fade show">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
     }
+
+    // Show/Hide password toggle
+    $('.toggle-password').click(function() {
+        const btn = $(this);
+        const input = $(btn.data('target'));
+        if (!input.length) return;
+
+        const isHidden = input.attr('type') === 'password';
+        input.attr('type', isHidden ? 'text' : 'password');
+        btn.find('i').attr('class', isHidden ? 'bi bi-eye' : 'bi bi-eye-slash');
+        btn.attr('aria-label', isHidden ? 'Hide password' : 'Show password');
+        btn.attr('title', isHidden ? 'Hide password' : 'Show password');
+    });
 
     // Add User
     $('#saveAddUser').click(function() {

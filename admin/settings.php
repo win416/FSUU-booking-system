@@ -36,6 +36,30 @@ if ($res) {
 // Load services
 $services_result = $db->query("SELECT * FROM services ORDER BY service_name ASC");
 
+// Load dentists and their shared availability settings
+$dentists = [];
+$dentists_result = $db->query("
+    SELECT user_id, first_name, last_name, email
+    FROM users
+    WHERE role = 'dentist'
+    ORDER BY first_name ASC, last_name ASC
+");
+if ($dentists_result) {
+    while ($d = $dentists_result->fetch_assoc()) {
+        $dentist_id = (int)$d['user_id'];
+        $dentists[] = [
+            'user_id'         => $dentist_id,
+            'first_name'      => $d['first_name'],
+            'last_name'       => $d['last_name'],
+            'email'           => $d['email'],
+            'weekday_start'   => substr($sys_settings["dentist_{$dentist_id}_weekday_start"] ?? '08:00', 0, 5),
+            'weekday_end'     => substr($sys_settings["dentist_{$dentist_id}_weekday_end"] ?? '12:00', 0, 5),
+            'saturday_start'  => substr($sys_settings["dentist_{$dentist_id}_saturday_start"] ?? '09:00', 0, 5),
+            'saturday_end'    => substr($sys_settings["dentist_{$dentist_id}_saturday_end"] ?? '12:00', 0, 5),
+        ];
+    }
+}
+
 // Default values if settings don't exist
 $max_bookings    = $sys_settings['max_bookings_per_day'] ?? 20;
 $reminder_hours  = $sys_settings['reminder_hours'] ?? 24;
@@ -115,6 +139,11 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#tab-account">
                             <i class="bi bi-person-circle me-1"></i> My Account
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#tab-dentist-hours">
+                            <i class="bi bi-clock-history me-1"></i> Dentist Availability
                         </a>
                     </li>
                 </ul>
@@ -417,6 +446,78 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                             </div>
                         </div>
                     </div>
+
+                    <!-- ===== TAB 5: DENTIST AVAILABILITY ===== -->
+                    <div class="tab-pane fade" id="tab-dentist-hours">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Dentist Time Availability</h5>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="refreshDentistAvailability">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="card mb-3 info-card">
+                            <div class="card-body small text-muted">
+                                This uses the same availability settings dentists edit in their portal. Any update saved by admin or dentist is shared and reflected on both sides.
+                            </div>
+                        </div>
+                        <?php if (!empty($dentists)): ?>
+                            <div class="row g-3">
+                                <?php foreach ($dentists as $dentist): ?>
+                                    <div class="col-md-6">
+                                        <div class="card h-100">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0">
+                                                    <i class="bi bi-person-badge me-1"></i>
+                                                    Dr. <?php echo htmlspecialchars($dentist['first_name'] . ' ' . $dentist['last_name']); ?>
+                                                </h6>
+                                                <small class="text-muted"><?php echo htmlspecialchars($dentist['email'] ?? ''); ?></small>
+                                            </div>
+                                            <div class="card-body">
+                                                <form class="dentistHoursForm" data-dentist-id="<?php echo (int)$dentist['user_id']; ?>">
+                                                    <input type="hidden" name="dentist_id" value="<?php echo (int)$dentist['user_id']; ?>">
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-semibold">Mon-Fri Availability</label>
+                                                        <div class="row g-2">
+                                                            <div class="col-6">
+                                                                <label class="form-label small text-muted">Start</label>
+                                                                <input type="time" class="form-control" name="weekday_start" value="<?php echo htmlspecialchars($dentist['weekday_start']); ?>" required>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <label class="form-label small text-muted">End</label>
+                                                                <input type="time" class="form-control" name="weekday_end" value="<?php echo htmlspecialchars($dentist['weekday_end']); ?>" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-semibold">Saturday Availability</label>
+                                                        <div class="row g-2">
+                                                            <div class="col-6">
+                                                                <label class="form-label small text-muted">Start</label>
+                                                                <input type="time" class="form-control" name="saturday_start" value="<?php echo htmlspecialchars($dentist['saturday_start']); ?>" required>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <label class="form-label small text-muted">End</label>
+                                                                <input type="time" class="form-control" name="saturday_end" value="<?php echo htmlspecialchars($dentist['saturday_end']); ?>" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <small class="text-muted dentist-hours-updated"></small>
+                                                        <button type="submit" class="btn btn-primary btn-sm">
+                                                            <i class="bi bi-save me-1"></i> Save
+                                                        </button>
+                                                    </div>
+                                                    <div class="dentistHoursAlert mt-2"></div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="alert alert-info mb-0">No dentist accounts found yet.</div>
+                        <?php endif; ?>
+                    </div>
                 </div><!-- end tab-content -->
             </div>
         </div>
@@ -666,6 +767,61 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
             showAlert('#passwordAlert', res.success ? 'success' : 'danger', res.message);
             if (res.success) $('#changePasswordForm')[0].reset();
         }, 'json').fail(() => showAlert('#passwordAlert', 'danger', 'Request failed.'));
+    });
+
+    // ---- Dentist Availability (shared with dentist portal) ----
+    function applyDentistHours(dentists) {
+        if (!Array.isArray(dentists)) return;
+        dentists.forEach(function(dentist) {
+            const form = $('.dentistHoursForm[data-dentist-id="' + dentist.user_id + '"]');
+            if (!form.length) return;
+            form.find('input[name="weekday_start"]').val((dentist.weekday_start || '08:00').toString().substring(0, 5));
+            form.find('input[name="weekday_end"]').val((dentist.weekday_end || '12:00').toString().substring(0, 5));
+            form.find('input[name="saturday_start"]').val((dentist.saturday_start || '09:00').toString().substring(0, 5));
+            form.find('input[name="saturday_end"]').val((dentist.saturday_end || '12:00').toString().substring(0, 5));
+            form.find('.dentist-hours-updated').text('Synced ' + new Date().toLocaleTimeString());
+        });
+    }
+
+    function refreshDentistHours() {
+        if (!$('#tab-dentist-hours').length) return;
+        if ($('#tab-dentist-hours :input:focus').length) return;
+        $.post('../api/settings.php', { action: 'get_dentist_hours' }, function(res) {
+            if (res && res.success) {
+                applyDentistHours(res.dentists || []);
+            }
+        }, 'json');
+    }
+
+    let dentistHoursTimer = null;
+    $('#settingsTabs a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+        const target = $(e.target).attr('href');
+        if (target === '#tab-dentist-hours') {
+            refreshDentistHours();
+            if (!dentistHoursTimer) {
+                dentistHoursTimer = setInterval(refreshDentistHours, 10000);
+            }
+        } else if (dentistHoursTimer) {
+            clearInterval(dentistHoursTimer);
+            dentistHoursTimer = null;
+        }
+    });
+
+    $('#refreshDentistAvailability').click(function() {
+        refreshDentistHours();
+    });
+
+    $('.dentistHoursForm').submit(function(e) {
+        e.preventDefault();
+        const form = $(this);
+        const alertBox = form.find('.dentistHoursAlert');
+        $.post('../api/settings.php', form.serialize() + '&action=save_dentist_hours', function(res) {
+            showAlert(alertBox, res.success ? 'success' : 'danger', res.message);
+            if (res.success) {
+                form.find('.dentist-hours-updated').text('Synced ' + new Date().toLocaleTimeString());
+                refreshDentistHours();
+            }
+        }, 'json').fail(() => showAlert(alertBox, 'danger', 'Request failed.'));
     });
     </script>
 </body>
