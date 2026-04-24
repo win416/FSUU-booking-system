@@ -243,7 +243,7 @@ $patients = $patientsStmt->get_result();
                             <img id="patientProfileImage" src="../img/default-avatar.png" alt="Patient Avatar"
                                  class="rounded-circle border" style="width:120px;height:120px;object-fit:cover;display:none;">
                             <div id="patientProfileInitials" class="rounded-circle border d-inline-flex align-items-center justify-content-center"
-                                 style="width:120px;height:120px;font-size:2rem;font-weight:700;color:#29ABE2;background:#eef8ff;">P</div>
+                                 style="width:120px;height:120px;font-size:2rem;font-weight:700;color:#29ABE2;background:#eef8ff;display:none;">P</div>
                             <div class="mt-2 text-muted small">Assigned Patient</div>
                         </div>
                         <div class="col-md-8">

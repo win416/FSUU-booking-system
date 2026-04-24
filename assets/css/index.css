@@ -25,7 +25,7 @@ body {
 
 /* Navbar Premium Polish */
 .navbar {
-    padding: 16px 0;
+    padding: 16px 20px;
     transition: all 0.4s ease;
     background: transparent !important;
     border-bottom: 1px solid transparent;
@@ -34,6 +34,7 @@ body {
     left: 0;
     right: 0;
     z-index: 1030;
+    width: 100%;
 }
 
 .navbar .container {
@@ -41,10 +42,15 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .navbar.navbar-scrolled {
-    padding: 12px 0;
+    padding: 12px 20px;
     background: rgba(255, 255, 255, 0.98) !important;
     border-bottom: 1px solid #E0E0E0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);

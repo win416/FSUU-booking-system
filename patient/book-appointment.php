@@ -223,12 +223,6 @@ function serviceBgImage(string $name): string {
                             </button>
                         </div>
                         <div class="booking-panel-body">
-                            <!-- Operating hours notice -->
-                            <div class="clinic-hours-notice mb-3">
-                                <i class="bi bi-info-circle-fill me-2"></i>
-                                <strong>Clinic Hours:</strong>
-                                <?php echo htmlspecialchars($clinicHoursNotice); ?>
-                            </div>
                             <div class="row g-3">
                                 <div class="col-md-7">
                                     <div id="calendar"></div>
