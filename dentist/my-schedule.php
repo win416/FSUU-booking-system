@@ -233,6 +233,30 @@ $all_events = array_merge($block_events, $appt_events);
             min-height: 42px;
             background: #fbfdff;
         }
+
+        /* Make month view day cells show a scrollable list of events when many appointments exist */
+        /* Works with FullCalendar dayGridMonth structure */
+        .fc .fc-daygrid-day-frame {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        /* Keep day number/header static */
+        .fc .fc-daygrid-day-top {
+            flex: 0 0 auto;
+            padding: 6px 8px;
+        }
+        /* Keep day number/header static */
+        .fc .fc-daygrid-day-top {
+            flex: 0 0 auto;
+            padding: 6px 8px;
+        }
+        .fc .fc-daygrid-event {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 6px;
+        }
     </style>
 </head>
 <body>
@@ -416,6 +440,37 @@ $all_events = array_merge($block_events, $appt_events);
         </div>
     </div>
 
+    <!-- Day schedule modal (shows appointments when clicking a date in month view) -->
+    <div class="modal fade" id="dayScheduleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dayScheduleModalTitle"><i class="bi bi-calendar3 me-2"></i>Schedule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Service</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dayScheduleTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" id="blockDateFromDayBtn"><i class="bi bi-calendar-x me-1"></i> Block This Date</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="blockModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -490,7 +545,7 @@ $all_events = array_merge($block_events, $appt_events);
             },
             height: 'auto',
             dayMaxEvents: true,
-            dayMaxEventRows: true,
+            dayMaxEventRows: 4,
             hiddenDays: [0],
             slotMinTime: '08:00:00',
             slotMaxTime: '21:00:00',
@@ -529,9 +584,16 @@ $all_events = array_merge($block_events, $appt_events);
                 return { html: '<div class="fc-event-content-custom"><div class="fc-event-time-custom">' + (arg.timeText || '') + '</div><div class="fc-event-title-custom">' + arg.event.title + '</div><div class="fc-event-service-custom">' + service + '</div></div>' };
             },
             dateClick: function(info) {
-                $('#block_date').val(info.dateStr);
-                new bootstrap.Modal(document.getElementById('blockModal')).show();
+                // If in month view, open a day schedule modal listing that day's appointments
+                if (calendar.view && calendar.view.type === 'dayGridMonth') {
+                    showDaySchedule(info.dateStr);
+                } else {
+                    // on other views open block modal as before
+                    $('#block_date').val(info.dateStr);
+                    new bootstrap.Modal(document.getElementById('blockModal')).show();
+                }
             },
+
             dayCellClassNames: function (arg) {
                 const classes = [];
                 const y = arg.date.getFullYear();
@@ -545,6 +607,82 @@ $all_events = array_merge($block_events, $appt_events);
             viewDidMount: function () { applyBlockedDayStyling(); }
         });
         calendar.render();
+
+        // Show a modal listing appointments for a specific date (used in month view)
+        function showDaySchedule(dateStr) {
+            const events = calendar.getEvents().filter(function(ev){
+                if (!ev.start) return false;
+                const s = ev.start;
+                const y = s.getFullYear();
+                const m = String(s.getMonth() + 1).padStart(2, '0');
+                const d = String(s.getDate()).padStart(2, '0');
+                return dateStr === (y + '-' + m + '-' + d);
+            });
+
+            const tbody = document.getElementById('dayScheduleTableBody');
+            tbody.innerHTML = '';
+            events.sort(function(a,b){ return (a.start || 0) - (b.start || 0); });
+            events.forEach(function(ev){
+                const tr = document.createElement('tr');
+                const timeTd = document.createElement('td');
+                const patientTd = document.createElement('td');
+                const serviceTd = document.createElement('td');
+                const statusTd = document.createElement('td');
+
+                // time
+                let timeText = ev.allDay ? 'All day' : formatTimeForModal(ev.start);
+                timeTd.textContent = timeText;
+
+                // patient (title)
+                patientTd.textContent = ev.title || '';
+
+                // service or reason
+                const svc = ev.extendedProps && (ev.extendedProps.service || ev.extendedProps.reason) ? (ev.extendedProps.service || ev.extendedProps.reason) : '';
+                serviceTd.textContent = svc;
+
+                // status / blocked
+                if (ev.extendedProps && ev.extendedProps.isBlocked) {
+                    statusTd.innerHTML = '<span class="badge bg-danger">Blocked</span>';
+                } else {
+                    const st = ev.extendedProps && ev.extendedProps.status ? ev.extendedProps.status : '';
+                    statusTd.innerHTML = '<span class="badge bg-info">' + (st ? ucfirst(st) : '') + '</span>';
+                }
+
+                tr.appendChild(timeTd);
+                tr.appendChild(patientTd);
+                tr.appendChild(serviceTd);
+                tr.appendChild(statusTd);
+                tbody.appendChild(tr);
+            });
+
+            // set modal title
+            const titleEl = document.getElementById('dayScheduleModalTitle');
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            titleEl.textContent = 'Schedule for ' + dateObj.toLocaleString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+            // set block date button
+            document.getElementById('blockDateFromDayBtn').onclick = function(){
+                // open block modal with date prefilled
+                const dayModal = bootstrap.Modal.getInstance(document.getElementById('dayScheduleModal'));
+                if (dayModal) dayModal.hide();
+                resetBlockModal();
+                $('#block_date').val(dateStr);
+                new bootstrap.Modal(document.getElementById('blockModal')).show();
+            };
+
+            new bootstrap.Modal(document.getElementById('dayScheduleModal')).show();
+        }
+
+        function formatTimeForModal(dt) {
+            if (!dt) return '';
+            let h = dt.getHours();
+            let m = dt.getMinutes();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            let hour12 = h % 12 || 12;
+            return (String(hour12).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ' ' + ampm);
+        }
+
+        function ucfirst(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
         function applyBlockedDayStyling() {
             setTimeout(function () {

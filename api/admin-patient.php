@@ -154,6 +154,47 @@ try {
             echo json_encode(['success' => true, 'message' => 'Password reset successfully']);
             break;
 
+        case 'delete_patient':
+            $patient_id = intval($_POST['patient_id'] ?? 0);
+            if (!$patient_id) throw new Exception('Invalid patient ID');
+
+            // Verify patient exists and is a student/staff
+            $check = $db->prepare("SELECT user_id FROM users WHERE user_id=? AND role IN ('student','staff')");
+            $check->bind_param("i", $patient_id);
+            $check->execute();
+            if ($check->get_result()->num_rows === 0)
+                throw new Exception('Patient not found');
+
+            // Delete related records in order (respecting foreign keys)
+            // Delete appointments
+            $del1 = $db->prepare("DELETE FROM appointments WHERE user_id=?");
+            $del1->bind_param("i", $patient_id);
+            $del1->execute();
+
+            // Delete notifications
+            $del3 = $db->prepare("DELETE FROM notifications WHERE user_id=?");
+            $del3->bind_param("i", $patient_id);
+            $del3->execute();
+
+            // Delete medical info
+            $del4 = $db->prepare("DELETE FROM medical_info WHERE user_id=?");
+            $del4->bind_param("i", $patient_id);
+            $del4->execute();
+
+            // Delete messages (both sent and received)
+            $del5 = $db->prepare("DELETE FROM messages WHERE sender_id=? OR receiver_id=?");
+            $del5->bind_param("ii", $patient_id, $patient_id);
+            $del5->execute();
+
+            // Delete the user account
+            $del6 = $db->prepare("DELETE FROM users WHERE user_id=?");
+            $del6->bind_param("i", $patient_id);
+            if (!$del6->execute())
+                throw new Exception('Failed to delete patient account');
+
+            echo json_encode(['success' => true, 'message' => 'Patient deleted successfully']);
+            break;
+
         default:
             throw new Exception('Invalid action');
     }

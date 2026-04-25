@@ -20,3 +20,33 @@
 .sidebar .nav-link.logout-link {
     margin-top: auto;
 }
+
+/* ── Dentist Hero Slideshow Fix ────────────────────────────────────────── */
+.fac-slideshow {
+    position: relative;
+    width: 100%;
+    /* This makes the height grow proportionally with the width (16:5 ratio) */
+    aspect-ratio: 14 / 4; 
+    min-height: 250px; /* Prevents it from getting too small on mobile */
+    border-radius: 16px;
+    overflow: hidden !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+}
+
+.fac-slide, 
+.fac-slide img {
+    width: 100%;
+    height: 100% !important; /* Forces images to fill the new proportional height */
+    object-fit: cover; /* Prevents the 'squashed' or 'stretched' look */
+    display: block;
+}
+
+/* Responsive Fix for small phones */
+@media (max-width: 575.98px) {
+    .fac-slideshow,
+    .fac-slide,
+    .fac-slide img {
+        aspect-ratio: auto; /* Disable aspect ratio for small screens */
+        height: 200px !important; /* Use a fixed height that fits phone screens */
+    }
+}

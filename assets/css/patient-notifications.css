@@ -2,6 +2,14 @@
    Patient Notifications — redesigned
    ============================================================================= */
 
+/* wrapper for page content — controls spacing on small screens */
+.notif-wrapper {
+    max-width: 1100px;
+    width: 100%;
+    padding: 0 15px;
+    margin: 0 auto;
+}
+
 /* ── Page header ──────────────────────────────────────────────────── */
 .notif-page-header {
     background: #fff;
@@ -288,21 +296,45 @@
 
 /* ── Mobile ───────────────────────────────────────────────────────── */
 @media (max-width: 767.98px) {
+    /* No gutter on mobile as requested */
+    .notif-wrapper { padding-left: 0; padding-right: 0; }
     .notif-page-header {
         flex-direction: column;
         align-items: flex-start !important;
         gap: 0.75rem;
+        padding-left: 0;
+        padding-right: 0;
+        border-radius: 0; /* full-bleed header */
     }
     .notif-search-wrap { width: 100%; }
-    .notif-card.unread { background: #f8fafc; }
+    .notif-card { margin-left: 0; margin-right: 0; border-radius: 0; }
+    .notif-card .card-body { padding-left: 12px; padding-right:12px; }
     #clearAll { display: none !important; }
 }
 
 @media (max-width: 575.98px) {
-    .notif-page-header { padding: 1rem; }
-    .notif-filter-tabs { padding: 0 0.5rem; }
-    .notif-filter-tabs .nav-link { padding: 0.6rem 0.65rem; font-size: 0.8rem; }
-    .notif-card .card-body { padding: 0.75rem 0.85rem; }
+    .notif-wrapper { padding-left: 0; padding-right: 0; }
+    .notif-page-header { padding: 0.8rem; border-radius: 0; }
+    .notif-filter-tabs { padding: 0 0.25rem; }
+    .notif-filter-tabs .nav-link { padding: 0.45rem 0.5rem; font-size: 0.8rem; }
+    .notif-card { margin-left: 0; margin-right: 0; border-radius: 0; }
+    .notif-card .card-body { padding: 0.6rem 0.9rem; }
     .notif-card.unread { background: #f8fafc; }
     #clearAll { display: none !important; }
+}
+
+/* ── Large screens: full-width notifications (edge-to-edge within main content) ───────────────────────────────── */
+@media (min-width: 1200px) {
+    /* remove wrapper max-width so content spans available main area */
+    .notif-wrapper { max-width: none; padding-left: 0; padding-right: 0; }
+
+    /* make header and filter visually align to edges of the main content */
+    .notif-page-header, .notif-filter-tabs { margin-left: 0; margin-right: 0; padding-left: 24px; padding-right: 24px; border-radius: 0; }
+
+    /* notification cards stretch to full width of content area with matching gutters */
+    .notif-card { margin-left: 0; margin-right: 0; border-radius: 0; }
+    .notif-card .card-body { padding-left: 24px; padding-right: 24px; }
+
+    /* restore subtle separation between cards and full-bleed edges */
+    .notif-date-group { margin-left: 24px; margin-right: 24px; }
 }

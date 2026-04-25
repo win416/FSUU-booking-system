@@ -25,7 +25,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-section">
+    <section class="hero-section" style="background-image: url('img/insidefsuudental.jpg');">
         <div class="hero-overlay"></div>
         <div class="container hero-body">
             <h2 class="hero-title">Welcome to FSUU Dental Clinic</h2>
@@ -114,7 +114,6 @@
                         <li><i class="bi bi-check-circle-fill"></i>Modern equipment and technology</li>
                         <li><i class="bi bi-check-circle-fill"></i>Experienced and qualified dentists</li>
                         <li><i class="bi bi-check-circle-fill"></i>Patient-centered care approach</li>
-                        <li><i class="bi bi-check-circle-fill"></i>Affordable treatment options</li>
                     </ul>
                 </div>
                 <div class="col-lg-6">
@@ -282,6 +281,21 @@
                 navbar.classList.remove('navbar-scrolled');
             }
         });
+
+        // Hero video fallback handling: remove background image when video can play, keep poster/fallback otherwise
+        (function(){
+            const video = document.getElementById('heroVideo');
+            const hero = document.querySelector('.hero-section');
+            if (!video || !hero) return;
+            // when video starts playing, remove fallback background
+            video.addEventListener('playing', function(){ hero.classList.add('video-ready'); });
+            video.addEventListener('error', function(e){ console.warn('Hero video failed to load', e); /* keep fallback image */ });
+            // In case autoplay is blocked, try to play programmatically (muted allowed)
+            video.play().catch(()=>{
+                // autoplay blocked; leave poster visible
+                console.debug('Autoplay prevented; poster will be shown');
+            });
+        })();
 
     </script>
 </body>

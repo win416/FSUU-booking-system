@@ -101,6 +101,7 @@ function serviceBgImage(string $name): string {
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/patient-dashboard.css">
     <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=13">
+    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=13">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>
@@ -647,38 +648,47 @@ function displayTimeSlots(slots, maxPerDay, silent = false) {
     const today = now.toDateString() === new Date(selectedDate + 'T00:00:00').toDateString();
 
     let availCount = 0;
-    let unavailableCount = 0;
-    let slotButtons = '';
+    let amButtons = '';
+    let pmButtons = '';
     let selectedStillAvailable = false;
 
     slots.forEach(slot => {
-        const slotDt  = new Date(selectedDate + 'T' + slot.time);
-        const isPast  = today && slotDt < now;
-        const isFull  = slot.booked >= maxPerDay;
-        const isBlock = slot.blocked;
-        const disabled = isPast || isFull || isBlock;
+        const slotDt   = new Date(selectedDate + 'T' + slot.time);
+        const isPast   = today && slotDt < now;
+        const isBlock  = slot.blocked;
+        const isBooked = slot.booked && slot.booked > 0;
+        const disabled = isPast || isBlock || isBooked;
         if (!disabled) availCount++;
         if (!disabled && selectedTime === slot.time) selectedStillAvailable = true;
 
-        if (disabled) {
-            unavailableCount++;
-            return;
-        }
+        // Accessibility / hint text
+        let title = '';
+        if (isPast) title = 'Time has already passed';
+        else if (isBlock) title = 'Not available';
+        else if (isBooked) title = 'Already booked by another student';
 
-        slotButtons += `
+        // Determine AM / PM
+        const hour = new Date('1970-01-01T' + slot.time).getHours();
+        const isPM = hour >= 12;
+
+        const btn = `
             <button type="button"
-                    class="slot-chip ${selectedTime === slot.time ? 'selected' : ''}"
-                    data-time="${slot.time}">
-                ${formatTime(slot.time)}
+                    class="slot-chip ${selectedTime === slot.time ? 'selected' : ''}${disabled ? ' disabled' : ''}"
+                    data-time="${slot.time}"
+                    ${disabled ? 'disabled' : ''}
+                    title="${title}">
+                <span>${formatTime(slot.time)}</span>
             </button>
         `;
+
+        if (isPM) pmButtons += btn; else amButtons += btn;
     });
 
     if (selectedTime && !selectedStillAvailable) {
         selectedTime = null;
         updateSummary();
         if (silent) {
-            showToast('warning', 'This time slot is already fully booked. Please choose another available time based on dentist availability.');
+            showToast('warning', 'This time slot has been taken. Please choose another available time.');
         }
     }
 
@@ -702,24 +712,63 @@ function displayTimeSlots(slots, maxPerDay, silent = false) {
         <div class="slot-picker-wrap">
             <div class="slot-picker-head">
                 <span class="slot-picker-label">Select Time</span>
-                ${unavailableCount > 0 ? `<span class="slot-picker-note">${unavailableCount} unavailable hidden</span>` : ''}
             </div>
-            <div class="slot-grid" role="listbox" aria-label="Available Time">
-                ${slotButtons}
+            <div class="slot-wheels d-flex" role="presentation" aria-hidden="false">
+                <div class="slot-wheel-col" aria-label="AM">
+                    <div class="slot-wheel" role="listbox" aria-label="AM times">
+                        ${amButtons}
+                        <div class="slot-wheel-center-indicator" aria-hidden="true"></div>
+                    </div>
+                    <div class="slot-wheel-label text-center text-muted small mt-1">AM</div>
+                </div>
+                <div class="slot-wheel-col" aria-label="PM">
+                    <div class="slot-wheel" role="listbox" aria-label="PM times">
+                        ${pmButtons}
+                        <div class="slot-wheel-center-indicator" aria-hidden="true"></div>
+                    </div>
+                    <div class="slot-wheel-label text-center text-muted small mt-1">PM</div>
+                </div>
             </div>
         </div>
     `;
+
     $('#timeSlotsContainer').html(countHtml + slotPickerHtml);
+
+    // Helper: scroll element into center of container
+    function scrollToCenter(el, container) {
+        if (!el || !container) return;
+        const elTop = el.offsetTop;
+        const elHeight = el.offsetHeight;
+        const contHeight = container.clientHeight;
+        const scrollTop = elTop - (contHeight / 2) + (elHeight / 2);
+        container.scrollTop = scrollTop;
+    }
+
+    // Center selected or first available slot in its wheel
+    setTimeout(() => {
+        if (selectedTime) {
+            const $sel = $(`.slot-chip.selected`);
+            if ($sel.length) {
+                const $container = $sel.closest('.slot-wheel');
+                scrollToCenter($sel[0], $container[0]);
+            }
+        } else {
+            // try AM first then PM
+            const $first = $('.slot-wheel').find('.slot-chip:not(.disabled)').first();
+            if ($first.length) scrollToCenter($first[0], $first.closest('.slot-wheel')[0]);
+        }
+    }, 60);
 }
 
 // ── Step 2 → 3: Select time ────────────────────────────────────────────
 $(document).on('click', '.slot-chip', function () {
+    // Prevent selecting disabled/unavailable times
+    if ($(this).prop('disabled') || $(this).hasClass('disabled')) return;
     const picked = $(this).data('time');
     if (!picked) return;
     selectedTime = String(picked);
     $('.slot-chip').removeClass('selected');
     $(this).addClass('selected');
-
     $('#step2').addClass('d-none');
     $('#step3').removeClass('d-none');
     stopSlotAutoRefresh();

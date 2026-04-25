@@ -12,6 +12,7 @@
         margin-bottom: 10px;
         box-shadow: 0 1px 4px rgba(0,0,0,0.07);
         border: 1px solid #f0f0f0;
+        transition: box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
     }
     .appt-item-top {
         display: flex;
@@ -39,5 +40,12 @@
         margin-top: 10px;
         padding-top: 8px;
         border-top: 1px solid #f3f4f6;
+    }
+
+    /* Highlighted / focused appointment on mobile (when navigated from notification) */
+    .appt-item.table-info, .appt-item.focused {
+        background: #eaf8ff;
+        border-color: rgba(41,171,226,0.35);
+        box-shadow: 0 8px 24px rgba(41,171,226,0.12);
     }
 }

@@ -144,7 +144,6 @@ $history = $histStmt->get_result();
                                         <th class="history-table-cell">Service</th>
                                         <th class="history-table-cell">Duration</th>
                                         <th class="history-table-cell">Status</th>
-                                        <th class="history-table-cell">Notes</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -174,9 +173,7 @@ $history = $histStmt->get_result();
                                         <td class="history-table-cell">
                                             <span class="badge bg-info">Completed</span>
                                         </td>
-                                        <td class="history-table-cell">
-                                            <small class="text-muted"><?php echo $row['notes'] ? htmlspecialchars($row['notes']) : '—'; ?></small>
-                                        </td>
+
                                     </tr>
                                     <?php endwhile; ?>
                                 </tbody>

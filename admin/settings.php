@@ -217,7 +217,6 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                                             <button type="submit" class="btn btn-primary">
                                                 <i class="bi bi-save me-1"></i> Save Booking Settings
                                             </button>
-                                            <small class="d-block text-muted mt-2">Clinic default hours: M/Th & T/F: 8:00 AM - 9:00 PM | Wednesday: 8:00 AM - 5:00 PM | Saturday: 8:00 AM - 4:00 PM</small>
                                         </form>
                                     </div>
                                 </div>
@@ -454,11 +453,6 @@ $clinic_address  = $sys_settings['clinic_address'] ?? '';
                             <button type="button" class="btn btn-outline-primary btn-sm" id="refreshDentistAvailability">
                                 <i class="bi bi-arrow-clockwise me-1"></i> Refresh
                             </button>
-                        </div>
-                        <div class="card mb-3 info-card">
-                            <div class="card-body small text-muted">
-                                This uses the same availability settings dentists edit in their portal. Any update saved by admin or dentist is shared and reflected on both sides.
-                            </div>
                         </div>
                         <?php if (!empty($dentists)): ?>
                             <div class="row g-3">

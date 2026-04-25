@@ -161,6 +161,9 @@ $appointments = $appts->get_result();
                             <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
                                 <i class="bi bi-key"></i> Reset Password
                             </button>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deletePatientModal">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -382,6 +385,33 @@ $appointments = $appts->get_result();
     </div>
 </div>
 
+<!-- ===== Delete Patient Modal ===== -->
+<div class="modal fade" id="deletePatientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Patient</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger fw-bold mb-3">⚠️ This action cannot be undone!</p>
+                <p class="mb-2">Are you sure you want to permanently delete <strong><?php echo htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']); ?></strong>?</p>
+                <p class="text-muted small mb-3">All associated data including medical information, appointments, and records will be removed from the system.</p>
+                <div class="mb-3">
+                    <label class="form-label">Type the patient's name to confirm:</label>
+                    <input type="text" id="deleteConfirmName" class="form-control" placeholder="Enter: <?php echo htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']); ?>">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                    <i class="bi bi-trash me-1"></i>Delete Patient
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -526,6 +556,29 @@ $('#picUploadInput').on('change', function() {
             }
         },
         error: function() { showAlert('Upload failed. Please try again.', 'danger'); }
+    });
+});
+
+// Delete patient confirmation
+const patientFullName = '<?php echo htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']); ?>';
+$('#deleteConfirmName').on('input', function() {
+    $('#confirmDeleteBtn').prop('disabled', $(this).val().trim() !== patientFullName);
+});
+
+$('#confirmDeleteBtn').on('click', function() {
+    const btn = $(this);
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Deleting…');
+    $.post(API, { action: 'delete_patient', patient_id: patientId }, function(res) {
+        if (res.success) {
+            showAlert(res.message, 'success');
+            setTimeout(() => { window.location.href = 'patients.php'; }, 1500);
+        } else {
+            showAlert(res.message, 'danger');
+            btn.prop('disabled', false).html('<i class="bi bi-trash me-1"></i>Delete Patient');
+        }
+    }, 'json').fail(function() {
+        showAlert('Server error. Please try again.', 'danger');
+        btn.prop('disabled', false).html('<i class="bi bi-trash me-1"></i>Delete Patient');
     });
 });
 </script>

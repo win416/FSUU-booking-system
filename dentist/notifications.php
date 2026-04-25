@@ -154,8 +154,8 @@ function resolveAppointmentIdFromNotification(mysqli $db, int $dentistId, array 
 
     <div class="main-content">
         <?php include '../includes/dentist-topbar.php'; ?>
-        <div class="container-fluid my-4">
-            <div style="max-width:1100px;">
+        <div class="container-fluid my-4 d-flex justify-content-center">
+            <div class="notif-wrapper">
             <div class="notif-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div><h4 class="fw-bold mb-1"><i class="bi bi-bell me-2"></i>Notifications</h4></div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">

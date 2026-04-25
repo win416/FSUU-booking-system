@@ -300,37 +300,49 @@ $patients = $patientsStmt->get_result();
         });
     }
 
-    $(document).on('click', '.patient-profile-row', function() {
-        const patientId = $(this).data('id');
-        const name = $(this).data('name') || 'Patient';
-        const email = $(this).data('email') || 'Not available';
-        const contact = $(this).data('contact') || 'Not available';
-        const fsuuId = $(this).data('fsuu-id') || '—';
-        const program = $(this).data('program') || '—';
-        const picture = $(this).data('picture') || '';
+$(document).on('click', '.patient-profile-row', function() {
+    // 1. Get the data from the clicked row
+    const patientId = $(this).data('id');
+    const name = $(this).data('name') || 'Patient';
+    const email = $(this).data('email') || 'Not available';
+    const contact = $(this).data('contact') || 'Not available';
+    const fsuuId = $(this).data('fsuu-id') || '—';
+    const program = $(this).data('program') || '—';
+    const picture = $(this).data('picture') || '';
 
-        $('#patientProfileName').text(name);
-        $('#patientProfileEmail').text(email);
-        $('#patientProfileContact').text(contact);
-        $('#patientProfileFsuu').text(fsuuId);
-        $('#patientProfileProgram').text(program);
+    // 2. Fill the text fields in the modal
+    $('#patientProfileName').text(name);
+    $('#patientProfileEmail').text(email);
+    $('#patientProfileContact').text(contact);
+    $('#patientProfileFsuu').text(fsuuId);
+    $('#patientProfileProgram').text(program);
 
+    // 3. FIX: Clear and Toggle the Profile Picture vs Initials
+    // We hide both first to ensure a clean slate every time you click a new patient
+    $('#patientProfileImage, #patientProfileInitials').hide();
+
+    if (picture && picture.trim() !== '') {
+        // Show the uploaded picture
+        $('#patientProfileImage').attr('src', '../' + picture).show();
+        // Force the initials to stay hidden
+        $('#patientProfileInitials').attr('style', 'display: none !important');
+    } else {
+        // No picture found, generate and show initials
         const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'P';
-        if (picture) {
-            $('#patientProfileImage').attr('src', '../' + picture).show();
-            $('#patientProfileInitials').hide();
-        } else {
-            $('#patientProfileImage').hide();
-            $('#patientProfileInitials').text(initials).show();
-        }
+        $('#patientProfileImage').hide();
+        // Use inline style to ensure the flexbox layout doesn't conflict with .hide()
+        $('#patientProfileInitials').text(initials).attr('style', 'width:120px;height:120px;font-size:2rem;font-weight:700;color:#29ABE2;background:#eef8ff;display:inline-flex !important;align-items:center;justify-content:center;');
+    }
 
-        const msgUrl = 'messages.php?compose_to=' + encodeURIComponent(patientId) +
-            '&compose_name=' + encodeURIComponent(name) +
-            '&compose_subject=' + encodeURIComponent('Patient Concern');
-        $('#messagePatientBtn').attr('href', msgUrl);
+    // 4. Update the Message Button link
+    const msgUrl = 'messages.php?compose_to=' + encodeURIComponent(patientId) +
+        '&compose_name=' + encodeURIComponent(name) +
+        '&compose_subject=' + encodeURIComponent('Patient Concern');
+    $('#messagePatientBtn').attr('href', msgUrl);
 
-        new bootstrap.Modal(document.getElementById('patientProfileModal')).show();
-    });
+    // 5. Open the Modal
+    new bootstrap.Modal(document.getElementById('patientProfileModal')).show();
+});
 
     $('#recordForm').on('submit', function(e) {
         e.preventDefault();

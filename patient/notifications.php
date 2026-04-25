@@ -139,7 +139,7 @@ function resolvePatientAppointmentIdFromNotification(mysqli $db, int $userId, ar
     <div class="main-content">
         <?php include '../includes/patient-topbar.php'; ?>
         <div class="container-fluid my-4 d-flex justify-content-center">
-            <div style="max-width:1100px;width:100%;padding:0 15px;">
+            <div class="notif-wrapper">
 
             <!-- Page Header -->
             <div class="notif-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">

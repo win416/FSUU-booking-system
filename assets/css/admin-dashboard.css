@@ -4,29 +4,33 @@
 .fac-slideshow {
     position: relative;
     width: 100%;
-    height: 250px !important;
-    max-height: 250px !important;
+    /* Use aspect-ratio instead of fixed height */
+    aspect-ratio: 14 / 4; 
+    min-height: 250px; /* Ensures it never gets too small on mobile */
     border-radius: 16px;
     overflow: hidden !important;
     box-shadow: 0 4px 24px rgba(0,0,0,0.14);
     flex-shrink: 0;
 }
+
 .fac-slide {
     position: absolute !important;
     inset: 0;
     opacity: 0;
     transition: opacity 0.9s ease;
-    height: 250px !important;
-    overflow: hidden;
+    width: 100%;
+    height: 100% !important; /* Take full height of container */
 }
+
 .fac-slide.active { opacity: 1; }
+
 .fac-slide img {
     width: 100%;
-    height: 250px !important;
-    max-height: 250px !important;
-    object-fit: cover;
+    height: 100% !important;
+    object-fit: cover; /* Keeps image from stretching */
     display: block;
 }
+
 .fac-hero-overlay {
     position: absolute;
     inset: 0;

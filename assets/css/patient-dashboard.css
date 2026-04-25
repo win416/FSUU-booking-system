@@ -4,29 +4,30 @@
 .fac-slideshow {
     position: relative;
     width: 100%;
-    height: 320px;
+    /* This makes the height grow proportionally with the width (14:5 ratio) */
+    aspect-ratio: 14 / 4; 
+    min-height: 250px; /* Prevents it from getting too small on mobile */
     border-radius: 16px;
-    overflow: hidden;
+    overflow: hidden !important;
     box-shadow: 0 4px 24px rgba(0,0,0,0.14);
 }
-/* Hero variant — slightly taller than base to fit text */
-.fac-hero {
-    height: 250px;
-}
-.fac-slide {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.9s ease;
-}
-.fac-slide.active {
-    opacity: 1;
-}
+
+.fac-slide, 
 .fac-slide img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: 100% !important; /* Forces images to fill the new proportional height */
+    object-fit: cover; /* Prevents the 'squashed' or 'stretched' look */
     display: block;
+}
+
+/* Responsive Fix for small phones */
+@media (max-width: 575.98px) {
+    .fac-slideshow,
+    .fac-slide,
+    .fac-slide img {
+        aspect-ratio: auto; /* Disable aspect ratio for small screens */
+        height: 200px !important; /* Use a fixed height that fits phone screens */
+    }
 }
 /* Gradient overlay for text readability */
 .fac-hero-overlay {

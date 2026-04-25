@@ -14,6 +14,7 @@ class Database {
             }
             
             $this->connection->set_charset("utf8mb4");
+            $this->connection->query("SET time_zone = '+08:00'");
         } catch (Exception $e) {
             die("Database connection error: " . $e->getMessage());
         }
