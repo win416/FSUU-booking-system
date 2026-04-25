@@ -226,7 +226,7 @@ body {
 /* Hero Section Enhancement */
 .hero-section {
     position: relative;
-    background: url('../../img/insidefsuudental.jpg') center center / cover no-repeat;
+    background: url('../img/insidefsuudental.jpg') center center / cover no-repeat;
     display: flex;
     flex-direction: column;
     align-items: center;

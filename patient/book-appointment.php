@@ -100,8 +100,7 @@ function serviceBgImage(string $name): string {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/patient-dashboard.css">
-    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=13">
-    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=13">
+    <link rel="stylesheet" href="../assets/css/patient-book-appointment.css?v=15">
     <link rel="icon" type="image/x-icon" href="../img/favicon.ico">
 </head>
 <body>

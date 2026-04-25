@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
-    <link rel="stylesheet" href="assets/css/index.css?v=26">
+    <link rel="stylesheet" href="assets/css/index.css?v=27">
 </head>
 <body>
     <!-- Navigation -->
@@ -91,7 +91,7 @@
                     </div>
                 </div>
             </div>
-            <div class="services-nav-mobile d-none">
+            <div class="services-nav-mobile">
                 <button class="services-nav-btn" id="servicesPrevBtn" aria-label="Previous service">
                     <i class="bi bi-chevron-left"></i>
                 </button>
@@ -281,22 +281,6 @@
                 navbar.classList.remove('navbar-scrolled');
             }
         });
-
-        // Hero video fallback handling: remove background image when video can play, keep poster/fallback otherwise
-        (function(){
-            const video = document.getElementById('heroVideo');
-            const hero = document.querySelector('.hero-section');
-            if (!video || !hero) return;
-            // when video starts playing, remove fallback background
-            video.addEventListener('playing', function(){ hero.classList.add('video-ready'); });
-            video.addEventListener('error', function(e){ console.warn('Hero video failed to load', e); /* keep fallback image */ });
-            // In case autoplay is blocked, try to play programmatically (muted allowed)
-            video.play().catch(()=>{
-                // autoplay blocked; leave poster visible
-                console.debug('Autoplay prevented; poster will be shown');
-            });
-        })();
-
     </script>
 </body>
 </html>
