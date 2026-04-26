@@ -943,26 +943,3 @@ body {
         text-overflow: ellipsis;
     }
 }
-#timeSlotsContainer {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-.time-slot-btn {
-    width: 100% !important;
-    display: block !important;
-    margin-bottom: 0 !important;
-}
-
-/* This fixes the AM/PM text that is pushing the box to the right */
-#timeSlotsContainer h6, 
-#timeSlotsContainer span,
-#timeSlotsContainer div:not(.time-slot-btn) {
-    grid-column: span 2 !important;
-    text-align: center !important;
-    width: 100% !important;
-}

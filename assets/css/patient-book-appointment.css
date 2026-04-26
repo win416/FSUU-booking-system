@@ -480,82 +480,67 @@
     color: var(--primary-text);
 }
 
-/* ── Time slots panel ────────────────────────────────────────────────── */
+/* ── Time slots panel (Corrected Grid Version) ───────────────────────── */
 .time-slots-panel {
-    background: var(--secondary-bg);
+    background: #f8f9fa;
     border-radius: 0.65rem;
     border: 1px solid var(--border-color);
     padding: 1rem;
     min-height: 200px;
 }
 
-.slots-placeholder,
-.slots-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-height: 150px;
-    color: var(--text-light);
-    font-size: 0.85rem;
-    text-align: center;
+/* This is the main container for your buttons */
+#timeSlotsContainer {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* Forces 2 columns */
+    gap: 10px !important;
+    padding-top: 10px !important;
+    width: 100% !important;
 }
 
-.slots-placeholder i { font-size: 2rem; opacity: 0.4; }
-.slots-loading { flex-direction: row; }
-
-.slots-availability-note {
-    font-size: 0.8rem;
-    color: var(--text-light);
-}
-
-.slots-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-}
-
-.slots-availability-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.2rem 0.55rem;
-    border-radius: 999px;
-    border: 1px solid rgba(41,171,226,0.35);
-    background: rgba(41,171,226,0.1);
-    color: #0f6d97;
-    font-size: 0.72rem;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.slot-picker-wrap {
-    background: #fff;
-    border: 1px solid #dbe7ef;
-    border-radius: 0.85rem;
-    padding: 0.7rem;
-}
-
-.slot-picker-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.55rem;
-}
-
+/* Ensure headings like AM/PM take up the full width of the grid */
+#timeSlotsContainer h6, 
+#timeSlotsContainer span,
 .slot-picker-label {
-    font-size: 0.73rem;
-    color: #6d7a86;
-    letter-spacing: 0.04em;
+    grid-column: span 2 !important;
+    text-align: center;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-size: 0.75rem;
+    color: #6c757d;
     text-transform: uppercase;
     font-weight: 700;
 }
 
-.slot-picker-note {
-    font-size: 0.72rem;
-    color: #8a98a6;
+/* Style for the buttons (Chips) */
+.slot-chip, .time-slot-btn {
+    width: 100% !important;
+    border: 1px solid #d6e4ef;
+    background: #fff;
+    color: #1f2a33;
+    border-radius: 0.6rem;
+    padding: 0.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.slot-chip:hover {
+    border-color: #29ABE2;
+    background: #f1f9fe;
+}
+
+.slot-chip.selected {
+    border-color: #29ABE2;
+    background: #29ABE2;
+    color: #fff;
+}
+
+/* Hide the unused Wheel layout to prevent overlaps */
+.slot-wheels, .slot-wheel-col {
+    display: none !important;
 }
 
 /* Replace grid with AM/PM wheel layout */
