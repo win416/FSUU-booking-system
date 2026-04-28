@@ -126,7 +126,7 @@ while ($current < $end_time) {
     $blocked->execute();
     $is_blocked = $blocked->get_result()->num_rows > 0;
 
-    // Current load for this slot
+    // Current load for this slot (excluding cancelled appointments)
     $booked = $db->prepare("
         SELECT COUNT(*) as count
         FROM appointments

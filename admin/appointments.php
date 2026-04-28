@@ -168,12 +168,12 @@ $result = $db->query($query);
                                             </td>
                                             <td>
                                                 <?php if($status_key === 'pending'): ?>
-                                                    <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
+                                                    <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" data-dentist="<?php echo $appt['dentist_id'] ?? 0; ?>" title="Reschedule">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
                                                     <span class="text-muted small"><?php echo $dentist_label; ?> handles approval</span>
                                                 <?php elseif($status_key === 'approved'): ?>
-                                                    <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" title="Reschedule">
+                                                    <button class="btn btn-sm btn-outline-primary edit-btn me-1" data-id="<?php echo $appt['appointment_id']; ?>" data-date="<?php echo $appt['appointment_date']; ?>" data-time="<?php echo $appt['appointment_time']; ?>" data-service="<?php echo $appt['service_id']; ?>" data-dentist="<?php echo $appt['dentist_id'] ?? 0; ?>" title="Reschedule">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
                                                     <span class="text-muted small"><?php echo $dentist_label; ?> handles completion</span>
@@ -237,7 +237,6 @@ $result = $db->query($query);
                             <select class="form-select" id="edit_time" name="appointment_time" required>
                                 <option value="">Select time...</option>
                             </select>
-                            <small class="text-muted">Mon-Fri: 1:00 PM - 3:30 PM | Sat: 9:00 AM - 12:00 PM</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Reason for Reschedule (Optional)</label>
@@ -274,17 +273,19 @@ $result = $db->query($query);
         });
 
         // Edit/Reschedule button
+        let currentDentistId = null;
         $('.edit-btn').click(function() {
             const id = $(this).data('id');
             const date = $(this).data('date');
             const time = $(this).data('time');
+            currentDentistId = $(this).data('dentist');
             
             $('#edit_appointment_id').val(id);
             $('#edit_date').val(date);
             $('#edit_reason').val('');
             
-            // Load time slots for the date
-            loadTimeSlots(date, time);
+            // Load time slots for the date using the dentist's working hours
+            loadTimeSlots(date, time, currentDentistId);
             
             const modal = new bootstrap.Modal(document.getElementById('editModal'));
             modal.show();
@@ -294,27 +295,76 @@ $result = $db->query($query);
         $('#edit_date').change(function() {
             const date = $(this).val();
             if (date) {
-                loadTimeSlots(date);
+                loadTimeSlots(date, null, currentDentistId);
             }
         });
 
-        function loadTimeSlots(date, selectedTime = null) {
+        function loadTimeSlots(date, selectedTime = null, dentistId = null) {
             const timeSelect = $('#edit_time');
             timeSelect.html('<option value="">Loading...</option>');
             
             const dayOfWeek = new Date(date).getDay();
-            let slots = [];
             
             if (dayOfWeek === 0) { // Sunday - closed
                 timeSelect.html('<option value="">Clinic closed on Sundays</option>');
                 return;
-            } else if (dayOfWeek === 6) { // Saturday
-                slots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00'];
-            } else { // Mon-Fri
-                slots = ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
             }
             
+            // If no dentist ID, show generic slots
+            if (!dentistId || dentistId <= 0) {
+                let slots = [];
+                if (dayOfWeek === 6) { // Saturday
+                    slots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00'];
+                } else { // Mon-Fri
+                    slots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00'];
+                }
+                renderSlots(slots, selectedTime);
+                return;
+            }
+            
+            // Fetch dentist's working hours
+            $.get('../api/dentist-working-hours.php?dentist_id=' + dentistId)
+                .done(function(res) {
+                    if (!res.success || !res.settings) {
+                        timeSelect.html('<option value="">Unable to load available times</option>');
+                        return;
+                    }
+                    
+                    const settings = res.settings;
+                    let start, end;
+                    
+                    if (dayOfWeek === 6) { // Saturday
+                        start = settings.saturday_start || '09:00';
+                        end = settings.saturday_end || '12:00';
+                    } else { // Mon-Fri (and Wednesday)
+                        start = settings.weekday_start || '08:00';
+                        end = settings.weekday_end || '12:00';
+                    }
+                    
+                    // Generate 30-minute slots
+                    const slots = [];
+                    const startDate = new Date('2000-01-01 ' + start);
+                    const endDate = new Date('2000-01-01 ' + end);
+                    
+                    let current = new Date(startDate);
+                    while (current < endDate) {
+                        const hours = String(current.getHours()).padStart(2, '0');
+                        const minutes = String(current.getMinutes()).padStart(2, '0');
+                        slots.push(hours + ':' + minutes);
+                        current.setMinutes(current.getMinutes() + 30);
+                    }
+                    
+                    renderSlots(slots, selectedTime);
+                })
+                .fail(function() {
+                    timeSelect.html('<option value="">Unable to load available times</option>');
+                });
+        }
+        
+        function renderSlots(slots, selectedTime) {
+            const timeSelect = $('#edit_time');
             let options = '<option value="">Select time...</option>';
+            
             slots.forEach(slot => {
                 const time24 = slot + ':00';
                 const hour = parseInt(slot.split(':')[0]);

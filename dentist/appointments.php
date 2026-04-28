@@ -280,7 +280,7 @@ function loadTimeSlots(date, selectedTime = null) {
     fetchDentistWorkingHours()
         .then(settings => {
             const start = dayOfWeek === 6 ? (settings.saturday_start || '09:00') : (settings.weekday_start || '08:00');
-            const end = dayOfWeek === 6 ? (settings.saturday_end || '12:00') : (settings.weekday_end || '12:00');
+            const end = dayOfWeek === 6 ? (settings.saturday_end || '12:00') : '17:00'; // Change this line
             const toMinutes = (hhmm) => {
                 const [h, m] = String(hhmm).split(':').map(v => parseInt(v, 10));
                 if (!Number.isFinite(h) || !Number.isFinite(m)) return NaN;
@@ -320,12 +320,13 @@ $(document).on('click', '.edit-btn', function(e) {
 
     const id = $(this).data('id');
     const date = $(this).data('date');
+    const time = $(this).data('time');
     const today = new Date().toISOString().split('T')[0];
 
     $('#edit_appointment_id').val(id);
     $('#edit_date').attr('min', today).val(date);
     $('#edit_reason').val('');
-    loadTimeSlots(date);
+    loadTimeSlots(date, time);
     editModal.show();
 });
 
