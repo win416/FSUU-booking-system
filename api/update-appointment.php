@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Update appointment
-        $stmt = $db->prepare("UPDATE appointments SET appointment_date = ?, appointment_time = ?, updated_at = NOW() WHERE appointment_id = ?");
+        $stmt = $db->prepare("UPDATE appointments SET appointment_date = ?, appointment_time = ? WHERE appointment_id = ?");
         $stmt->bind_param("ssi", $new_date, $new_time, $appointment_id);
         
         if ($stmt->execute()) {

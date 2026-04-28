@@ -226,7 +226,10 @@ if ($action === 'approve' || $action === 'decline') {
 }
 
 if ($action === 'reschedule') {
+    file_put_contents('../debug_api.log', date('[Y-m-d H:i:s] ') . "Dentist reschedule request. POST: " . json_encode($_POST) . ", Owner: " . json_encode($owner) . "\n", FILE_APPEND);
+    
     if (!in_array($owner['status'], ['pending', 'approved'], true)) {
+        file_put_contents('../debug_api.log', date('[Y-m-d H:i:s] ') . "Reschedule failed: Invalid status '{$owner['status']}'\n", FILE_APPEND);
         echo json_encode(['success' => false, 'message' => 'Only pending or approved appointments can be rescheduled.']);
         exit();
     }
@@ -307,9 +310,11 @@ if ($action === 'reschedule') {
 
     $db->begin_transaction();
     try {
-        $update = $db->prepare("UPDATE appointments SET appointment_date = ?, appointment_time = ?, updated_at = NOW() WHERE appointment_id = ?");
+        $update = $db->prepare("UPDATE appointments SET appointment_date = ?, appointment_time = ? WHERE appointment_id = ?");
         $update->bind_param("ssi", $new_date, $new_time, $appointment_id);
-        $update->execute();
+        if (!$update->execute()) {
+            throw new Exception("Failed to update appointment: " . $update->error);
+        }
 
         $oldDate = date('M d, Y', strtotime($appt['appointment_date']));
         $oldTime = date('g:i A', strtotime($appt['appointment_time']));
@@ -322,12 +327,15 @@ if ($action === 'reschedule') {
 
         $notif = $db->prepare("INSERT INTO notifications (user_id, type, subject, message, status) VALUES (?, 'email', 'Appointment Rescheduled', ?, 'pending')");
         $notif->bind_param("is", $appt['user_id'], $message);
-        $notif->execute();
+        if (!$notif->execute()) {
+            throw new Exception("Failed to create notification: " . $notif->error);
+        }
 
         $db->commit();
         echo json_encode(['success' => true, 'message' => 'Appointment rescheduled successfully.']);
     } catch (Throwable $e) {
         $db->rollback();
+        file_put_contents('../debug_api.log', date('[Y-m-d H:i:s] ') . "Reschedule transaction failed: " . $e->getMessage() . "\n", FILE_APPEND);
         echo json_encode(['success' => false, 'message' => 'Failed to reschedule appointment.']);
     }
     exit();
