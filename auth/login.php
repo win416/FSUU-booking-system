@@ -90,7 +90,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <?php endif; ?>
 
                     <?php if (isset($_GET['verified'])): ?>
-                        <div class="alert alert-success">✅ Email verified! You can now log in.</div>
+                        <div class="alert d-flex align-items-center gap-3 mb-3" style="background:#d4edda;border:2px solid #28a745;border-radius:10px;padding:16px 18px;">
+                            <span style="font-size:1.8rem;line-height:1;">✅</span>
+                            <div>
+                                <div style="font-weight:700;color:#155724;font-size:1.1rem;">Email Verified!</div>
+                                <div style="font-size:0.9rem;color:#155724;margin-top:2px;">You can now log in with your credentials.</div>
+                            </div>
+                        </div>
                     <?php endif; ?>
                     
                     <form method="POST" action="">
